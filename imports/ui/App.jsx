@@ -53,8 +53,6 @@ export class App extends Component {
   }
 
   showForm() {
-    console.log(this.state.currentDataCollection)
-    console.log(123)
     if (this.state.showEditDataCollection === true) {
       return (<Edit currentDataCollection={this.state.currentDataCollection} />);
     }
@@ -105,6 +103,6 @@ export default createContainer(() => {
   const user = Meteor.userId();
 
   return {
-    dataCollections: DataCollections.find({ owner: user }, { sort: { name: 1 } }).fetch(),
+    dataCollections: DataCollections.find({ ownerId: user }, { sort: { name: 1 } }).fetch(),
   };
 }, App);
