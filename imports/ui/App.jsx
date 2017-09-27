@@ -91,7 +91,7 @@ export class App extends Component {
             <div className="col s12">
               <br />
               <Divider />
-              {this.showForm()}>
+              {this.showForm()}
                 <Divider />
             </div>
           </div>
