@@ -5,7 +5,7 @@ import ActionDeleteForever from 'material-ui/svg-icons/action/delete-forever';
 import { red500 } from 'material-ui/styles/colors';
 
 
-export default class TeamList extends Component {
+export default class CollectionList extends Component {
 
   updateCurrentDataCollection(dataCollection){
     this.props.updateCurrentDataCollection(dataCollection);
