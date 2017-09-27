@@ -13,9 +13,6 @@ export default class New extends Component {
     let player = {
       name: this.refs.name.value,
       team: this.refs.team.value,
-      ballManipuation: this.refs.ballManipuation.value,
-      kickingAbilities: this.refs.kickingAbilities.value,
-      notes: this.refs.notes.value,
       createdAt: new Date(),
       owner: Meteor.userId(),
     }
@@ -47,9 +44,6 @@ export default class New extends Component {
           </div>
 
           <div className="row">
-            <div className="input-field col s6">
-              <textarea placeholder="Notes" ref="notes" type="text" className="materialize-textarea" />
-            </div>
             <div className="input-field col s6">
               <button className="btn waves-effect waves-light light-blue darken-3" type="submit" name="action">Submit
           <i className="material-icons right">send</i>

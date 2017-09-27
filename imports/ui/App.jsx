@@ -19,9 +19,6 @@ import Edit from './EditPlayer';
 const tempPlayer = {
   name: "小王",
   team: "EverGrand",
-  ballManipuation: 5,
-  kickingAbilities: 5,
-  notes: "TEMP NOTES",
 }
 
 

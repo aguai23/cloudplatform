@@ -36,28 +36,10 @@ export default class Player extends Component {
       <Card>
 
         <CardMedia
-          overlay={<CardTitle title={player.name} subtitle={`Offense: ${offense} Defence: ${defense} Total: ${total}`} />}>
+          overlay={<CardTitle title={player.name} />}>
           <img src="messi.jpg" />
         </CardMedia>
         <CardText>
-          <div style={styles.wrapper}>
-            <Chip
-              backgroundColor={blue200}
-              style={styles.chip}>
-              <Avatar size={32} color={lightBlue50} backgroundColor={lightBlue800}>
-                {player.ballManipuation}
-              </Avatar>
-              Ball Manipulation
-        </Chip>
-            <Chip
-              backgroundColor={blue200}
-              style={styles.chip}>
-              <Avatar size={32} color={lightBlue50} backgroundColor={lightBlue800}>
-                {player.kickingAbilities}
-              </Avatar>
-              Kicking Abilities
-       </Chip>
-          </div>
         </CardText>
         <CardActions>
           <RaisedButton label="Edit player/stats"

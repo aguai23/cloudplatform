@@ -31,8 +31,6 @@ Players.deny({
 const PlayerSchema = new SimpleSchema({
   name: {type : String },
   team: {type : String },
-  ballManipuation: {type : Number, defaultValue:0},
-  kickingAbilities: {type : Number, defaultValue:0 },
   notes: {type : String, optional:true },
   owner: { type: String, optional:true},
 });
