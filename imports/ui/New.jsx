@@ -1,27 +1,26 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
-import { Players } from '../api/players';
+import { DataCollections } from '../api/dataCollections';
 
 
 export default class New extends Component {
 
-  submitPlayer(event) {
+  submitDataCollection(event) {
     //prevent from refreshing
     event.preventDefault();
 
-    let player = {
+    let dataCollection = {
       name: this.refs.name.value,
-      team: this.refs.team.value,
-      createdAt: new Date(),
-      owner: Meteor.userId(),
+      type: this.refs.type.value,
+      ownerId: Meteor.userId(),
     }
 
-    Meteor.call('insertPlayer', player, (error) => {
+    Meteor.call('insertDataCollection', dataCollection, (error) => {
       if (error) {
         alert("somethings wrong" + error.reason);
       } else {
-        alert("Player added");
+        alert("DataCollection added");
         browserHistory.push('/');
       }
     });
@@ -30,8 +29,8 @@ export default class New extends Component {
   render() {
     return (
       <div className="row">
-        <form className="col s12" onSubmit={this.submitPlayer.bind(this)}>
-          <h3>Add a new player</h3>
+        <form className="col s12" onSubmit={this.submitDataCollection.bind(this)}>
+          <h3>Add a new dataCollection</h3>
 
           <div className="row">
             <div className="input-field col s6">
@@ -39,7 +38,7 @@ export default class New extends Component {
               <input placeholder="Name" ref="name" type="text" className="validate" />
             </div>
             <div className="input-field col s6">
-              <input placeholder="Team" ref="team" type="text" className="validate" />
+              <input placeholder="Team" ref="type" type="text" className="validate" />
             </div>
           </div>
 

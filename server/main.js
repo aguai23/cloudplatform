@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor';
-import { Players } from '../imports/api/players';
+import { DataCollections } from '../imports/api/dataCollections';
 
 Meteor.startup(() => {
   // code to run on server at startup
-  Meteor.publish('players', function() {
-    return Players.find({});
+  Meteor.publish('dataCollections', function() {
+    return DataCollections.find({});
   })
 });

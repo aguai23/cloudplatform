@@ -26,23 +26,19 @@ export default class Player extends Component {
   }
 
   render() {
-    const player = this.props.player;
-    const defense = player.dualTackling + player.fieldCoverage + player.passingAbilities + player.blockingAbilities;
-    const offense = player.playmakingRisks + player.gameStrategy + player.kickingAbilities + player.ballManipuation;
-    const total = offense + defense;
-
+    const dataCollection = this.props.dataCollection;
 
     return (
       <Card>
 
         <CardMedia
-          overlay={<CardTitle title={player.name} />}>
+          overlay={<CardTitle title={dataCollection.name} />}>
           <img src="messi.jpg" />
         </CardMedia>
         <CardText>
         </CardText>
         <CardActions>
-          <RaisedButton label="Edit player/stats"
+          <RaisedButton label="Edit dataCollection/stats"
             labelPosition="before"
             style={styles.button}
             onClick={this.showEditForm.bind(this)} />

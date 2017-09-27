@@ -8,23 +8,22 @@ export default class Edit extends Component {
     this.props.showTeamStats();
   }
 
-  editPlayer(event) {
+  editDataCollection(event) {
     //prevent from refreshing
     event.preventDefault();
 
-    let player = {
-      _id: this.props.currentPlayer._id,
+    let dataCollection = {
+      _id: this.props.currentDataCollection._id,
       name: this.refs.name.value,
-      team: this.refs.team.value,
-      createdAt: new Date(),
-      owner: Meteor.userId(),
+      type: this.refs.type.value,
+      ownerId: Meteor.userId(),
     }
 
-    Meteor.call('updatePlayer', player, (error) => {
+    Meteor.call('updateDataCollection', dataCollection, (error) => {
       if (error) {
         alert("somethings wrong" + error.reason);
       } else {
-        alert("Player updated");
+        alert("DataCollection updated");
         this.showTeamStats();
       }
     });
@@ -32,19 +31,19 @@ export default class Edit extends Component {
 
   render() {
 
-    const currentPlayer = this.props.currentPlayer;
+    const currentDataCollection = this.props.currentDataCollection;
 
     return (
       <div className="row">
-        <form className="col s12" onSubmit={this.editPlayer.bind(this)}>
+        <form className="col s12" onSubmit={this.editDataCollection.bind(this)}>
           <h3>添加新项目</h3>
 
           <div className="row">
             <div className="input-field col s6">
-              <input placeholder="姓名" ref="name" type="text" className="validate" defaultValue={currentPlayer.name} />
+              <input placeholder="名称" ref="name" type="text" className="validate" defaultValue={currentDataCollection.name} />
             </div>
             <div className="input-field col s6">
-              <input placeholder="Team" ref="team" type="text" className="validate" defaultValue={currentPlayer.team} />
+              <input placeholder="type" ref="type" type="text" className="validate" defaultValue={currentDataCollection.type} />
             </div>
             <button type="submit">提交</button>
           </div>

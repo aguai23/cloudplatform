@@ -1,8 +1,8 @@
 import { Mongo } from 'meteor/mongo';
 
-export const Players = new Mongo.Collection('players');
+export const DataCollections = new Mongo.Collection('dataCollections');
 
-Players.allow({
+DataCollections.allow({
   insert() {
     return false;
   },
@@ -14,7 +14,7 @@ Players.allow({
   }
 });
 
-Players.deny({
+DataCollections.deny({
   insert() {
     return true;
   },
@@ -28,11 +28,10 @@ Players.deny({
 
 
 
-const PlayerSchema = new SimpleSchema({
+const DataCollectionSchema = new SimpleSchema({
   name: {type : String },
-  team: {type : String },
-  notes: {type : String, optional:true },
-  owner: { type: String, optional:true},
+  type: {type : String },
+  ownerId: { type: String, optional:true},
 });
 
-Players.attachSchema(PlayerSchema);
+DataCollections.attachSchema(DataCollectionSchema);

@@ -2,23 +2,20 @@ import React, { Component, PropTypes } from 'react';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import RaisedButton from 'material-ui/RaisedButton';
 import AppBar from 'material-ui/AppBar';
-
-
-
 import { List } from 'material-ui/List';
 import Divider from 'material-ui/Divider';
 import { createContainer } from 'meteor/react-meteor-data';
 import { Link } from 'react-router';
-import { Players } from '../api/players';
+import { DataCollections } from '../api/dataCollections';
 
-import TeamList from './Team-list';
-import Player from './Player';
+import CollectionList from './Collection-list';
+import DataCollection from './DataCollection';
 import AccountsWrapper from './AccountsWrapper';
-import Edit from './EditPlayer';
+import Edit from './EditDataCollection';
 
-const tempPlayer = {
-  name: "小王",
-  team: "EverGrand",
+const tempDataCollection = {
+  name: "",
+  type: "",
 }
 
 
@@ -29,39 +26,37 @@ export class App extends Component {
 
     //setting up State
     this.state = {
-      currentPlayer: tempPlayer,
-      showEditPlayer: false,
+      currentDataCollection: tempDataCollection,
+      showEditDataCollection: false,
     };
-    this.updateCurrentPlayer = this.updateCurrentPlayer.bind(this);
+    this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
     this.showEditForm = this.showEditForm.bind(this);
   }
 
-
-
-
-
-  renderPlayers() {
-    return this.props.players.map((player) => (
-      <TeamList key={player._id} player={player} updateCurrentPlayer={this.updateCurrentPlayer} />
+  renderDataCollections() {
+    return this.props.dataCollections.map((dataCollection) => (
+      <CollectionList key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
     ));
   }
 
-  updateCurrentPlayer(player) {
+  updateCurrentDataCollection(dataCollection) {
     this.setState({
-      currentPlayer: player,
+      currentDataCollection: dataCollection,
     });
   }
 
 
   showEditForm() {
     this.setState({
-      showEditPlayer: true,
+      showEditDataCollection: true,
     });
   }
 
   showForm() {
-    if (this.state.showEditPlayer === true) {
-      return (<Edit currentPlayer={this.state.currentPlayer} />);
+    console.log(this.state.currentDataCollection)
+    console.log(123)
+    if (this.state.showEditDataCollection === true) {
+      return (<Edit currentDataCollection={this.state.currentDataCollection} />);
     }
   }
 
@@ -76,13 +71,13 @@ export class App extends Component {
             <AccountsWrapper />
           </AppBar>
           <div className="row">
-            <div className="col s12 m7"><Player player={this.state.currentPlayer} showEditForm={this.showEditForm} /></div>
+            <div className="col s12 m7"><DataCollection dataCollection={this.state.currentDataCollection} showEditForm={this.showEditForm} /></div>
             <div className="col s12 m5">
-              <h2>Team List</h2>
-              <Link to="/new" className="waves-effect waves-light btn light-blue darken-3">Add player</Link>
+              <h2>Collection List</h2>
+              <Link to="/new" className="waves-effect waves-light btn light-blue darken-3">Add dataCollection</Link>
               <Divider />
               <List>
-                {this.renderPlayers()}
+                {this.renderDataCollections()}
               </List>
               <Divider />
             </div>
@@ -102,14 +97,14 @@ export class App extends Component {
 }
 
 App.PropTypes = {
-  players: PropTypes.array.isRequired,
+  dataCollections: PropTypes.array.isRequired,
 };
 
 export default createContainer(() => {
-  Meteor.subscribe('players');
+  Meteor.subscribe('dataCollections');
   const user = Meteor.userId();
 
   return {
-    players: Players.find({ owner: user }, { sort: { name: 1 } }).fetch(),
+    dataCollections: DataCollections.find({ owner: user }, { sort: { name: 1 } }).fetch(),
   };
 }, App);

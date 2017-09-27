@@ -1,20 +1,20 @@
 import { Meteor } from 'meteor/meteor';
-import { Players } from '../imports/api/players';
+import { DataCollections } from '../imports/api/dataCollections';
 
 
 //this to the way to use methods for security
 Meteor.methods({
-  insertPlayer(player) {
-    Players.insert(player);
+  insertDataCollection(dataCollection) {
+    DataCollections.insert(dataCollection);
   },
 
-  updatePlayer(player) {
-    Players.update(player._id,
-    { $set: player});
+  updateDataCollection(dataCollection) {
+    DataCollections.update(dataCollection._id,
+    { $set: dataCollection});
   },
 
-  deletePlayer(playerId) {
-    Players.remove(playerId);
+  deleteDataCollection(dataCollectionId) {
+    DataCollections.remove(dataCollectionId);
 
   }
 });
