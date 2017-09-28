@@ -6,6 +6,7 @@ import { Router, Route, browserHistory } from 'react-router';
 
 import App from '../imports/ui/App.jsx';
 import AddCollection from '../imports/ui/AddCollection.jsx';
+import AddCase from '../imports/ui/AddCases.jsx'
 import Lost from '../imports/ui/Lost.jsx';
 import Home from '../imports/ui/Home.jsx';
 
@@ -17,7 +18,8 @@ Meteor.startup(() => {
     <Router history={browserHistory}>
     <Route path="/" component={Home} />
     <Route path="/datasets" component={App} />
-    <Route path="/new" component={AddCollection} />
+    <Route path="/newCollection" component={AddCollection} />
+    <Route path="/newCase" component={AddCase} />
     <Route path="*" component={AddCollection} />
   </Router>
 ), document.getElementById('render-target'));

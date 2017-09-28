@@ -12,6 +12,8 @@ import CollectionList from './Collection-list';
 import DataCollection from './DataCollection';
 import AccountsWrapper from './AccountsWrapper';
 import Edit from './EditDataCollection';
+import CaseList from './Case-list';
+import { Cases } from '../api/cases';
 
 const tempDataCollection = {
   name: "",
@@ -31,12 +33,28 @@ export class App extends Component {
     };
     this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
     this.showEditForm = this.showEditForm.bind(this);
+    this.onDataCollectionClick = this.onDataCollectionClick.bind(this);
   }
 
-  renderDataCollections() {
+  renderDataCollection() {
     return this.props.dataCollections.map((dataCollection) => (
-      <CollectionList key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
+      <CollectionList onDataCollectionClick={this.onDataCollectionClick} key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
     ));
+  }
+
+  onDataCollectionClick(dataCollectionId){
+    //TODO: 跳转到新增cases的页面
+    this.renderCases(dataCollectionId)
+  }
+  
+  renderCases(collectionId) {
+    //TODO: 渲染列表
+    // const cases = Cases.find({}).fetch();
+    //   console.log(cases)
+    // return cases.map((Case) => {
+    //     <CaseList key={Case._id} Case={Case} />
+    //   }
+    // )
   }
 
   updateCurrentDataCollection(dataCollection) {
@@ -72,10 +90,10 @@ export class App extends Component {
             <div className="col s12 m7"><DataCollection dataCollection={this.state.currentDataCollection} showEditForm={this.showEditForm} /></div>
             <div className="col s12 m5">
               <h2>Collection List</h2>
-              <Link to="/new" className="waves-effect waves-light btn light-blue darken-3">Add dataCollection</Link>
+              <Link to="/newCollection" className="waves-effect waves-light btn light-blue darken-3">Add dataCollection</Link>
               <Divider />
               <List>
-                {this.renderDataCollections()}
+                {this.renderDataCollection()}
               </List>
               <Divider />
             </div>
@@ -85,11 +103,18 @@ export class App extends Component {
               <br />
               <Divider />
               {this.showForm()}
-                <Divider />
+              <Divider />
             </div>
           </div>
+          {/* <div className="row">
+              <br />
+              <Divider />
+              {this.renderCases()}
+              <Divider />
+            </div> */}
         </div>
       </MuiThemeProvider>
+      
     )
   }
 }

@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { DataCollections } from '../imports/api/dataCollections';
+import { Cases } from '../imports/api/cases'
 
 
 //this to the way to use methods for security
@@ -15,6 +16,9 @@ Meteor.methods({
 
   deleteDataCollection(dataCollectionId) {
     DataCollections.remove(dataCollectionId);
+  },
 
+  insertCase(Case) {
+    Cases.insert(Case)
   }
 });
