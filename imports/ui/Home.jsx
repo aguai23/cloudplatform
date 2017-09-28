@@ -5,7 +5,7 @@ import { browserHistory } from 'react-router';
 
 import { Accounts } from 'meteor/accounts-base'
 
-import AccountsWrapper from './AccountsWrapper';
+import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
 
 export default class Home extends Component {
   constructor(props) {
@@ -13,26 +13,25 @@ export default class Home extends Component {
   }
 
   login = function(){
-    console.log("login()");
+    // console.log("login()");
 
-    Meteor.loginWithPassword("admin@admin", "123123", function(error) {
+    Meteor.loginWithPassword(this.emailInput.value, this.passwordInput.value, function(error) {
       if(error) {
         return console.log("Login Failed. " + error);
       }
 
-      //console.log(Meteor.user());
+      // console.log(Meteor.user());
 
       browserHistory.push('/datasets');
     });
-
   }
 
   register = function() {
-    console.log('register()');
+    // console.log('register()');
 
     Accounts.createUser({
-      username: "test@test",
-      password: "123123"
+      email: this.emailInput.value,
+      password: this.passwordInput.value
     }, function(error) {
       if(error) {
         return console.log("Registration Failed. " + error);
@@ -41,16 +40,42 @@ export default class Home extends Component {
       //console.log(Meteor.user());
 
       browserHistory.push('/datasets');
-    })
+    });
   }
 
   render() {
     return (
-      <div ref="container">;
-        <button onClick={this.login}>登录</button>
-        <button onClick={this.register}>注册</button>
+      <div ref="container" className="container">
+        <Col sm={4} md={4} lg={4}>
+          <Form horizontal>
+            <FormGroup>
+              <Col sm={2}>Email</Col>
+              <Col sm={10}>
+                <FormControl type="email" placeholder="Email" inputRef={function(ref) { this.emailInput = ref; }} />
+              </Col>
+            </FormGroup>
 
-        <AccountsWrapper />
+            <FormGroup>
+              <Col sm={2}>密码</Col>
+              <Col sm={10}>
+                <FormControl type="password" placeholder="Password" inputRef={function(ref) { this.passwordInput = ref; }}/>
+              </Col>
+            </FormGroup>
+
+            <FormGroup>
+              <Col smOffset={2} sm={10}>
+                <Checkbox>Remember me</Checkbox>
+              </Col>
+            </FormGroup>
+
+            <FormGroup>
+              <Col smOffset={2} sm={10}>
+                <Button className="btn btn-success" onClick={this.login}>登录</Button>
+              <Button className="btn btn-warning" onClick={this.register}>注册</Button>
+              </Col>
+            </FormGroup>
+          </Form>
+        </Col>
       </div>
     );
   }
