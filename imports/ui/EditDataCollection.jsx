@@ -36,7 +36,7 @@ export default class Edit extends Component {
     return (
       <div className="row">
         <form className="col s12" onSubmit={this.editDataCollection.bind(this)}>
-          <h3>添加新项目</h3>
+          <h3>修改数据集名称</h3>
 
           <div className="row">
             <div className="input-field col s6">

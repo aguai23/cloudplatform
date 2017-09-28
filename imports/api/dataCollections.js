@@ -29,9 +29,25 @@ DataCollections.deny({
 
 
 const DataCollectionSchema = new SimpleSchema({
-  name: {type : String },
-  type: {type : String },
-  ownerId: { type: String, optional:true},
+  name: {
+    label: '名称',
+    type: String
+  },
+  type: {
+    label: '类型',
+    type: String
+  },
+  class: {
+    label: '分类(收藏夹/数据集)',
+    type: String,
+    optional: false,
+    defaultValue: 'openCollection'
+  },
+  ownerId: {
+    label: '所属用户Id',
+    type: String,
+    optional: true,
+  },
 });
 
 DataCollections.attachSchema(DataCollectionSchema);
