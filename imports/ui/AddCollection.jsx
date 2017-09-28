@@ -4,7 +4,7 @@ import { browserHistory } from 'react-router';
 import { DataCollections } from '../api/dataCollections';
 
 
-export default class AddCollection extends Component {
+export default class addCollection extends Component {
 
   submitDataCollection(event) {
     //prevent from refreshing
