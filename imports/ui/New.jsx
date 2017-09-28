@@ -35,18 +35,16 @@ export default class New extends Component {
           <div className="row">
             <div className="input-field col s6">
 
-              <input placeholder="Name" ref="name" type="text" className="validate" />
+              <input placeholder="数据集名称" ref="name" type="text" className="validate" />
             </div>
             <div className="input-field col s6">
-              <input placeholder="Team" ref="type" type="text" className="validate" />
+              <input placeholder="数据集类型" ref="type" type="text" className="validate" />
             </div>
           </div>
 
           <div className="row">
             <div className="input-field col s6">
-              <button className="btn waves-effect waves-light light-blue darken-3" type="submit" name="action">Submit
-          <i className="material-icons right">send</i>
-              </button>
+              <button  type="submit" name="action" className="btn btn-success">Submit</button>
             </div>
           </div>
 

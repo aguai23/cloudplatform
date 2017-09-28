@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Card, CardMedia, CardTitle, CardText, CardActions } from 'material-ui/Card';
-import RaisedButton from 'material-ui/RaisedButton';
+import { Card, CardHeader, CardActions, CardText } from 'material-ui/Card';
+import FlatButton from 'material-ui/FlatButton';
 import Avatar from 'material-ui/Avatar';
 import Chip from 'material-ui/Chip';
 import { blue200, lightBlue800, lightBlue50 } from 'material-ui/styles/colors';
@@ -30,18 +30,14 @@ export default class Player extends Component {
 
     return (
       <Card>
-
-        <CardMedia
-          overlay={<CardTitle title={dataCollection.name} />}>
-          <img src="messi.jpg" />
-        </CardMedia>
-        <CardText>
-        </CardText>
+        <CardHeader
+          title={dataCollection.name}
+          actAsExpander={true}
+          showExpandableButton={true}
+        />
         <CardActions>
-          <RaisedButton label="Edit dataCollection/stats"
-            labelPosition="before"
-            style={styles.button}
-            onClick={this.showEditForm.bind(this)} />
+          <FlatButton label="Edit dataCollection"
+          onClick={this.showEditForm.bind(this)} />
         </CardActions>
       </Card>
     )
