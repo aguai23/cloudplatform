@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor';
 import React, { Component, PropTypes } from 'react';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import RaisedButton from 'material-ui/RaisedButton';
@@ -6,11 +7,14 @@ import { List } from 'material-ui/List';
 import Divider from 'material-ui/Divider';
 import { createContainer } from 'meteor/react-meteor-data';
 import { Link } from 'react-router';
+import { Accounts } from 'meteor/accounts-base';
+
 import { DataCollections } from '../api/dataCollections';
 
 import CollectionList from './Collection-list';
 import DataCollection from './DataCollection';
 import AccountsWrapper from './AccountsWrapper';
+import AccountState from './AccountState'
 import Edit from './EditDataCollection';
 
 const tempDataCollection = {
@@ -27,13 +31,14 @@ export class App extends Component {
     //setting up State
     this.state = {
       currentDataCollection: tempDataCollection,
-      showEditDataCollection: false,
+      showEditDataCollection: false
     };
     this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
     this.showEditForm = this.showEditForm.bind(this);
   }
 
   renderDataCollections() {
+    // console.log("userData", this.props.userData);
     return this.props.dataCollections.map((dataCollection) => (
       <CollectionList key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
     ));
@@ -59,13 +64,15 @@ export class App extends Component {
   }
 
   render() {
+    email = this.props.userData ? this.props.userData.emails[0] : "请登录";
     return (
       <MuiThemeProvider>
         <div className="container">
-          <AppBar title="Soccer Application"
+          <AppBar title="医学影像数据分析开放云平台"
             iconClassNameRight="muidocs-icon-navigation-expand-more"
             showMenuIconButton={false}
             style={{ backgroundColor: '#0277BD' }}>
+            <AccountState title={email}/>
             <AccountsWrapper />
           </AppBar>
           <div className="row">
@@ -96,13 +103,33 @@ export class App extends Component {
 
 App.PropTypes = {
   dataCollections: PropTypes.array.isRequired,
+  userData: PropTypes.object
 };
 
 export default createContainer(() => {
   Meteor.subscribe('dataCollections');
-  const user = Meteor.userId();
+  Meteor.subscribe('userData');
+  const userId = Meteor.userId();
 
   return {
-    dataCollections: DataCollections.find({ ownerId: user }, { sort: { name: 1 } }).fetch(),
+    dataCollections: DataCollections.find({ ownerId: userId }, { sort: { name: 1 } }).fetch(),
+    userData: Meteor.user()
   };
 }, App);
+
+// Tracker.autorun(function() {
+//   let currentUser;
+//
+//   const
+//     subscription = Meteor.subscribe("userData")
+//     subReady = subscription.ready()
+//   ;
+//
+//   if(subReady) {
+//     console.log(Meteor.user());
+//     currentUser = Meteor.user();
+//     App.props.currentUser = currentUser;
+//   }
+//   console.log("subscription", subscription.ready());
+//
+// });

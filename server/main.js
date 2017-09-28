@@ -5,5 +5,5 @@ Meteor.startup(() => {
   // code to run on server at startup
   Meteor.publish('dataCollections', function() {
     return DataCollections.find({});
-  })
+  });
 });
