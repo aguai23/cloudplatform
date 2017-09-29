@@ -45,7 +45,7 @@ export default class Home extends Component {
 
   render() {
     return (
-      <div ref="container" className="container">
+      <div ref="container" className="container login-box">
         <Col sm={4} md={4} lg={4}>
           <Form horizontal>
             <FormGroup>

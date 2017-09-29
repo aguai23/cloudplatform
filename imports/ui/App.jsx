@@ -40,7 +40,7 @@ export class App extends Component {
     this.onDataCollectionClick = this.onDataCollectionClick.bind(this);
   }
 
-  renderDataCollections() {
+  renderDataCollection() {
     // console.log("userData", this.props.userData);
     return this.props.dataCollections.map((dataCollection) => (
       <CollectionList onDataCollectionClick={this.onDataCollectionClick} key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
@@ -90,7 +90,7 @@ export class App extends Component {
             iconClassNameRight="muidocs-icon-navigation-expand-more"
             showMenuIconButton={false}
             style={{ backgroundColor: '#0277BD' }}>
-            <AccountState title={email}/>
+            <AccountState title="User"/>
             <AccountsWrapper />
           </AppBar>
           <div className="row">
