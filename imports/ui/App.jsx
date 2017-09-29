@@ -55,7 +55,6 @@ export class App extends Component {
     };
     this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
     this.showEditForm = this.showEditForm.bind(this);
-    this.onDataCollectionClick = this.onDataCollectionClick.bind(this);
     this.onAddCasesClick = this.onAddCasesClick.bind(this);
     this.onClickRemoveCollection = this.onClickRemoveCollection.bind(this);
     this.onTabSelectHandler = this.onTabSelectHandler.bind(this);
