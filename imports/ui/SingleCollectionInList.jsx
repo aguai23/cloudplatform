@@ -5,6 +5,31 @@ import Avatar from 'material-ui/Avatar';
 import Chip from 'material-ui/Chip';
 import { blue200, lightBlue800, lightBlue50 } from 'material-ui/styles/colors';
 
+import FontAwesome from 'react-fontawesome';
+
+
+export default class SingleCollectionInList extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  onClickRemove() {
+    // console.log(this.props);
+    this.props.onClickRemove(this.props.dataCollection._id);
+  }
+
+  render() {
+    // console.log("SingleCollectionInList");
+    return (
+      <div>
+        {this.props.dataCollection.name}
+        <FontAwesome name='trash-o' size='lg' className="pull-right" onClick={this.onClickRemove.bind(this)}/>
+      </div>
+    );
+  }
+}
+
+/*
 const styles = {
   chip: {
     margin: 4,
@@ -43,3 +68,4 @@ export default class Player extends Component {
     )
   }
 }
+*/

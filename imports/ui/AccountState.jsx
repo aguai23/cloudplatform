@@ -11,12 +11,17 @@ export default class Home extends Component {
   constructor(props) {
     super(props);
 
-  }
+    userInfo = Meteor.user();
 
+    this.state = {
+      email: userInfo ? userInfo.emails[0].address : "未登录"
+    }
+
+  }
 
   render() {
     return (
-      <DropdownButton title={this.props.title} id="dropdown-account">
+      <DropdownButton title={this.state.email} id="dropdown-account">
         <MenuItem eventKey="1">我的数据集</MenuItem>
         <MenuItem eventKey="2">我的收藏</MenuItem>
         <MenuItem divider />

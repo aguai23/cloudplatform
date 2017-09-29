@@ -14,7 +14,7 @@ Meteor.methods({
     { $set: dataCollection});
   },
 
-  deleteDataCollection(dataCollectionId) {
+  removeDataCollection(dataCollectionId) {
     DataCollections.remove(dataCollectionId);
   },
 
