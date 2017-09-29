@@ -20,5 +20,9 @@ Meteor.methods({
 
   insertCase(Case) {
     Cases.insert(Case)
+  },
+
+  deleteCase(CaseId){
+    Cases.remove(CaseId);
   }
 });

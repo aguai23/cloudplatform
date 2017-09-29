@@ -10,6 +10,7 @@ import { Link } from 'react-router';
 import { Accounts } from 'meteor/accounts-base';
 
 import { DataCollections } from '../api/dataCollections';
+import { Cases }  from '../api/cases' ;
 
 import CollectionList from './Collection-list';
 import DataCollection from './DataCollection';
@@ -17,8 +18,7 @@ import AccountsWrapper from './AccountsWrapper';
 import AccountState from './AccountState'
 import Edit from './EditDataCollection';
 import CaseList from './Case-list';
-import { Cases } from '../api/cases';
-import {Session} from "meteor/session";
+import { Session } from "meteor/session";
 
 const tempDataCollection = {
   name: "",
@@ -29,48 +29,46 @@ const tempDataCollection = {
 export class App extends Component {
 
   constructor(props) {
-    super(props);
-    const a = Meteor.user();
-
+    super(props); 
     //setting up State
     this.state = {
-      a: a.emails[0].address,
       currentDataCollection: tempDataCollection,
-      showEditDataCollection: false
+      showEditDataCollection: false,
+      showCases: false,
     };
     this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
     this.showEditForm = this.showEditForm.bind(this);
-    this.onDataCollectionClick = this.onDataCollectionClick.bind(this);
+    this.onAddCasesClick = this.onAddCasesClick.bind(this);
   }
 
   renderDataCollection() {
     // console.log("userData", this.props.userData);
     return this.props.dataCollections.map((dataCollection) => (
-      <CollectionList onDataCollectionClick={this.onDataCollectionClick} key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
+      <CollectionList onAddCasesClick={this.onAddCasesClick} key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
     ));
   }
 
-  onDataCollectionClick(dataCollectionId){
+  onAddCasesClick(dataCollectionId) {
     Session.set({
-      collectionId: dataCollectionId
+      collectionId: dataCollectionId,
     })
     this.context.router.push('/newCase');
-    // this.renderCases(dataCollectionId)
   }
 
-  renderCases(collectionId) {
-    //TODO: 渲染列表
-    // const cases = Cases.find({}).fetch();
-    //   console.log(cases)
-    // return cases.map((Case) => {
-    //     <CaseList key={Case._id} Case={Case} />
-    //   }
-    // )
+  renderCases() {
+    if (this.state.showCases === true) {
+      const collectionId =  this.state.currentDataCollection._id
+      const cases = Cases.find({collectionId,ownerId:Meteor.userId()}).fetch();
+      return cases.map((Case) => (
+        <CaseList onAddCasesClick={this.onAddCasesClick} key={Case._id} Case={Case} />
+      ));      
+    }
   }
 
   updateCurrentDataCollection(dataCollection) {
     this.setState({
       currentDataCollection: dataCollection,
+      showCases: true
     });
   }
 
@@ -96,13 +94,13 @@ export class App extends Component {
             iconClassNameRight="muidocs-icon-navigation-expand-more"
             showMenuIconButton={false}
             style={{ backgroundColor: '#0277BD' }}>
-            <AccountState title="User"/>
+            <AccountState title="User" />
             <AccountsWrapper />
           </AppBar>
           <div className="row">
             <div className="col s12 m7"><DataCollection dataCollection={this.state.currentDataCollection} showEditForm={this.showEditForm} /></div>
             <div className="col s12 m5">
-              <h2>Collection List{this.state.a}</h2>
+              <h2>Collection List</h2>
               <Link to="/newCollection" className="waves-effect waves-light btn light-blue darken-3">Add dataCollection</Link>
               <Divider />
               <List>
@@ -119,12 +117,12 @@ export class App extends Component {
               <Divider />
             </div>
           </div>
-          {/* <div className="row">
-              <br />
-              <Divider />
-              {this.renderCases()}
-              <Divider />
-            </div> */}
+          <div className="row">
+            <br />
+            <Divider />
+            {this.renderCases()}
+            <Divider />
+          </div>
         </div>
       </MuiThemeProvider>
 
@@ -143,12 +141,13 @@ App.contextTypes = {
 
 export default createContainer(() => {
   Meteor.subscribe('dataCollections');
+  Meteor.subscribe('cases');
   Meteor.subscribe('userData');
   const userId = Meteor.userId();
 
   return {
     dataCollections: DataCollections.find({ ownerId: userId }, { sort: { name: 1 } }).fetch(),
-    userData: Meteor.user()
+    userData: Meteor.user(),
   };
 }, App);
 
