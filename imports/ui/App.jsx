@@ -18,6 +18,7 @@ import AccountState from './AccountState'
 import Edit from './EditDataCollection';
 import CaseList from './Case-list';
 import { Cases } from '../api/cases';
+import {Session} from "meteor/session";
 
 const tempDataCollection = {
   name: "",
@@ -29,9 +30,11 @@ export class App extends Component {
 
   constructor(props) {
     super(props);
+    const a = Meteor.user();
 
     //setting up State
     this.state = {
+      a: a.emails[0].address,
       currentDataCollection: tempDataCollection,
       showEditDataCollection: false
     };
@@ -48,8 +51,11 @@ export class App extends Component {
   }
 
   onDataCollectionClick(dataCollectionId){
-    //TODO: 跳转到新增cases的页面
-    this.renderCases(dataCollectionId)
+    Session.set({
+      collectionId: dataCollectionId
+    })
+    this.context.router.push('/newCase');
+    // this.renderCases(dataCollectionId)
   }
 
   renderCases(collectionId) {
@@ -96,7 +102,7 @@ export class App extends Component {
           <div className="row">
             <div className="col s12 m7"><DataCollection dataCollection={this.state.currentDataCollection} showEditForm={this.showEditForm} /></div>
             <div className="col s12 m5">
-              <h2>Collection List</h2>
+              <h2>Collection List{this.state.a}</h2>
               <Link to="/newCollection" className="waves-effect waves-light btn light-blue darken-3">Add dataCollection</Link>
               <Divider />
               <List>
@@ -130,6 +136,10 @@ App.PropTypes = {
   dataCollections: PropTypes.array.isRequired,
   userData: PropTypes.object
 };
+
+App.contextTypes = {
+  router: React.PropTypes.object
+}
 
 export default createContainer(() => {
   Meteor.subscribe('dataCollections');
