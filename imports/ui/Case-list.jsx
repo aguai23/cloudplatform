@@ -20,7 +20,7 @@ export default class CaseList extends Component {
     return (
     <ListItem
     primaryText = {this.props.Case.name}
-    rightIcon={<ActionDeleteForever hoverColor={red500} onClick={this.deleteDataCollection.bind(this, this.props.Case._id)}/>}
+    rightIcon={<ActionDeleteForever hoverColor={red500} onClick={this.deleteCase.bind(this, this.props.Case._id)}/>}
      />
     )
   }

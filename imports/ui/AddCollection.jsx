@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 import { DataCollections } from '../api/dataCollections';
 
-
 export default class addCollection extends Component {
 
   submitDataCollection(event) {
@@ -21,7 +20,7 @@ export default class addCollection extends Component {
         alert("somethings wrong" + error.reason);
       } else {
         alert("DataCollection added");
-        browserHistory.push('/');
+        browserHistory.push('/datasets');
       }
     });
   }
@@ -44,7 +43,7 @@ export default class addCollection extends Component {
 
           <div className="row">
             <div className="input-field col s6">
-              <button  type="submit" name="action" className="btn btn-success">Submit</button>
+              <button type="submit" name="action" className="btn btn-success">Submit</button>
             </div>
           </div>
 

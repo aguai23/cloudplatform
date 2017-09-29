@@ -6,6 +6,7 @@ import { Accounts } from 'meteor/accounts-base';
 import { Tracker } from 'meteor/tracker';
 
 import { DataCollections } from '../api/dataCollections';
+import { Cases }  from '../api/cases' ;
 
 import CollectionList from './Collection-list';
 import SingleCollectionInList from './SingleCollectionInList';
@@ -13,8 +14,7 @@ import AccountsWrapper from './AccountsWrapper';
 import AccountState from './AccountState'
 import Edit from './EditDataCollection';
 import CaseList from './Case-list';
-import { Cases } from '../api/cases';
-import {Session} from "meteor/session";
+import { Session } from "meteor/session";
 
 import { Button, Nav, NavItem } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
@@ -50,11 +50,13 @@ export class App extends Component {
     this.state = {
       currentDataCollection: tempDataCollection,
       showEditDataCollection: false,
-      tabActiveKey: "1"
+      tabActiveKey: "1",
+      showCases: false
     };
     this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
     this.showEditForm = this.showEditForm.bind(this);
     this.onDataCollectionClick = this.onDataCollectionClick.bind(this);
+    this.onAddCasesClick = this.onAddCasesClick.bind(this);
     this.onClickRemoveCollection = this.onClickRemoveCollection.bind(this);
     this.onTabSelectHandler = this.onTabSelectHandler.bind(this);
   }
@@ -62,16 +64,15 @@ export class App extends Component {
   renderDataCollection() {
     console.log("this.props.dataCollections", this.props.dataCollections);
     return this.props.dataCollections.map((dataCollection) => (
-      <CollectionList onDataCollectionClick={this.onDataCollectionClick} key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
+      <CollectionList onAddCasesClick={this.onAddCasesClick} key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
     ));
   }
 
-  onDataCollectionClick(dataCollectionId){
+  onAddCasesClick(dataCollectionId) {
     Session.set({
-      collectionId: dataCollectionId
+      collectionId: dataCollectionId,
     })
     this.context.router.push('/newCase');
-    // this.renderCases(dataCollectionId)
   }
 
   onClickRemoveCollection(id) {
@@ -96,18 +97,19 @@ export class App extends Component {
   }
 
   renderCases(collectionId) {
-    //TODO: 渲染列表
-    // const cases = Cases.find({}).fetch();
-    //   console.log(cases)
-    // return cases.map((Case) => {
-    //     <CaseList key={Case._id} Case={Case} />
-    //   }
-    // )
+    if (this.state.showCases === true) {
+      const collectionId =  this.state.currentDataCollection._id
+      const cases = Cases.find({collectionId,ownerId:Meteor.userId()}).fetch();
+      return cases.map((Case) => (
+        <CaseList onAddCasesClick={this.onAddCasesClick} key={Case._id} Case={Case} />
+      ));
+    }
   }
 
   updateCurrentDataCollection(dataCollection) {
     this.setState({
       currentDataCollection: dataCollection,
+      showCases: true
     });
   }
 
@@ -170,7 +172,7 @@ export class App extends Component {
           <div className="row">
             <div className="col s12 m7"><DataCollection dataCollection={this.state.currentDataCollection} showEditForm={this.showEditForm} /></div>
             <div className="col s12 m5">
-              <h2>Collection List{this.state.email}</h2>
+              <h2>Collection List</h2>
               <Link to="/newCollection" className="waves-effect waves-light btn light-blue darken-3">Add dataCollection</Link>
               <Divider />
               <List>
@@ -206,6 +208,7 @@ App.contextTypes = {
 
 export default createContainer(() => {
   Meteor.subscribe('dataCollections');
+  Meteor.subscribe('cases');
   Meteor.subscribe('userData');
   const userId = Meteor.userId();
 
