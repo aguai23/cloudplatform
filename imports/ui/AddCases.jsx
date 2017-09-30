@@ -17,7 +17,7 @@ export default class AddCase extends Component {
     submitDataCollection(event) {
         //prevent from refreshing
         event.preventDefault();
-        
+
         let Case = {
             name: this.refs.name.value,
             type: this.refs.type.value,
@@ -41,25 +41,30 @@ export default class AddCase extends Component {
 
     render() {
         return (
-            <div className="row">
-                <form className="col s12" onSubmit={this.submitDataCollection.bind(this)}>
+            <div className="container">
+                <form onSubmit={this.submitDataCollection.bind(this)}>
                     <h3>Add a new case{this.state.user}</h3>
                     <div className="row">
                         <div className="input-field col s4">
-                            <input placeholder="病例名称" ref="name" type="text" className="validate" />
+                            <label>病例名称</label>
+                            <input placeholder="" ref="name" type="text" className="validate" />
                         </div>
                         <div className="input-field col s4">
-                            <input placeholder="病例种类" ref="type" type="text" className="validate" />
+                            <label>种类</label>
+                            <input placeholder="" ref="type" type="text" className="validate" />
                         </div>
                         <div className="input-field col s4">
-                            <input placeholder="病例类别" ref="class" type="text" className="validate" />
+                            <label>类别</label>
+                            <input placeholder="" ref="class" type="text" className="validate" />
                         </div>
                     </div>
                     <div className="row">
                         <div className="input-field col s4">
-                            <input placeholder="标签" ref="label" type="text" className="validate" />
+                            <label>标签</label>
+                            <input placeholder="" ref="label" type="text" className="validate" />
                         </div>
                         <div className="input-field col s4">
+                            <label>图片</label>
                             <input ref="files" type="file" className="validate" />
                         </div>
                     </div>
