@@ -7,7 +7,10 @@ import { Accounts } from 'meteor/accounts-base';
 
 import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
 
-export default class Home extends Component {
+import Header from './Header';
+import Footer from './Footer';
+
+export default class Login extends Component {
   constructor(props) {
     super(props);
   }

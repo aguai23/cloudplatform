@@ -34,7 +34,13 @@ const DataCollectionSchema = new SimpleSchema({
     type: String
   },
   type: {
-    label: '类型',
+    label: 'values: PUBLIC/PRIVATE/FAVORITES',
+    type: String,
+    optional: false,
+    defaultValue: 'PRIVATE'
+  },
+  equip: {
+    label: 'scanning equipments: DBA/HOWTEK/LUMYSIS',
     type: String
   },
   class: {
