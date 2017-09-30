@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
+import { List, Radio } from 'react-bootstrap'
 export default class AddCase extends Component {
     constructor(props) {
         super(props);
@@ -24,7 +25,12 @@ export default class AddCase extends Component {
             class: this.refs.class.value,
             label: this.refs.label.value,
             files: ['todo'],
-            profile: { todo: 'todo' },
+            profile: { 
+                gender: this.refs.gender,
+                age: this.refs.age,
+                source: this.refs.source,
+                description: this.refs.description
+             },
             collectionId: this.state.collectionId,
             ownerId: Meteor.userId(),
         }
@@ -67,6 +73,28 @@ export default class AddCase extends Component {
                             <label>图片</label>
                             <input ref="files" type="file" className="validate" />
                         </div>
+                    </div>
+                    <div className="row">
+                        <label>病患信息</label>
+                        <label>性别: &nbsp;&nbsp;
+                            <input name="gender" ref="label1" type="radio" />男 &nbsp;&nbsp;
+                            <input name="gender" ref="label2" type="radio" />女
+                        </label>
+                    </div>
+                    <div className="row">
+                        <label>年龄: &nbsp;&nbsp;
+                            <input type="number" ref="age" />
+                        </label>
+                    </div>
+                    <div className="row">
+                        <label>来源: &nbsp;&nbsp;
+                            <input type="text" ref="source" />
+                        </label>
+                    </div>
+                    <div className="row">
+                        <label>描述: &nbsp;&nbsp;
+                            <input type="text" ref="description" />
+                        </label>
                     </div>
                     <div className="row">
                         <div className="input-field col s6">
