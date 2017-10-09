@@ -17,12 +17,12 @@ injectTapEventPlugin();
 Meteor.startup(() => {
   ReactDOM.render((
     <Router history={browserHistory}>
+      <Redirect from="/" to="/login"></Redirect>
       <Route path="/" component={App} >
-        <Route path="/datasets" component={Main}/>
-        <Route path="/newCase" component={AddCase}/>
+        <Route path="datasets" component={Main}></Route>
+        <Route path="newCase" component={AddCase}></Route>
       </Route>
-      <Route path="/login" component={Login}></Route>
-      <Route exact path="/" render={() => <Redirect to="/login" />} />
+      <Route path="login" component={Login}></Route>
       <Route path="*" component={Login}></Route>
   </Router>
 ), document.getElementById('render-target'));
