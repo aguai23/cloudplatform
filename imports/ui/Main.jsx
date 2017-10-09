@@ -12,13 +12,14 @@ import 'react-toastify/dist/ReactToastify.min.css';
 
 import AccountsWrapper from './AccountsWrapper';
 import AccountState from './AccountState'
-import CaseList from './Case-list';
+import CaseList from './CaseList';
 import { Cases }  from '../api/cases' ;
 import CollectionList from './Collection-list';
 import { DataCollections } from '../api/dataCollections';
 import Edit from './EditDataCollection';
 import ModalAddCollection from './ModalAddCollection';
 import SingleCollectionInList from './SingleCollectionInList';
+import { browserHistory } from 'react-router';
 
 
 const tempDataCollection = {
