@@ -22,65 +22,81 @@ const styles = {
     width: '400px'
   },
 
-  linkNoAccountYet: {
+  btnRegister: {
+    width: '50px',
+    margin: '0 auto'
+  },
+
+  linkAlreadyHaveAccount: {
     fontSize: '12px'
   }
 }
 
-export default class Login extends Component {
+export default class Registration extends Component {
   constructor(props) {
     super(props);
   }
 
-  login = function(){
-    // console.log("login()");
+  register = function() {
+    // console.log('register()');
 
-    Meteor.loginWithPassword(this.emailInput.value, this.passwordInput.value, function(error) {
+    if(this.passwordInput.value !== this.confirmPasswordInput.value) {
+      return console.log("Registration Failed. Error: Different passwords.");
+    }
+
+    Accounts.createUser({
+      email: this.emailInput.value,
+      password: this.passwordInput.value
+    }, function(error) {
       if(error) {
-        return console.log("Login Failed. " + error);
+        return console.log("Registration Failed. " + error);
       }
 
-      // console.log(Meteor.user());
+      //console.log(Meteor.user());
 
       browserHistory.push('/datasets');
     });
   }
 
   render() {
-    console.log(styles);
     return (
       <div ref="container" className="container" style={styles.loginBox}>
-        <h3 style={{textAlign: 'center'}}>用户登录</h3>
+        <h3 style={{textAlign: 'center'}}>新用户注册</h3>
         <hr/>
           <Form horizontal>
             <FormGroup>
-              <Col sm={2}>Email</Col>
-              <Col sm={10}>
+              <Col sm={3}>Email</Col>
+              <Col sm={9}>
                 <FormControl type="email" placeholder="Email" inputRef={function(ref) { this.emailInput = ref; }} />
               </Col>
             </FormGroup>
 
             <FormGroup>
-              <Col sm={2}>密码</Col>
-              <Col sm={10}>
+              <Col sm={3}>密码</Col>
+              <Col sm={9}>
                 <FormControl type="password" placeholder="Password" inputRef={function(ref) { this.passwordInput = ref; }}/>
               </Col>
             </FormGroup>
 
             <FormGroup>
-              <Col smOffset={2} sm={10}>
-                <Checkbox>Remember me</Checkbox>
+              <Col sm={3}>确认密码</Col>
+              <Col sm={9}>
+                <FormControl type="password" placeholder="Confirm password" inputRef={function(ref) { this.confirmPasswordInput = ref; }}/>
               </Col>
             </FormGroup>
 
             <FormGroup>
-              <Col smOffset={2} sm={10}>
-                <Button className="btn btn-success" onClick={this.login}>登录</Button>
+              <Col smOffset={3} sm={9}>
+                <Checkbox>同意使用协议</Checkbox>
               </Col>
             </FormGroup>
 
-            <a href="registration" className="pull-right" style={styles.linkNoAccountYet}>去注册?</a>
+            <hr/>
 
+            <div style={styles.btnRegister}>
+              <Button className="btn btn-warning" onClick={this.register}>注册</Button>
+            </div>
+            <a href="login" className="pull-right" style={styles.linkAlreadyHaveAccount}>已经有账号?</a>
           </Form>
       </div>
     );

@@ -5,7 +5,7 @@ import { Session } from "meteor/session";
 
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
-import { Button, MenuItem, Nav, NavItem, SplitButton } from 'react-bootstrap';
+import { Button, ButtonToolbar, DropdownButton, FormControl, FormGroup, MenuItem, Nav, NavItem, SplitButton } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
@@ -27,12 +27,45 @@ const tempDataCollection = {
 };
 
 const styles = {
+  btnAddCollection: {
+    position: 'relative',
+    marginTop: '11px'
+  },
+
+  btnFeatures: {
+    position: 'relative',
+    display: 'inline-block',
+    marginLeft: '100px',
+    top: '-3px'
+  },
+
+  btnSearch: {
+    color: 'grey',
+    display: 'inline-block',
+    position: 'absolute',
+    right: '2px',
+    top: '4px',
+    borderRadius: '3px',
+    border: 'none'
+  },
+
+  btnSearchHovered: {
+    color: '#ffffff',
+    backgroundColor: '#8FBE00'
+  },
+
+  inputSearch: {
+    display: 'inline-block',
+    position: 'relative'
+  },
+
   mainDiv: {
     position: 'relative',
-    marginTop: '200px'
+    marginTop: '50px'
   },
 
   tabHeaders: {
+    position: 'relative',
     display: 'inline-block',
     fontSize: '18px'
   },
@@ -40,6 +73,15 @@ const styles = {
   btnCreateLink: {
     textDecoration: 'none',
     color: 'white'
+  },
+
+  searchBar: {
+    position: 'relative',
+    display: 'inline-block',
+    marginLeft: '100px',
+    position: 'relative',
+    top: '-15px',
+    width: '300px'
   }
 };
 
@@ -52,6 +94,7 @@ export class Main extends Component {
     //setting up State
     this.state = {
       currentDataCollection: tempDataCollection,
+      searchButtonIsHovered: false,
       showEditDataCollection: false,
       tabActiveKey: "PUB",
       showCases: false,
@@ -86,6 +129,10 @@ export class Main extends Component {
     return this.props.dataCollections.map((dataCollection) => (
       <CollectionList onAddCasesClick={this.onAddCasesClick} key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
     ));
+  }
+
+  setSearchButtonHovered(val) {
+    this.setState({searchButtonIsHovered: val});
   }
 
   onAddCasesClick(dataCollectionId) {
@@ -187,7 +234,25 @@ export class Main extends Component {
               <NavItem eventKey="FAV" href="#">收藏数据集</NavItem>
             </Nav>
 
-            <Button className="pull-right" bsStyle="success" bsSize="xsmall" onClick={() => this.onClickAddCollection()}>
+            <FormGroup bsSize="small" style={styles.searchBar}>
+              <FormControl type="text" placeholder="输入关键字搜索" style={styles.inputSearch}/>
+              <Button bsSize="xsmall" style={styles.btnSearch} className="pull-right"
+                onMouseEnter={() => this.setSearchButtonHovered(true)}
+                onMouseLeave={() => this.setSearchButtonHovered(false)}
+                className={this.state.searchButtonIsHovered ? 'btnSearchHovered' : null}>
+                <FontAwesome name='search' size='lg'/>
+            </Button>
+            </FormGroup>
+
+            <ButtonToolbar style={styles.btnFeatures}>
+              <DropdownButton bsStyle="default" title="Density: 4" id="dropdown-no-caret">
+                <MenuItem eventKey="1">Density: 2</MenuItem>
+                <MenuItem eventKey="2">Density: 3</MenuItem>
+                <MenuItem eventKey="3">Density: 4</MenuItem>
+              </DropdownButton>
+            </ButtonToolbar>
+
+            <Button className="pull-right" bsStyle="success" bsSize="small" style={styles.btnAddCollection} onClick={() => this.onClickAddCollection()}>
               新建数据集
             </Button>
 

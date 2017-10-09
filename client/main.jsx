@@ -10,6 +10,7 @@ import AddCase from '../imports/ui/AddCases'
 import Login from '../imports/ui/Login';
 import Lost from '../imports/ui/Lost';
 import Main from '../imports/ui/Main';
+import Registration from '../imports/ui/Registration';
 
 
 injectTapEventPlugin();
@@ -23,6 +24,7 @@ Meteor.startup(() => {
         <Route path="newCase" component={AddCase}></Route>
       </Route>
       <Route path="login" component={Login}></Route>
+      <Route path="registration" component={Registration}></Route>
       <Route path="*" component={Login}></Route>
   </Router>
 ), document.getElementById('render-target'));

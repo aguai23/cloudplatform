@@ -6,7 +6,8 @@ import { Breadcrumbs } from 'react-bootstrap';
 export default class Footer extends Component {
   render() {
     return (
-      <div>Footer</div>
+      <div>
+      </div>
 
     );
   }

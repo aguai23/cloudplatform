@@ -5,6 +5,12 @@ import Header from './Header';
 import Footer from './Footer';
 
 
+const styles = {
+  footer: {
+
+  }
+}
+
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -27,7 +33,7 @@ export default class App extends Component {
       <div>
         <Header routes={this.props.routes} params={this.props.params}/>
           {childrenWithProps}
-        <Footer />
+        <Footer style={styles.footer}/>
       </div>
     )
   }
