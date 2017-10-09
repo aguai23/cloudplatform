@@ -3,110 +3,183 @@ import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
-import { List, Radio } from 'react-bootstrap'
+import { Col, Checkbox, Radio, Form, ButtonToolbar, Button, FormGroup, HelpBlock, FormControl, FieldGroup, ControlLabel, Nav, NavItem } from 'react-bootstrap'
 export default class AddCase extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            collectionId: Session.get('collectionId')
+  constructor(props) {
+    super(props);
+    this.state = {
+      collectionId: Session.get('collectionId'),
+      Case: {}
+    };
+    this.onCaseChange = this.onCaseChange.bind(this);
+    this.submitDataCollection = this.submitDataCollection.bind(this)
+  }
+  componentDidMount() {
+
+  }
+
+  onCaseChange(input) {
+    const { Case } = this.state;
+    Case[input.target.id] = input.target.value
+    this.setState({
+      Case
+    })
+  }
+
+  submitDataCollection(event) {
+    event.preventDefault();
+
+    const { Case } = this.state;
+    const flag = Case.name && Case.type && Case.class && Case.label && Case.gender && Case.age && Case.source && Case.source && Case.description
+    if (!flag) {
+      alert('请完善信息');
+      return;
+    } else {
+      const standardCase = {
+        name: Case.name,
+        type: Case.type,
+        class: Case.class,
+        label: Case.label,
+        files: ['todo'],
+        profile: {
+          gender: Case.gender,
+          age: Case.age,
+          source: Case.source,
+          description: Case.description
+        },
+        collectionId: this.state.collectionId? this.state.collectionId:'test' ,
+        ownerId: Meteor.userId(),
+      }
+      Meteor.call('insertCase', standardCase, (error) => {
+        if (error) {
+          alert("somethings wrong" + error.reason);
+        } else {
+          alert("Case added");
+          browserHistory.push('/datasets');
         }
-    }
-    componentDidMount() {
+      });
 
     }
 
-    submitDataCollection(event) {
-        //prevent from refreshing
-        event.preventDefault();
+    Meteor.call('insertCase', Case, (error) => {
+      if (error) {
+        alert("somethings wrong" + error.reason);
+      } else {
+        alert("Case added");
+        browserHistory.push('/datasets');
+      }
+    });
+  }
 
-        let Case = {
-            name: this.refs.name.value,
-            type: this.refs.type.value,
-            class: this.refs.class.value,
-            label: this.refs.label.value,
-            files: ['todo'],
-            profile: { 
-                gender: this.refs.gender,
-                age: this.refs.age,
-                source: this.refs.source,
-                description: this.refs.description
-             },
-            collectionId: this.state.collectionId,
-            ownerId: Meteor.userId(),
-        }
+  render() {
+    const wellStyles = { marginTop: '20px' };
 
-        Meteor.call('insertCase', Case, (error) => {
-            if (error) {
-                alert("somethings wrong" + error.reason);
-            } else {
-                alert("Case added");
-                browserHistory.push('/datasets');
-            }
-        });
-    }
+    return (
+      <div className="container">
+        <h3>添加新病例{this.state.user}</h3>
+        <Form horizontal>
+          <div className="well" style={wellStyles}>
+            <FormGroup controlId="name">
+              <Col componentClass={ControlLabel} sm={2}>
+                病例名称
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" placeholder="名称" />
+              </Col>
+            </FormGroup>
 
-    render() {
-        return (
-            <div className="container">
-                <form onSubmit={this.submitDataCollection.bind(this)}>
-                    <h3>Add a new case{this.state.user}</h3>
-                    <div className="row">
-                        <div className="input-field col s4">
-                            <label>病例名称</label>
-                            <input placeholder="" ref="name" type="text" className="validate" />
-                        </div>
-                        <div className="input-field col s4">
-                            <label>种类</label>
-                            <input placeholder="" ref="type" type="text" className="validate" />
-                        </div>
-                        <div className="input-field col s4">
-                            <label>类别</label>
-                            <input placeholder="" ref="class" type="text" className="validate" />
-                        </div>
-                    </div>
-                    <div className="row">
-                        <div className="input-field col s4">
-                            <label>标签</label>
-                            <input placeholder="" ref="label" type="text" className="validate" />
-                        </div>
-                        <div className="input-field col s4">
-                            <label>图片</label>
-                            <input ref="files" type="file" className="validate" />
-                        </div>
-                    </div>
-                    <div className="row">
-                        <label>病患信息</label>
-                        <label>性别: &nbsp;&nbsp;
-                            <input name="gender" ref="label1" type="radio" />男 &nbsp;&nbsp;
-                            <input name="gender" ref="label2" type="radio" />女
-                        </label>
-                    </div>
-                    <div className="row">
-                        <label>年龄: &nbsp;&nbsp;
-                            <input type="number" ref="age" />
-                        </label>
-                    </div>
-                    <div className="row">
-                        <label>来源: &nbsp;&nbsp;
-                            <input type="text" ref="source" />
-                        </label>
-                    </div>
-                    <div className="row">
-                        <label>描述: &nbsp;&nbsp;
-                            <input type="text" ref="description" />
-                        </label>
-                    </div>
-                    <div className="row">
-                        <div className="input-field col s6">
-                            <button type="submit" name="action" className="btn btn-success">Submit</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        )
-    }
+            <FormGroup controlId="type">
+              <Col componentClass={ControlLabel} sm={2}>
+                种类
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="class">
+              <Col componentClass={ControlLabel} sm={2}>
+                类别
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="label">
+              <Col componentClass={ControlLabel} sm={2}>
+                标签
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+              </Col>
+            </FormGroup>
+          </div>
+          <div className="well" style={wellStyles}>
+            <FormGroup controlId="formHorizontalPassword">
+              <Col componentClass={ControlLabel} sm={2}>
+                图片
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="file" placeholder="种类" />
+              </Col>
+            </FormGroup>
+          </div>
+
+          <div className="well" style={wellStyles}>
+
+            <FormGroup controlId="age">
+              <Col componentClass={ControlLabel} sm={2}>
+                年龄
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup>
+              <Col componentClass={ControlLabel} sm={2}>
+                性别
+                      </Col>
+              <Col sm={6}>
+                <Radio onClick={this.onCaseChange} id="gender" name="gender" value="a" inline>男</Radio>{' '}
+                <Radio onClick={this.onCaseChange} id="gender" name="gender" value="b" inline>女</Radio>{' '}
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="source">
+              <Col componentClass={ControlLabel} sm={2}>
+                来源
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="description">
+              <Col componentClass={ControlLabel} sm={2}>
+                描述
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} componentClass="textarea" placeholder="textarea" />
+              </Col>
+            </FormGroup>
+
+          </div>
+
+          <FormGroup>
+            <Col smOffset={3} sm={8}>
+              <Button onClick={this.submitDataCollection} bsStyle="success">提交</Button> &nbsp;&nbsp;
+              <Button onClick={()=>{browserHistory.push('/datasets');}} bsStyle="Default">返回</Button>
+
+            </Col>
+          </FormGroup>
+        </Form>
+      </div>
+    )
+  }
 }
 
 AddCase.contextTypes = {
-    router: React.PropTypes.object
+  router: React.PropTypes.object
 }
