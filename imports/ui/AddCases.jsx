@@ -21,6 +21,10 @@ export default class AddCase extends Component {
   onCaseChange(input) {
     const { Case } = this.state;
     Case[input.target.id] = input.target.value
+    if(input.target.id === 'age' && input.target.value <=0){
+      alert('年龄错误')
+      return;
+    }
     this.setState({
       Case
     })
@@ -32,7 +36,7 @@ export default class AddCase extends Component {
     const { Case } = this.state;
     const flag = Case.name && Case.type && Case.class && Case.label && Case.gender && Case.age && Case.source && Case.source && Case.description
     if (!flag) {
-      alert('请完善信息');
+      alert('请检验并完善信息');
       return;
     } else {
       const standardCase = {
@@ -58,17 +62,7 @@ export default class AddCase extends Component {
           browserHistory.push('/datasets');
         }
       });
-
     }
-
-    Meteor.call('insertCase', Case, (error) => {
-      if (error) {
-        alert("somethings wrong" + error.reason);
-      } else {
-        alert("Case added");
-        browserHistory.push('/datasets');
-      }
-    });
   }
 
   render() {
@@ -84,7 +78,7 @@ export default class AddCase extends Component {
                 病例名称
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" placeholder="名称" />
+                <FormControl onChange={this.onCaseChange} type="text"  />
               </Col>
             </FormGroup>
 
@@ -93,7 +87,7 @@ export default class AddCase extends Component {
                 种类
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+                <FormControl onChange={this.onCaseChange} type="text"  />
               </Col>
             </FormGroup>
 
@@ -102,7 +96,7 @@ export default class AddCase extends Component {
                 类别
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -111,7 +105,7 @@ export default class AddCase extends Component {
                 标签
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
           </div>
@@ -121,7 +115,7 @@ export default class AddCase extends Component {
                 图片
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="file" placeholder="种类" />
+                <FormControl onChange={this.onCaseChange} type="file" />
               </Col>
             </FormGroup>
           </div>
@@ -132,8 +126,8 @@ export default class AddCase extends Component {
               <Col componentClass={ControlLabel} sm={2}>
                 年龄
                       </Col>
-              <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+              <Col sm={2}>
+                <FormControl onChange={this.onCaseChange} type="number" />
               </Col>
             </FormGroup>
 
@@ -152,7 +146,7 @@ export default class AddCase extends Component {
                 来源
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" placeholder="种类" />
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -161,7 +155,7 @@ export default class AddCase extends Component {
                 描述
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} componentClass="textarea" placeholder="textarea" />
+                <FormControl onChange={this.onCaseChange} componentClass="textarea" />
               </Col>
             </FormGroup>
 
@@ -170,7 +164,7 @@ export default class AddCase extends Component {
           <FormGroup>
             <Col smOffset={3} sm={8}>
               <Button onClick={this.submitDataCollection} bsStyle="success">提交</Button> &nbsp;&nbsp;
-              <Button onClick={()=>{browserHistory.push('/datasets');}} bsStyle="Default">返回</Button>
+              <Button onClick={()=>{browserHistory.push('/datasets');}}>返回</Button>
 
             </Col>
           </FormGroup>
