@@ -51,7 +51,9 @@ const CaseSchema = new SimpleSchema({
   },
   profile: {
       label: '信息',
-      type: Object
+      type: Object,
+      blackbox: true,
+      optional: true
   },
   collectionId: {
       label: '所属数据集',
