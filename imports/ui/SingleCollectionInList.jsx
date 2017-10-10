@@ -5,7 +5,9 @@ import Avatar from 'material-ui/Avatar';
 import Chip from 'material-ui/Chip';
 import { blue200, lightBlue800, lightBlue50 } from 'material-ui/styles/colors';
 
+import { Col } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
+import { Link } from 'react-router';
 
 
 export default class SingleCollectionInList extends Component {
@@ -22,7 +24,9 @@ export default class SingleCollectionInList extends Component {
     // console.log("SingleCollectionInList");
     return (
       <div>
-        {this.props.dataCollection.name + (this.props.dataCollection.equip ? " / " + this.props.dataCollection.equip : "")}
+        <Link to="/caseList">
+          {this.props.dataCollection.name + (this.props.dataCollection.equip ? " / " + this.props.dataCollection.equip : "")}
+        </Link>
         <FontAwesome name='trash-o' size='lg' className="pull-right" onClick={this.onClickRemove.bind(this)}/>
       </div>
     );
