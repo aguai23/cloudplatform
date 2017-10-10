@@ -146,8 +146,6 @@ export class Main extends Component {
   onClickRemoveCollection(id) {
     // console.log("id", id);
 
-    toast.success("数据集已成功删除！", {position: toast.POSITION.BOTTOM_RIGHT});
-
     Meteor.call('removeDataCollection', id, (error) => {
       if (error) {
         console.log("Failed to remove DataCollection. " + error.reason);
@@ -274,6 +272,16 @@ export class Main extends Component {
             </div>
           </div>
         </div>
+
+        <ToastContainer
+            position="bottom-right"
+            type="info"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+          />
       </div>
     );
 

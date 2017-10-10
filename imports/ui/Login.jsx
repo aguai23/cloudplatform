@@ -41,13 +41,13 @@ export default class Login extends Component {
       }
 
       // console.log(Meteor.user());
+      localStorage.setItem('userInfo', JSON.stringify(Meteor.user()));
 
       browserHistory.push('/datasets');
     });
   }
 
   render() {
-    console.log(styles);
     return (
       <div ref="container" className="container" style={styles.loginBox}>
         <h3 style={{textAlign: 'center'}}>用户登录</h3>

@@ -17,7 +17,6 @@ export default class App extends Component {
   }
 
   render() {
-    console.log("this.props", this.props);
     const childrenWithProps = React.Children.map(this.props.children, (child) => {
 
       return React.cloneElement(child, {
@@ -26,8 +25,6 @@ export default class App extends Component {
       });
 
     });
-
-    console.log(childrenWithProps);
 
     return (
       <div>
