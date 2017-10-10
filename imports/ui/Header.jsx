@@ -37,32 +37,62 @@ export default class Header extends Component {
   constructor(props) {
     super(props);
 
+    var userInfo = localStorage.getItem('userInfo');
+
     this.state = {
-      userInfo: Meteor.user()
+      userInfo: (userInfo ? JSON.parse(userInfo) : null)
     }
   }
 
   addBtnAccount() {
-    console.log(this.state.userInfo);
-    if(this.state.userInfo !== undefined) {
+    if(this.state.userInfo !== null) {
       return (
         <ButtonToolbar className="pull-right" style={styles.btnAccount}>
-          <DropdownButton bsStyle="default" title={this.state.userInfo.emails[0].address} noCaret id="dropdown-no-caret">
-            <MenuItem eventKey="1">修改密码</MenuItem>
-            <MenuItem eventKey="2">编辑资料</MenuItem>
-            <MenuItem eventKey="3">管理数据集</MenuItem>
+          <DropdownButton bsStyle="default" title={this.state.userInfo.emails[0].address} noCaret id="dropdown-no-caret" onSelect={(eventKey) => {this.onDropdownSelectHandler(eventKey)}}>
+            <MenuItem eventKey="CHANGE_PWD">修改密码</MenuItem>
+            <MenuItem eventKey="EDIT_PROFILE">编辑资料</MenuItem>
+            <MenuItem eventKey="MANAGE_DATASETS">管理数据集</MenuItem>
             <MenuItem divider />
-            <MenuItem eventKey="4">登出</MenuItem>
+            <MenuItem eventKey="LOGOUT">退出</MenuItem>
           </DropdownButton>
         </ButtonToolbar>
       );
     } else {
       return (
         <ButtonToolbar className="pull-right" style={styles.btnAccount}>
-          <Button className="btn btn-success" onClick={Login.login}>登录</Button>
-          <Button className="btn btn-warning" onClick={Login.register}>注册</Button>
+          <a className="btn btn-success" href="/login">登录</a>
+          <a className="btn btn-warning" href="registration">注册</a>
         </ButtonToolbar>
       )
+    }
+  }
+
+  onDropdownSelectHandler(eventKey) {
+    console.log(eventKey);
+
+    switch(eventKey) {
+      case 'CHANGE_PWD':
+      break;
+
+      case 'EDIT_PROFILE':
+      break;
+
+      case 'MANAGE_DATASETS':
+      break;
+
+      case 'LOGOUT':
+        Meteor.logout(function(error) {
+          if(error) {
+            return console.log("Logout failed. " + error);
+          }
+
+          localStorage.removeItem('userInfo');
+          this.setState({'userInfo':  null});
+        }.bind(this));
+      break;
+
+      default:
+      console.log('No matched event found');
     }
   }
 
