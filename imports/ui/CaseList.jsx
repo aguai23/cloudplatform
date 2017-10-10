@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { Media } from 'react-bootstrap';
-import { Cases }  from '../api/cases' ;
+import { Media, Label, Row, Col, Grid, ControlLabel, Well,Button } from 'react-bootstrap';
+import { Cases } from '../api/cases';
 import { DataCollections } from '../api/dataCollections';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
@@ -11,15 +11,14 @@ export default class CaseList extends Component {
     this.state = {
       CaseList: []
     };
- 
+    // this.deleteCase = this.deleteCase.bind(this)
   }
   componentWillMount() {
-    const temp = Cases.find({}).fetch();
-    const b = DataCollections.find({}).fetch();
+
   }
 
-  deleteCase(Case) {
-    Meteor.call('deleteCase', Case, (error) => {
+  deleteCase(caseId) {
+    Meteor.call('deleteCase', caseId, (error) => {
       if (error) {
         alert("somethings wrong" + error.reason);
       } else {
@@ -29,37 +28,36 @@ export default class CaseList extends Component {
   }
 
   render() {
-    const textStyle = { margin: '50px' }
-    const list = [{ a: 1, b: 2 }, { a: 2, b: 3 }]
-
+    // const textStyle = { margin: '50px' }
+    const allCase = Cases.find({}).fetch();
+    const that = this;
     return (
       <div>
-        {list.length && list.map((Case, index) => {
+        {allCase.length && allCase.map((Case, index) => {
           return (
-            <Media key={Case.b}>
-              <Media.Left style={textStyle} >
-                <p> {Case.a}</p>
-                <p>{Case.a}</p>
-                <p>{Case.a}</p>
-                <p>{Case.a}</p>
-                <p>{Case.a}</p>
-                <p>{Case.a}</p>
-              </Media.Left>
-              <Media.Body>
+            <Row key={Case._id}>
+              <Col componentClass={ControlLabel} xs={4} md={2} >
+                  <p>{Case.name}</p>
+                  <p> <Label>年龄:</Label>{Case.profile.age}</p>
+                  <p> <Label>性别:</Label>{Case.profile.gender}</p>
+                  <p> <Label>来源:</Label>{Case.profile.source}</p>
+                  <p> <Label>描述:</Label>{Case.profile.description}</p>
+                  <p>
+                    <span className="glyphicon glyphicon-pencil"></span>
+                    &nbsp;&nbsp;&nbsp;
+                    <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this,Case._id)}></span>
+                  </p>
+              </Col>
+              <Col xs={14} md={10}>
                 <img width={165} height={165} src='http://i8.baidu.com/it/u=3976128583,2113847052&fm=85&s=E193C73A5F6373011066D840030010FA' alt="Image" />&nbsp;&nbsp;
                 <img width={165} height={165} src='http://i8.baidu.com/it/u=3976128583,2113847052&fm=85&s=E193C73A5F6373011066D840030010FA' alt="Image" />&nbsp;&nbsp;
                 <img width={165} height={165} src='http://i8.baidu.com/it/u=3976128583,2113847052&fm=85&s=E193C73A5F6373011066D840030010FA' alt="Image" />&nbsp;&nbsp;
-              </Media.Body>
-            </Media>
+            </Col>
+            </Row>
           )
         })
-
         }
       </div>
-      // <ListItem
-      // primaryText = {this.props.Case.name}
-      // rightIcon={<ActionDeleteForever hoverColor={red500} onClick={this.deleteCase.bind(this, this.props.Case._id)}/>}
-      //  />
     )
   }
 }

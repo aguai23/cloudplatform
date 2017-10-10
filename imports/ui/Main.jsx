@@ -19,7 +19,7 @@ import { DataCollections } from '../api/dataCollections';
 import Edit from './EditDataCollection';
 import ModalAddCollection from './ModalAddCollection';
 import SingleCollectionInList from './SingleCollectionInList';
-import { browserHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 
 
 const tempDataCollection = {
@@ -262,7 +262,7 @@ export class Main extends Component {
               <ul>
                 {this.state.dataCollections.map((dataCollection) => {
                   return (
-                    <li key={dataCollection._id}>
+                    <li key={dataCollection._id} onClick={() => {console.log("xxxxx")}}>
                       <SingleCollectionInList dataCollection={dataCollection} onClickRemove={this.onClickRemoveCollection} />
                       <hr/>
                     </li>
