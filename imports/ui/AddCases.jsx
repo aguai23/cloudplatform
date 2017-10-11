@@ -3,7 +3,31 @@ import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
-import { Col, Checkbox, Radio, Form, ButtonToolbar, Button, FormGroup, HelpBlock, FormControl, FieldGroup, ControlLabel, Nav, NavItem } from 'react-bootstrap'
+
+import { Col, Checkbox, Radio, Form, ButtonToolbar, Button, FormGroup, HelpBlock, FormControl, FieldGroup, ControlLabel, Nav, NavItem } from 'react-bootstrap';
+import Gallery from 'react-fine-uploader';
+import FineUploaderTraditional from 'fine-uploader-wrappers';
+
+import 'react-fine-uploader/gallery/gallery.css';
+
+const uploader = new FineUploaderTraditional({
+  options: {
+      chunking: {
+          enabled: true
+      },
+      deleteFile: {
+          enabled: false,
+          endpoint: '/methods/onUpload'
+      },
+      request: {
+          endpoint: '/uploads'
+      },
+      retry: {
+          enableAuto: true
+      }
+  }
+});
+
 export default class AddCase extends Component {
   constructor(props) {
     super(props);
@@ -128,7 +152,7 @@ export default class AddCase extends Component {
                 图片
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="file" />
+                <Gallery uploader={ uploader }/>
               </Col>
             </FormGroup>
           </div>

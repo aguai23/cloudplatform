@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 
 import { Breadcrumb, Button, ButtonToolbar, DropdownButton, MenuItem } from 'react-bootstrap';
+import { browserHistory } from 'react-router';
 
 import Login from './Login';
 
@@ -88,6 +89,9 @@ export default class Header extends Component {
 
           localStorage.removeItem('userInfo');
           this.setState({'userInfo':  null});
+
+          browserHistory.push('/login');
+
         }.bind(this));
       break;
 
