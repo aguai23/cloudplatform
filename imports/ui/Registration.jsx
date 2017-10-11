@@ -6,6 +6,7 @@ import { browserHistory } from 'react-router';
 import { Accounts } from 'meteor/accounts-base';
 
 import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
 
 import Header from './Header';
 import Footer from './Footer';
@@ -32,6 +33,12 @@ const styles = {
   }
 }
 
+validateEmail = function() {
+  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  console.log(re.test(this.emailInput.value));
+  return re.test(this.emailInput.value);
+}
+
 export default class Registration extends Component {
   constructor(props) {
     super(props);
@@ -40,7 +47,24 @@ export default class Registration extends Component {
   register = function() {
     // console.log('register()');
 
+    if(this.emailInput.value === undefined || this.emailInput.value === "") {
+      toast.warning("注册失败：Email不能为空");
+      return console.log("Registration Failed. Error: Empty email address.");
+    }
+
+    if(!validateEmail()) {
+      toast.warning("注册失败：请输入有效的Email地址");
+      return console.log("Registration Failed. Error: Invalid email address.");
+    }
+
+
+    if(this.passwordInput.value === undefined || this.passwordInput.value === "") {
+      toast.warning("注册失败：密码不能为空");
+      return console.log("Registration Failed. Error: Empty password.");
+    }
+
     if(this.passwordInput.value !== this.confirmPasswordInput.value) {
+      toast.warning("注册失败：两次输入密码不一致");
       return console.log("Registration Failed. Error: Different passwords.");
     }
 
@@ -52,7 +76,9 @@ export default class Registration extends Component {
         return console.log("Registration Failed. " + error);
       }
 
-      //console.log(Meteor.user());
+      // console.log(Meteor.user());
+
+      localStorage.setItem('userInfo', JSON.stringify(Meteor.user()));
 
       browserHistory.push('/datasets');
     });
@@ -98,6 +124,16 @@ export default class Registration extends Component {
             </div>
             <a href="login" className="pull-right" style={styles.linkAlreadyHaveAccount}>已经有账号?</a>
           </Form>
+
+          <ToastContainer
+              position="bottom-right"
+              type="info"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              pauseOnHover
+            />
       </div>
     );
   }

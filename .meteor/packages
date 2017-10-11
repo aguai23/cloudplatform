@@ -22,3 +22,6 @@ react-meteor-data
 accounts-ui
 accounts-password
 twbs:bootstrap
+http
+simple:rest
+simple:json-routes
