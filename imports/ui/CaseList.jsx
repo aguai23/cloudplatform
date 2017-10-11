@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Media, Label, Row, Col, Grid, ControlLabel, Well,Button } from 'react-bootstrap';
+import { Media, Label, Row, Col, Grid, Table, ControlLabel, Well, Button } from 'react-bootstrap';
 import { Cases } from '../api/cases';
 import { DataCollections } from '../api/dataCollections';
 import { Meteor } from 'meteor/meteor';
@@ -32,32 +32,37 @@ export default class CaseList extends Component {
     const allCase = Cases.find({}).fetch();
     const that = this;
     return (
-      <div>
-        {allCase.length && allCase.map((Case, index) => {
-          return (
-            <Row key={Case._id}>
-              <Col componentClass={ControlLabel} xs={4} md={2} >
-                  <p>{Case.name}</p>
-                  <p> <Label>年龄:</Label>{Case.profile.age}</p>
-                  <p> <Label>性别:</Label>{Case.profile.gender}</p>
-                  <p> <Label>来源:</Label>{Case.profile.source}</p>
-                  <p> <Label>描述:</Label>{Case.profile.description}</p>
-                  <p>
-                    <span className="glyphicon glyphicon-pencil"></span>
-                    &nbsp;&nbsp;&nbsp;
-                    <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this,Case._id)}></span>
-                  </p>
-              </Col>
-              <Col xs={14} md={10}>
-                <img width={165} height={165} src='http://i8.baidu.com/it/u=3976128583,2113847052&fm=85&s=E193C73A5F6373011066D840030010FA' alt="Image" />&nbsp;&nbsp;
-                <img width={165} height={165} src='http://i8.baidu.com/it/u=3976128583,2113847052&fm=85&s=E193C73A5F6373011066D840030010FA' alt="Image" />&nbsp;&nbsp;
-                <img width={165} height={165} src='http://i8.baidu.com/it/u=3976128583,2113847052&fm=85&s=E193C73A5F6373011066D840030010FA' alt="Image" />&nbsp;&nbsp;
-            </Col>
-            </Row>
-          )
-        })
-        }
-      </div>
+
+      <Table striped bordered condensed hover>
+        <thead>
+          <tr>
+            <th>病例名</th>
+            <th>年龄</th>
+            <th>性别</th>
+            <th>来源</th>
+            <th>创建时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {allCase.length && allCase.map((Case, index) => {
+            return (
+              <tr>
+                <td>{Case.name}</td>
+                <td>{Case.profile.age}</td>
+                <td>{Case.profile.gender}</td>
+                <td>{Case.profile.source}</td>
+                <td>{Case.profile.createAt}</td>
+                <td>
+                  <span className="glyphicon glyphicon-pencil"></span>
+                  &nbsp;&nbsp;&nbsp;
+                  <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, Case._id)}></span></td>
+              </tr>
+            )
+          })
+          }
+        </tbody>
+      </Table>
     )
   }
 }

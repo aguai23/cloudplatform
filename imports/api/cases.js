@@ -39,25 +39,30 @@ const CaseSchema = new SimpleSchema({
   },
   class: {
     label: '分类',
-    type: String
+      type: String
   },
   label: {
-      label: '标签',
-      type: String
+    label: '标签',
+    type: String
   },
   files: {
-      label: '文件地址',
-      type: [String]
+    label: '文件地址',
+    type: [String]
   },
   profile: {
-      label: '信息',
-      type: Object,
-      blackbox: true,
-      optional: true
+    label: '信息',
+    type: Object,
+    blackbox: true,
+    optional: true
+  },
+  createAt: {
+    label: '时间',
+    type: Date,
+    optional: true,
   },
   collectionId: {
-      label: '所属数据集',
-      type: String
+    label: '所属数据集',
+    type: String
   },
   ownerId: {
     label: '所属用户Id',
