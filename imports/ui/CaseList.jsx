@@ -4,6 +4,7 @@ import { Cases } from '../api/cases';
 import { DataCollections } from '../api/dataCollections';
 import { Meteor } from 'meteor/meteor';
 import { createContainer } from 'meteor/react-meteor-data';
+import { browserHistory, Link } from 'react-router';
 
 export default class CaseList extends Component {
   constructor(props) {
@@ -29,14 +30,14 @@ export default class CaseList extends Component {
     });
   }
 
-  searchCase(){
+  searchCase() {
     const name = this.input.value;
-    const targetCase = Cases.find({name:name}).fetch()
-    if(targetCase && targetCase.length){
+    const targetCase = Cases.find({ name: name }).fetch()
+    if (targetCase && targetCase.length) {
       this.setState({
         allCase: targetCase
       })
-    } else{
+    } else {
       alert('找不到该病例')
       return
     }
@@ -44,6 +45,9 @@ export default class CaseList extends Component {
 
   render() {
     const that = this;
+    const newTo = { pathname: "/newCase",query:{addre:2} };
+    
+    <Link to={newTo}> </Link>
     return (
       <div>
         <Navbar>
@@ -56,7 +60,7 @@ export default class CaseList extends Component {
           <Navbar.Collapse>
             <Navbar.Form pullLeft>
               <FormGroup>
-                <FormControl inputRef={ref=>{this.input = ref}} type="text" placeholder="输入病例名称" />
+                <FormControl inputRef={ref => { this.input = ref }} type="text" placeholder="输入病例名称" />
               </FormGroup>
               {' '}
               <Button onClick={this.searchCase}>查询</Button>
@@ -87,9 +91,9 @@ export default class CaseList extends Component {
                   <td>
                     <span className="glyphicon glyphicon-picture"></span>
                     &nbsp;&nbsp;&nbsp;
-                  <span className="glyphicon glyphicon-pencil"></span>
+                    <Link  to={`/newCase?id=${Case._id}`} className="glyphicon glyphicon-pencil"></Link>
                     &nbsp;&nbsp;&nbsp;
-                  <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, Case._id)}></span>
+                    <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, Case._id)}></span>
                   </td>
                 </tr>
               )

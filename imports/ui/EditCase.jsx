@@ -4,37 +4,33 @@ import { browserHistory } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
 import { Col, Checkbox, Radio, Form, ButtonToolbar, Button, FormGroup, HelpBlock, FormControl, FieldGroup, ControlLabel, Nav, NavItem } from 'react-bootstrap'
-export default class AddCase extends Component {
+export default class EditCase extends Component {
   constructor(props) {
     super(props);
-    const oldCase = Cases.findOne({ _id: this.props.location.query.id })
-    console.log(oldCase)
     this.state = {
       collectionId: Session.get('collectionId'),
-      Case: {},
-      oldCase: oldCase,
+      Case: {}
     };
     this.onCaseChange = this.onCaseChange.bind(this);
-    this.submitCases = this.submitCases.bind(this);
-    this.modifyCase = this.modifyCase.bind(this);
+    this.submitDataCollection = this.submitDataCollection.bind(this)
   }
   componentDidMount() {
+
   }
 
   onCaseChange(input) {
-      const { Case } = this.state;
-      Case[input.target.id] = input.target.value
-      if (input.target.id === 'age' && input.target.value <= 0) {
-        alert('年龄错误')
-        return;
-      }
-      this.setState({
-        Case
-      })
-    
+    const { Case } = this.state;
+    Case[input.target.id] = input.target.value
+    if (input.target.id === 'age' && input.target.value <= 0) {
+      alert('年龄错误')
+      return;
+    }
+    this.setState({
+      Case
+    })
   }
 
-  submitCases(event) {
+  submitDataCollection(event) {
     event.preventDefault();
 
     const { Case } = this.state;
@@ -68,22 +64,13 @@ export default class AddCase extends Component {
       });
     }
   }
-  modifyCase(event) {
-    event.preventDefault();
-    //遍历Case
-    const newCase = this.state.oldCase
-    for(let key in this.state.Case){
-      newCase[key] = this.state.Case[key]
-    }
-    console.log(newCase)
-  }
 
   render() {
     const wellStyles = { marginTop: '20px' };
-    const oldCase = this.state.oldCase
+
     return (
       <div className="container">
-        <h3>{oldCase?`修改${oldCase.name}病例`:'添加新病例'}</h3>
+        <h3>添加新病例{this.state.user}</h3>
         <Form horizontal>
           <div className="well" style={wellStyles}>
             <FormGroup controlId="name">
@@ -91,7 +78,7 @@ export default class AddCase extends Component {
                 病例名称
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.name} onChange={this.onCaseChange} type="text" />
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -100,7 +87,7 @@ export default class AddCase extends Component {
                 种类
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.type} onChange={this.onCaseChange} type="text" />
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -109,7 +96,7 @@ export default class AddCase extends Component {
                 类别
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.class} onChange={this.onCaseChange} type="text" />
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -118,7 +105,7 @@ export default class AddCase extends Component {
                 标签
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.label} onChange={this.onCaseChange} type="text" />
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
           </div>
@@ -140,7 +127,7 @@ export default class AddCase extends Component {
                 年龄
                       </Col>
               <Col sm={2}>
-                <FormControl defaultValue={oldCase && oldCase.profile.age} onChange={this.onCaseChange} type="number" />
+                <FormControl onChange={this.onCaseChange} type="number" />
               </Col>
             </FormGroup>
 
@@ -149,8 +136,8 @@ export default class AddCase extends Component {
                 性别
                       </Col>
               <Col sm={6}>
-                <Radio defaultChecked={oldCase && oldCase.profile.gender==='male'} onClick={this.onCaseChange} id="gender" name="gender" value="male" inline>男</Radio>{' '}
-                <Radio defaultChecked={oldCase && oldCase.profile.gender==='female'} onClick={this.onCaseChange} id="gender" name="gender" value="female" inline>女</Radio>{' '}
+                <Radio onClick={this.onCaseChange} id="gender" name="gender" value="a" inline>男</Radio>{' '}
+                <Radio onClick={this.onCaseChange} id="gender" name="gender" value="b" inline>女</Radio>{' '}
               </Col>
             </FormGroup>
 
@@ -159,7 +146,7 @@ export default class AddCase extends Component {
                 来源
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.profile.source} onChange={this.onCaseChange} type="text" />
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -168,7 +155,7 @@ export default class AddCase extends Component {
                 描述
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.profile.description} onChange={this.onCaseChange} componentClass="textarea" />
+                <FormControl onChange={this.onCaseChange} componentClass="textarea" />
               </Col>
             </FormGroup>
 
@@ -177,7 +164,7 @@ export default class AddCase extends Component {
                 创建时间
                       </Col>
               <Col sm={6}>
-                <input defaultValue={oldCase && oldCase.profile.createAt} id="createAt" type="date" onChange={this.onCaseChange} />
+                <input id="createAt" type="date" onChange={this.onCaseChange} />
               </Col>
             </FormGroup>
 
@@ -185,10 +172,7 @@ export default class AddCase extends Component {
 
           <FormGroup>
             <Col smOffset={3} sm={8}>
-              {oldCase ?<Button onClick={this.modifyCase} bsStyle="success">修改</Button>:
-    <Button onClick={this.submitCases} bsStyle="success">新建</Button>
-            }
-               &nbsp;&nbsp;
+              <Button onClick={this.submitDataCollection} bsStyle="success">提交</Button> &nbsp;&nbsp;
               <Button onClick={() => { browserHistory.push('/datasets'); }}>返回</Button>
 
             </Col>
@@ -199,6 +183,6 @@ export default class AddCase extends Component {
   }
 }
 
-AddCase.contextTypes = {
+EditCase.contextTypes = {
   router: React.PropTypes.object
 }
