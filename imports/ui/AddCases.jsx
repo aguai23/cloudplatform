@@ -10,29 +10,42 @@ import FineUploaderTraditional from 'fine-uploader-wrappers';
 
 import 'react-fine-uploader/gallery/gallery.css';
 
-const uploader = new FineUploaderTraditional({
-  options: {
-      chunking: {
-          enabled: true
-      },
-      deleteFile: {
-          enabled: false,
-          endpoint: '/methods/onUpload'
-      },
-      request: {
-          endpoint: '/uploads'
-      },
-      retry: {
-          enableAuto: true
-      }
-  }
-});
 
 export default class AddCase extends Component {
   constructor(props) {
     super(props);
-    const oldCase = Cases.findOne({ _id: this.props.location.query.id })
-    console.log(oldCase)
+    const oldCase = Cases.findOne({ _id: this.props.location.query.id });
+
+    this.uploader = new FineUploaderTraditional({
+      options: {
+        chunking: {
+            enabled: false
+        },
+        deleteFile: {
+          enabled: true,
+          endpoint: '/delete',
+          method: 'DELETE'
+        },
+        request: {
+          endpoint: '/uploads'
+        },
+        retry: {
+          enableAuto: true
+        },
+        callbacks: {
+          onAllComplete: function() {
+            console.log("onAllComplete");
+          },
+          onComplete: function(id) {
+            console.log(id);
+          },
+          onUpload: function() {
+            console.log("onUpload");
+          }
+        }
+      }
+    });
+
     this.state = {
       collectionId: Session.get('collectionId'),
       Case: {},
@@ -55,7 +68,7 @@ export default class AddCase extends Component {
       this.setState({
         Case
       })
-    
+
   }
 
   submitCases(event) {
@@ -152,7 +165,7 @@ export default class AddCase extends Component {
                 图片
                       </Col>
               <Col sm={6}>
-                <Gallery uploader={ uploader }/>
+                <Gallery uploader={ this.uploader }/>
               </Col>
             </FormGroup>
           </div>

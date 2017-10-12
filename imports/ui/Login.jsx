@@ -6,6 +6,7 @@ import { browserHistory } from 'react-router';
 import { Accounts } from 'meteor/accounts-base';
 
 import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
 
 import Header from './Header';
 import Footer from './Footer';
@@ -35,8 +36,22 @@ export default class Login extends Component {
   login = function(){
     // console.log("login()");
 
+    if(this.emailInput.value === undefined || this.emailInput.value === "") {
+      return toast.warning("邮箱不能为空");
+    }
+
+    if(this.passwordInput.value === undefined || this.emailInput.value === "") {
+      return toast.warning("密码不能为空");
+    }
+
     Meteor.loginWithPassword(this.emailInput.value, this.passwordInput.value, function(error) {
       if(error) {
+        console.log(error);
+        if(error.reason === 'User not found') {
+          toast.warning("用户不存在");
+        } else if(error.reason === 'Incorrect password'){
+          toast.warning("密码错误");
+        }
         return console.log("Login Failed. " + error);
       }
 
@@ -82,6 +97,16 @@ export default class Login extends Component {
             <a href="registration" className="pull-right" style={styles.linkNoAccountYet}>去注册?</a>
 
           </Form>
+
+          <ToastContainer
+              position="bottom-right"
+              type="info"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              pauseOnHover
+            />
       </div>
     );
   }
