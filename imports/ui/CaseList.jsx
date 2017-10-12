@@ -87,7 +87,7 @@ export default class CaseList extends Component {
                   <td>{Case.profile.age}</td>
                   <td>{Case.profile.gender}</td>
                   <td>{Case.profile.source}</td>
-                  <td>{Case.profile.createAt}</td>
+                  <td>{Case.createAt}</td>
                   <td>
                     <span className="glyphicon glyphicon-picture"></span>
                     &nbsp;&nbsp;&nbsp;
