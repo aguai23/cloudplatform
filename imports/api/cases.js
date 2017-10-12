@@ -57,7 +57,7 @@ const CaseSchema = new SimpleSchema({
   },
   createAt: {
     label: '时间',
-    type: Date,
+    type: String,
     optional: true,
   },
   collectionId: {

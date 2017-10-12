@@ -22,6 +22,11 @@ Meteor.methods({
     Cases.insert(Case)
   },
 
+  modifyCase(Case){
+    Cases.update(Case._id,
+      { $set: Case })
+  },
+
   deleteCase(CaseId){
     Cases.remove(CaseId);
   }

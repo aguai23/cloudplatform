@@ -59,15 +59,15 @@ export default class AddCase extends Component {
   }
 
   onCaseChange(input) {
-      const { Case } = this.state;
-      Case[input.target.id] = input.target.value
-      if (input.target.id === 'age' && input.target.value <= 0) {
-        alert('年龄错误')
-        return;
-      }
-      this.setState({
-        Case
-      })
+    const { Case } = this.state;
+    Case[input.target.id] = input.target.value
+    if (input.target.id === 'age' && input.target.value <= 0) {
+      alert('年龄错误')
+      return;
+    }
+    this.setState({
+      Case
+    })
 
   }
 
@@ -105,14 +105,26 @@ export default class AddCase extends Component {
       });
     }
   }
+
   modifyCase(event) {
     event.preventDefault();
     //遍历Case
     const newCase = this.state.oldCase
-    for(let key in this.state.Case){
-      newCase[key] = this.state.Case[key]
+    for (let key in this.state.Case) {
+      if (['gender','age','source','description'].indexOf(key) < 0) {
+        newCase[key] = this.state.Case[key]
+      } else {
+        newCase.profile[key] = this.state.Case[key]
+      }
     }
-    console.log(newCase)
+    Meteor.call('modifyCase',newCase,(error)=>{
+      if(error) {
+        alert("somethings wrong" + error.reason);
+      } else {
+        alert("Case modified");
+        browserHistory.push('/datasets');
+      }
+    })
   }
 
   render() {
@@ -120,7 +132,7 @@ export default class AddCase extends Component {
     const oldCase = this.state.oldCase
     return (
       <div className="container">
-        <h3>{oldCase?`修改${oldCase.name}病例`:'添加新病例'}</h3>
+        <h3>{oldCase ? `修改${oldCase.name}病例` : '添加新病例'}</h3>
         <Form horizontal>
           <div className="well" style={wellStyles}>
             <FormGroup controlId="name">
@@ -186,8 +198,8 @@ export default class AddCase extends Component {
                 性别
                       </Col>
               <Col sm={6}>
-                <Radio defaultChecked={oldCase && oldCase.profile.gender==='male'} onClick={this.onCaseChange} id="gender" name="gender" value="male" inline>男</Radio>{' '}
-                <Radio defaultChecked={oldCase && oldCase.profile.gender==='female'} onClick={this.onCaseChange} id="gender" name="gender" value="female" inline>女</Radio>{' '}
+                <Radio defaultChecked={oldCase && oldCase.profile.gender === 'male'} onClick={this.onCaseChange} id="gender" name="gender" value="male" inline>男</Radio>{' '}
+                <Radio defaultChecked={oldCase && oldCase.profile.gender === 'female'} onClick={this.onCaseChange} id="gender" name="gender" value="female" inline>女</Radio>{' '}
               </Col>
             </FormGroup>
 
@@ -222,10 +234,10 @@ export default class AddCase extends Component {
 
           <FormGroup>
             <Col smOffset={3} sm={8}>
-              {oldCase ?<Button onClick={this.modifyCase} bsStyle="success">修改</Button>:
-    <Button onClick={this.submitCases} bsStyle="success">新建</Button>
-            }
-               &nbsp;&nbsp;
+              {oldCase ? <Button onClick={this.modifyCase} bsStyle="success">修改</Button> :
+                <Button onClick={this.submitCases} bsStyle="success">新建</Button>
+              }
+              &nbsp;&nbsp;
               <Button onClick={() => { browserHistory.push('/datasets'); }}>返回</Button>
 
             </Col>
