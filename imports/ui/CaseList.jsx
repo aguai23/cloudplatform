@@ -45,15 +45,14 @@ export default class CaseList extends Component {
 
   render() {
     const that = this;
-    const newTo = { pathname: "/newCase",query:{addre:2} };
+    const newTo = { pathname: "/newCase"};
     
-    <Link to={newTo}> </Link>
     return (
       <div>
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
-              <p>搜索</p>
+            <Link to={newTo}>新建</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>

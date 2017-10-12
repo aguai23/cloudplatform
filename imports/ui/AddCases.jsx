@@ -32,7 +32,6 @@ export default class AddCase extends Component {
   constructor(props) {
     super(props);
     const oldCase = Cases.findOne({ _id: this.props.location.query.id })
-    console.log(oldCase)
     this.state = {
       collectionId: Session.get('collectionId'),
       Case: {},

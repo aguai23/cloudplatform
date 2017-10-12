@@ -31,7 +31,7 @@ const styles = {
 const nameMap = {
   '/': '首页',
   'datasets': '数据集',
-  'newCase': '新建病例集'
+  'newCase': '病例集管理'
 }
 
 export default class Header extends Component {
