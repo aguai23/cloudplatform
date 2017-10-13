@@ -13,7 +13,7 @@
   height: 36px;
   padding: 0 2rem;
   cursor: pointer;
-  user-select: none
+  user-select: none;
   transition: all .3s ease-out;
   text-align: center;
   vertical-align: middle;
