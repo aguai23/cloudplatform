@@ -12,6 +12,7 @@ import Login from '../imports/ui/Login';
 import Lost from '../imports/ui/Lost';
 import Main from '../imports/ui/Main';
 import Registration from '../imports/ui/Registration';
+import Viewer from '../imports/ui/Viewer';
 
 
 injectTapEventPlugin();
@@ -25,6 +26,7 @@ Meteor.startup(() => {
         <Route path="newCase" component={AddCase}></Route>
         <Route path="caseList" component={CaseList}></Route>
       </Route>
+      <Route path="viewer" component={Viewer}></Route>
       <Route path="login" component={Login}></Route>
       <Route path="registration" component={Registration}></Route>
       <Route path="*" component={Login}></Route>
