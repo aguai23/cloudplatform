@@ -9,9 +9,11 @@ Meteor.methods({
     console.log("index", index);
 
     // console.log("dicomParser", dicomParser);
-    var foundCase = Cases.findOne({});
+    var foundCase = Cases.findOne({_id: caseId});
 
     console.log("foundCase", foundCase);
+
+    
   }
 
 });

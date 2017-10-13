@@ -97,20 +97,20 @@ export class CaseList extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.state.cases.length > 0 && this.state.cases.map((Case, index) => {
+            {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
               return (
-                <tr key={Case._id}>
-                  <td>{Case.name}</td>
-                  <td>{Case.profile.age}</td>
-                  <td>{Case.profile.gender}</td>
-                  <td>{Case.profile.source}</td>
-                  <td>{Case.createAt}</td>
+                <tr key={specificCase._id}>
+                  <td>{specificCase.name}</td>
+                  <td>{specificCase.profile.age}</td>
+                  <td>{specificCase.profile.gender}</td>
+                  <td>{specificCase.profile.source}</td>
+                  <td>{specificCase.createAt}</td>
                   <td>
-                    <a className="glyphicon glyphicon-picture" onClick={() => this.onClickViewImage("123", 0)}></a>
+                    <a className="glyphicon glyphicon-picture" onClick={() => this.onClickViewImage(specificCase._id, 0)}></a>
                     &nbsp;&nbsp;&nbsp;
-                    <Link  to={`/newCase?id=${Case._id}`} className="glyphicon glyphicon-pencil"></Link>
+                    <Link  to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil"></Link>
                     &nbsp;&nbsp;&nbsp;
-                    <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, Case._id)}></span>
+                    <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, specificCase._id)}></span>
                   </td>
                 </tr>
                 )
