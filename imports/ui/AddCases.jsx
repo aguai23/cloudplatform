@@ -7,6 +7,8 @@ import { Session } from "meteor/session";
 import { Col, Checkbox, Radio, Form, ButtonToolbar, Button, FormGroup, HelpBlock, FormControl, FieldGroup, ControlLabel, Nav, NavItem } from 'react-bootstrap';
 import Gallery from 'react-fine-uploader';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
 
 import 'react-fine-uploader/gallery/gallery.css';
 
@@ -62,7 +64,7 @@ export default class AddCase extends Component {
     const { Case } = this.state;
     Case[input.target.id] = input.target.value
     if (input.target.id === 'age' && input.target.value <= 0) {
-      alert('年龄错误')
+      toast.error("年龄错误", {position: toast.POSITION.BOTTOM_RIGHT});
       return;
     }
     this.setState({
@@ -77,7 +79,7 @@ export default class AddCase extends Component {
     const { Case } = this.state;
     const flag = Case.name && Case.type && Case.class && Case.label && Case.gender && Case.age && Case.source && Case.source && Case.description && Case.createAt
     if (!flag) {
-      alert('请检验并完善信息');
+      toast.error("请检验并完善信息", {position: toast.POSITION.BOTTOM_RIGHT});
       return;
     } else {
       const standardCase = {
@@ -97,9 +99,9 @@ export default class AddCase extends Component {
       }
       Meteor.call('insertCase', standardCase, (error) => {
         if (error) {
-          alert("somethings wrong" + error.reason);
+          toast.error(`somethings wrong${error.reason}`, {position: toast.POSITION.BOTTOM_RIGHT});
         } else {
-          alert("Case added");
+          toast.success("病例添加成功", {position: toast.POSITION.BOTTOM_RIGHT});
           browserHistory.push('/datasets');
         }
       });
@@ -119,9 +121,9 @@ export default class AddCase extends Component {
     }
     Meteor.call('modifyCase',newCase,(error)=>{
       if(error) {
-        alert("somethings wrong" + error.reason);
+        toast.error(`somethings wrong${error.reason}`, {position: toast.POSITION.BOTTOM_RIGHT});
       } else {
-        alert("Case modified");
+        toast.success("病例修改成功", {position: toast.POSITION.BOTTOM_RIGHT});
         browserHistory.push('/datasets');
       }
     })
@@ -243,6 +245,15 @@ export default class AddCase extends Component {
             </Col>
           </FormGroup>
         </Form>
+        <ToastContainer
+            position="bottom-right"
+            type="info"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+          />
       </div>
     )
   }
