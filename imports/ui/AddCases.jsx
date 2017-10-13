@@ -102,7 +102,7 @@ export default class AddCase extends Component {
           toast.error(`somethings wrong${error.reason}`, {position: toast.POSITION.BOTTOM_RIGHT});
         } else {
           toast.success("病例添加成功", {position: toast.POSITION.BOTTOM_RIGHT});
-          browserHistory.push('/datasets');
+          Meteor.setTimeout(browserHistory.goBack,2000)
         }
       });
     }
@@ -124,7 +124,7 @@ export default class AddCase extends Component {
         toast.error(`somethings wrong${error.reason}`, {position: toast.POSITION.BOTTOM_RIGHT});
       } else {
         toast.success("病例修改成功", {position: toast.POSITION.BOTTOM_RIGHT});
-        browserHistory.push('/datasets');
+        Meteor.setTimeout(browserHistory.goBack,2000)
       }
     })
   }
@@ -228,7 +228,7 @@ export default class AddCase extends Component {
                 创建时间
                       </Col>
               <Col sm={6}>
-                <input defaultValue={oldCase && oldCase.profile.createAt} id="createAt" type="date" onChange={this.onCaseChange} />
+                <input defaultValue={oldCase && oldCase.createAt} id="createAt" type="date" onChange={this.onCaseChange} />
               </Col>
             </FormGroup>
 
@@ -240,7 +240,7 @@ export default class AddCase extends Component {
                 <Button onClick={this.submitCases} bsStyle="success">新建</Button>
               }
               &nbsp;&nbsp;
-              <Button onClick={() => { browserHistory.push('/datasets'); }}>返回</Button>
+              <Button onClick={browserHistory.goBack}>返回</Button>
 
             </Col>
           </FormGroup>
