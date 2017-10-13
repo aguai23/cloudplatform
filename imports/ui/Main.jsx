@@ -215,13 +215,6 @@ export class Main extends Component {
   }
 
   render() {
-    // <SplitButton title={"特征"} id="dropdown-features">
-    //   <MenuItem eventKey="1">Density: 1</MenuItem>
-    //   <MenuItem eventKey="2">Another action</MenuItem>
-    //   <MenuItem eventKey="3">Something else here</MenuItem>
-    //   <MenuItem divider />
-    //   <MenuItem eventKey="4">Separated link</MenuItem>
-    // </SplitButton>
     return (
       <div className="container" style={styles.mainDiv}>
         <div id="modal-base"></div>
@@ -284,43 +277,6 @@ export class Main extends Component {
           />
       </div>
     );
-
-    /*
-    return (
-      <MuiThemeProvider>
-        <div className="container">
-          <AppBar title="医学影像数据分析开放云平台"
-            iconClassNameRight="muidocs-icon-navigation-expand-more"
-            showMenuIconButton={false}
-            style={{ backgroundColor: '#0277BD' }}>
-            <AccountState />
-            <AccountsWrapper />
-          </AppBar>
-          <div className="row">
-            <div className="col s12 m7"><DataCollection dataCollection={this.state.currentDataCollection} showEditForm={this.showEditForm} /></div>
-            <div className="col s12 m5">
-              <h2>Collection List</h2>
-              <Link to="/newCollection" className="waves-effect waves-light btn light-blue darken-3">Add dataCollection</Link>
-              <Divider />
-              <List>
-                {this.renderDataCollection()}
-              </List>
-              <Divider />
-            </div>
-          </div>
-          <div className="row">
-            <div className="col s12">
-              <br />
-              <Divider />
-              {this.showForm()}
-              <Divider />
-            </div>
-          </div>
-        </div>
-      </MuiThemeProvider>
-
-    )
-    */
   }
 }
 

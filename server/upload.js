@@ -56,8 +56,9 @@ function onSimpleUpload(fields, file, res) {
   file.name = fields.qqfilename;
 
   if(isValid(file.size)) {
-    moveUploadedFile(file, uuid, function() {
+    moveUploadedFile(file, uuid, function(filePath) {
       responseData.success = true;
+      responseData.filePath = filePath;
       res.end(JSON.stringify(responseData));
     }, function() {
       responseData.error = "Problem saving the file";
@@ -99,7 +100,7 @@ function moveFile(destinationDir, sourceFile, destinationFile, successCb, failur
         })
         .on('end', function() {
           destStream.end();
-          successCb();
+          successCb(destinationFile);
         })
         .pipe(destStream);
     }

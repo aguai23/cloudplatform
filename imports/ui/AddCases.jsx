@@ -10,11 +10,15 @@ import FineUploaderTraditional from 'fine-uploader-wrappers';
 
 import 'react-fine-uploader/gallery/gallery.css';
 
+var isUploadFinished = true,
+    imageArray = [];
 
 export default class AddCase extends Component {
   constructor(props) {
     super(props);
     const oldCase = Cases.findOne({ _id: this.props.location.query.id });
+
+    var that = this;
 
     this.uploader = new FineUploaderTraditional({
       options: {
@@ -34,13 +38,15 @@ export default class AddCase extends Component {
         },
         callbacks: {
           onAllComplete: function() {
-            console.log("onAllComplete");
+            // console.log("imageArray", imageArray);
+            that.setState({isUploadFinished: true});
           },
-          onComplete: function(id) {
-            console.log(id);
+          onComplete: function(id, name, response) {
+            // console.log('response', response);
+            imageArray.push(response.filePath);
           },
           onUpload: function() {
-            console.log("onUpload");
+            that.setState({isUploadFinished: false});
           }
         }
       }
@@ -50,6 +56,7 @@ export default class AddCase extends Component {
       collectionId: Session.get('collectionId'),
       Case: {},
       oldCase: oldCase,
+      isUploadFinished: true
     };
     this.onCaseChange = this.onCaseChange.bind(this);
     this.submitCases = this.submitCases.bind(this);
@@ -74,6 +81,8 @@ export default class AddCase extends Component {
   submitCases(event) {
     event.preventDefault();
 
+    if(!isUploadFinished)  return;
+
     const { Case } = this.state;
     const flag = Case.name && Case.type && Case.class && Case.label && Case.gender && Case.age && Case.source && Case.source && Case.description && Case.createAt
     if (!flag) {
@@ -85,7 +94,7 @@ export default class AddCase extends Component {
         type: Case.type,
         class: Case.class,
         label: Case.label,
-        files: ['todo'],
+        files: imageArray,
         profile: {
           gender: Case.gender,
           age: Case.age,
@@ -234,8 +243,8 @@ export default class AddCase extends Component {
 
           <FormGroup>
             <Col smOffset={3} sm={8}>
-              {oldCase ? <Button onClick={this.modifyCase} bsStyle="success">修改</Button> :
-                <Button onClick={this.submitCases} bsStyle="success">新建</Button>
+              {oldCase ? <Button onClick={this.modifyCase} bsStyle="success" disabled={!this.state.isUploadFinished}>修改</Button> :
+                <Button onClick={this.submitCases} bsStyle="success" disabled={!this.state.isUploadFinished}>新建</Button>
               }
               &nbsp;&nbsp;
               <Button onClick={() => { browserHistory.push('/datasets'); }}>返回</Button>
