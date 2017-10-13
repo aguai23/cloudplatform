@@ -21,10 +21,10 @@ export default class SingleCollectionInList extends Component {
   }
 
   render() {
-    // console.log("SingleCollectionInList");
+    // console.log("this.props.dataCollection", this.props.dataCollection);
     return (
       <div>
-        <Link to="/caseList">
+        <Link to={'/datasets/' + this.props.dataCollection._id}>
           {this.props.dataCollection.name + (this.props.dataCollection.equip ? " / " + this.props.dataCollection.equip : "")}
         </Link>
         <FontAwesome name='trash-o' size='lg' className="pull-right" onClick={this.onClickRemove.bind(this)}/>

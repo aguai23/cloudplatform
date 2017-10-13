@@ -3,21 +3,29 @@ import { Navbar, FormGroup, FormControl, Table, Button } from 'react-bootstrap';
 import { Cases } from '../api/cases';
 import { DataCollections } from '../api/dataCollections';
 import { Meteor } from 'meteor/meteor';
-import { createContainer } from 'meteor/react-meteor-data';
+import { withTracker } from 'meteor/react-meteor-data';
 import { browserHistory, Link } from 'react-router';
 
-export default class CaseList extends Component {
+var collectionId;
+
+export class CaseList extends Component {
   constructor(props) {
     super(props);
-    const allCase = Cases.find({}).fetch();
-    this.state = {
-      CaseList: [],
-      allCase: allCase
-    };
-    this.searchCase = this.searchCase.bind(this)
-  }
-  componentWillMount() {
 
+    this.state = {
+      cases: Cases.find({}).fetch()
+    };
+
+    this.searchCase = this.searchCase.bind(this);
+
+    collectionId = this.props.params.caseId;
+
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if(nextProps.cases !== this.state.cases) {
+      this.setState({cases: nextProps.cases});
+    }
   }
 
   deleteCase(caseId) {
@@ -30,12 +38,22 @@ export default class CaseList extends Component {
     });
   }
 
+  onClickViewImage(caseId, index) {
+    Meteor.call('getDicoms', caseId, index, (error, result) => {
+      if(error) {
+        return console.log("error", error);
+      }
+
+      // console.log("result", result);
+    });
+  }
+
   searchCase() {
     const name = this.input.value;
     const targetCase = Cases.find({ name: name }).fetch()
     if (targetCase && targetCase.length) {
       this.setState({
-        allCase: targetCase
+        cases: targetCase
       })
     } else {
       alert('找不到该病例')
@@ -46,7 +64,7 @@ export default class CaseList extends Component {
   render() {
     const that = this;
     const newTo = { pathname: "/newCase"};
-    
+
     return (
       <div>
         <Navbar>
@@ -79,7 +97,7 @@ export default class CaseList extends Component {
             </tr>
           </thead>
           <tbody>
-            {this.state.allCase.length && this.state.allCase.map((Case, index) => {
+            {this.state.cases.length > 0 && this.state.cases.map((Case, index) => {
               return (
                 <tr key={Case._id}>
                   <td>{Case.name}</td>
@@ -88,15 +106,15 @@ export default class CaseList extends Component {
                   <td>{Case.profile.source}</td>
                   <td>{Case.createAt}</td>
                   <td>
-                    <span className="glyphicon glyphicon-picture"></span>
+                    <a className="glyphicon glyphicon-picture" onClick={() => this.onClickViewImage("123", 0)}></a>
                     &nbsp;&nbsp;&nbsp;
                     <Link  to={`/newCase?id=${Case._id}`} className="glyphicon glyphicon-pencil"></Link>
                     &nbsp;&nbsp;&nbsp;
                     <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, Case._id)}></span>
                   </td>
                 </tr>
-              )
-            })
+                )
+              })
             }
           </tbody>
         </Table>
@@ -110,4 +128,13 @@ CaseList.contextTypes = {
   router: React.PropTypes.object
 }
 
-Meteor.subscribe('cases')
+export default withTracker(props => {
+  const handle = Meteor.subscribe('cases');
+
+  //cases should be modified as follows later
+  //cases: Cases.find({collectionId: collectionId}).fetch()
+  return {
+    cases: Cases.find({}).fetch(),
+    listLoading: !handle.ready()
+  }
+})(CaseList);

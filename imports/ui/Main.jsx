@@ -112,15 +112,15 @@ export class Main extends Component {
   componentWillReceiveProps(nextProps) {
     if(this.state.tabActiveKey === 'PUB') {
       if(nextProps.publicDataCollections !== this.state.dataCollections) {
-        this.state.dataCollections = nextProps.publicDataCollections;
+        this.setState({dataCollections: nextProps.publicDataCollections});
       }
     } else if(this.state.tabActiveKey === 'PVT') {
       if(nextProps.privateDataCollections !== this.state.dataCollections) {
-        this.state.dataCollections = nextProps.privateDataCollections;
+        this.setState({dataCollections: nextProps.privateDataCollections});
       }
     } else if(this.state.tabActiveKey === 'FAV') {
       if(nextProps.favoriteDataCollections !== this.state.dataCollections) {
-        this.state.dataCollections = nextProps.favoriteDataCollections;
+        this.setState({dataCollections: nextProps.favoriteDataCollections});
       }
     }
   }
@@ -181,16 +181,6 @@ export class Main extends Component {
       this.setState({dataCollections: this.props.privateDataCollections});
     } else if(eventKey === 'FAV') {
       this.setState({dataCollections: this.props.favoriteDataCollections});
-    }
-  }
-
-  renderCases(collectionId) {
-    if (this.state.showCases === true) {
-      const collectionId =  this.state.currentDataCollection._id
-      const cases = Cases.find({collectionId,ownerId:Meteor.userId()}).fetch();
-      return cases.map((Case) => (
-        <CaseList onAddCasesClick={this.onAddCasesClick} key={Case._id} Case={Case} />
-      ));
     }
   }
 
@@ -255,7 +245,7 @@ export class Main extends Component {
               <ul>
                 {this.state.dataCollections.map((dataCollection) => {
                   return (
-                    <li key={dataCollection._id} onClick={() => {console.log("xxxxx")}}>
+                    <li key={dataCollection._id} >
                       <SingleCollectionInList dataCollection={dataCollection} onClickRemove={this.onClickRemoveCollection} />
                       <hr/>
                     </li>
