@@ -1,8 +1,11 @@
 import { Meteor } from 'meteor/meteor';
 import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
-import { ToastContainer, toast } from 'react-toastify';
+
+import { Accounts } from 'meteor/accounts-base';
+
 import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
+import { ToastContainer, toast } from 'react-toastify';
 
 
 const styles = {
@@ -29,11 +32,23 @@ export default class Login extends Component {
 
   login = function(){
 
+    if(this.emailInput.value === undefined || this.emailInput.value === "") {
+      return toast.warning("邮箱不能为空");
+    }
+
+    if(this.passwordInput.value === undefined || this.emailInput.value === "") {
+      return toast.warning("密码不能为空");
+    }
+
     Meteor.loginWithPassword(this.emailInput.value, this.passwordInput.value, function(error) {
       if(error) {
-        toast.error("用户名密码错误");
-        console.log("Login Failed. " + error);
-        return;
+        console.log(error);
+        if(error.reason === 'User not found') {
+          toast.warning("用户不存在");
+        } else if(error.reason === 'Incorrect password'){
+          toast.warning("密码错误");
+        }
+        return console.log("Login Failed. " + error);
       }
 
       localStorage.setItem('userInfo', JSON.stringify(Meteor.user()));

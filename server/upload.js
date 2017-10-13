@@ -1,53 +1,51 @@
 import { Meteor } from 'meteor/meteor';
 
 var fs = require('fs'),
+    rimraf = require("rimraf"),
     mkdirp = require('mkdirp'),
     multiparty = require('multiparty'),
 
-    fileInputName = process.env.FILE_INPUT_NAME || "qqfile",
-    publicDir = process.env.PUBLIC_DIR,
-    nodeModulesDir = process.env.NODE_MODULES_DIR,
-    uploadedFilesPath = process.env.UPLOADED_FILES_PATH,
+    fileInputName = Meteor.settings.FILE_INPUT_NAME || "qqfile",
+    // publicDir = process.env.PUBLIC_DIR,
+    // nodeModulesDir = process.env.NODE_MODULES_DIR,
+    uploadedFilesPath = Meteor.settings.UPLOADED_FILES_PATH,
     chunkDirName = "chunks",
-    port = process.env.SERVER_PORT || 8000,
-    maxFileSize = process.env.MAX_FILE_SIZE || 0;
+    // port = process.env.SERVER_PORT || 8000,
+    maxFileSize = Meteor.settings.MAX_FILE_SIZE || 0;
 
-// Meteor.methods({
-//   onUpload: function(req, res) {
-//     var form = new multiparty.Form();
-//
-//     console.log("req", req);
-//     //console.log("form", form);
-//
-//     //form.parse()
-//
-//
-//
-//   }
-// });
 
-JsonRoutes.add('post', 'uploads', function(req, res, next) {
-  // console.log("req", req);
-  console.log("res", res);
+Picker.route('/uploads', function(params, req, res, next) {
+  if(req.method === 'POST') {
+    var form = new multiparty.Form();
 
-  var form = new multiparty.Form();
+    form.parse(req, function(err, fields, files) {
+      var partIndex = fields.qqpartindex;
 
-  form.parse(req, function(err, fields, files) {
-    console.log('fields', fields);
-    console.log('files', files)
-    var partIndex = fields.qqpartindex;
+      if(partIndex == null) {
+        onSimpleUpload(fields, files[fileInputName][0], res);
+      } else {
 
-    //JsonRoutes.setResponseHeaders({'Content-Type', 'text/plain'});
-
-    console.log('partIndex', partIndex);
-
-    if(partIndex == null) {
-      onSimpleUpload(fields, files[fileInputName][0], res);
-    } else {
-
-    }
-  })
+      }
+    });
+  }
 });
+
+Picker.route('/delete/:uuid', function(params, req, res, next) {
+  console.log("params", params);
+  // console.log("req", req);
+  var uuid = params.uuid,
+      dirToDelete = uploadedFilesPath + uuid;
+
+  rimraf(dirToDelete, function(error) {
+    if(error) {
+      console.error("Problem deleteing file. " + error);
+      res.status(500);
+    }
+
+    res.end("Delete successfully");
+  });
+});
+
 
 function onSimpleUpload(fields, file, res) {
   var uuid = fields.qquuid,
@@ -60,12 +58,10 @@ function onSimpleUpload(fields, file, res) {
   if(isValid(file.size)) {
     moveUploadedFile(file, uuid, function() {
       responseData.success = true;
-      // res.send(responseData);
-      // JsonRoutes.sendResult(responseData);
+      res.end(JSON.stringify(responseData));
     }, function() {
       responseData.error = "Problem saving the file";
-      // res.send(responseData);
-      // JsonRoutes.sendResult(responseData);
+      res.end(JSON.stringify(responseData));
 
     });
   } else {
@@ -76,8 +72,7 @@ function onSimpleUpload(fields, file, res) {
 function failWithTooBigFile(responseData, res) {
   responseData.error = "File too big";
   responseData.preventRetry = true;
-  // res.send(responseData);
-  // JsonRoutes.sendResult(responseData);
+  res.end(JSON.stringify(responseData));
 
 }
 
