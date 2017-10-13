@@ -28,6 +28,6 @@ Meteor.startup(() => {
       <Route path="login" component={Login}></Route>
       <Route path="registration" component={Registration}></Route>
       <Route path="*" component={Login}></Route>
-  </Router>
+    </Router>
 ), document.getElementById('render-target'));
 });

@@ -126,7 +126,7 @@ export default class Registration extends Component {
           </Form>
 
           <ToastContainer
-              position="bottom-right"
+              position="top-center"
               type="info"
               autoClose={5000}
               hideProgressBar={false}

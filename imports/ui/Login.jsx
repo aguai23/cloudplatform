@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor';
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 
 import { Accounts } from 'meteor/accounts-base';
@@ -8,11 +7,9 @@ import { Accounts } from 'meteor/accounts-base';
 import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 
-import Header from './Header';
-import Footer from './Footer';
-
 
 const styles = {
+
   loginBox: {
     border: '1px solid black',
     borderRadius: '20px',
@@ -26,7 +23,7 @@ const styles = {
   linkNoAccountYet: {
     fontSize: '12px'
   }
-}
+};
 
 export default class Login extends Component {
   constructor(props) {
@@ -34,7 +31,6 @@ export default class Login extends Component {
   }
 
   login = function(){
-    // console.log("login()");
 
     if(this.emailInput.value === undefined || this.emailInput.value === "") {
       return toast.warning("邮箱不能为空");
@@ -55,12 +51,10 @@ export default class Login extends Component {
         return console.log("Login Failed. " + error);
       }
 
-      // console.log(Meteor.user());
       localStorage.setItem('userInfo', JSON.stringify(Meteor.user()));
-
       browserHistory.push('/datasets');
     });
-  }
+  };
 
   render() {
     return (
@@ -97,16 +91,15 @@ export default class Login extends Component {
             <a href="registration" className="pull-right" style={styles.linkNoAccountYet}>去注册?</a>
 
           </Form>
-
-          <ToastContainer
-              position="bottom-right"
-              type="info"
-              autoClose={3000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              pauseOnHover
-            />
+        <ToastContainer
+            position="top-center"
+            type="info"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+        />
       </div>
     );
   }
