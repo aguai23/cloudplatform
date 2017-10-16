@@ -53,7 +53,9 @@ export class CaseList extends Component {
           console.log("res", res);
 
           var pixelDataElement = res.pixelData;
-          var pixelData = new Uint16Array(res.imageInfo.buffer, pixelDataElement.dataOffset, pixelDataElement.length/2);
+          var pixelData = new Uint16Array(res.imageBuf.buffer, res.pixelDataOffset, res.pixelDataLength/2);
+
+          console.log("pixelData", pixelData);
         });
       }
 

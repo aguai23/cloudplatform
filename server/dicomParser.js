@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 
-import { Cases } from '../imports/api/cases'
+import { Cases } from '../imports/api/cases';
+
 
 var fs = require('fs');
 
@@ -43,8 +44,11 @@ Meteor.methods({
 
     result.status = 'SUCCESS';
 
-    result.imageInfo = dicomObj[index-1].byteArray;
-    result.pixelData = dicomObj[index-1].elements.x7fe00010;
+    result.imageBuf = dicomObj[index-1].byteArray;
+    result.pixelDataOffset = dicomObj[index-1].elements.x7fe00010.dataOffset;
+    result.pixelDataLength = dicomObj[index-1].elements.x7fe00010.length;
+
+    result.getPixelData = function() {};
 
     result.minPixelValue = 0;
     result.maxPixelValue = 4096;
