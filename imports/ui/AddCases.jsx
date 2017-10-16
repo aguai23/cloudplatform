@@ -4,7 +4,7 @@ import { browserHistory } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
 
-import { Col, Checkbox, Radio, Form, ButtonToolbar, Button, FormGroup, HelpBlock, FormControl, FieldGroup, ControlLabel, Nav, NavItem } from 'react-bootstrap';
+import { Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Modal} from 'react-bootstrap';
 import Gallery from 'react-fine-uploader';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
@@ -58,11 +58,13 @@ export default class AddCase extends Component {
       collectionId: Session.get('collectionId'),
       Case: {},
       oldCase: oldCase,
-      isUploadFinished: true
+      isUploadFinished: true,
+      showFilesList: false
     };
     this.onCaseChange = this.onCaseChange.bind(this);
     this.submitCases = this.submitCases.bind(this);
     this.modifyCase = this.modifyCase.bind(this);
+    this.changeModalState = this.changeModalState.bind(this);
   }
   componentDidMount() {
   }
@@ -138,9 +140,17 @@ export default class AddCase extends Component {
     })
   }
 
+  changeModalState(){
+    const showState = this.state.showFilesList
+    this.setState({
+      showFilesList : !showState
+    })
+  }
+
   render() {
     const wellStyles = { marginTop: '20px' };
-    const oldCase = this.state.oldCase
+    const oldCase = this.state.oldCase;
+    const filesList = oldCase ? oldCase.files : []
     return (
       <div className="container">
         <h3>{oldCase ? `修改${oldCase.name}病例` : '添加新病例'}</h3>
@@ -189,6 +199,11 @@ export default class AddCase extends Component {
                       </Col>
               <Col sm={6}>
                 <Gallery uploader={ this.uploader }/>
+              </Col>
+              <Col>
+              { oldCase &&
+                <Button onClick={this.changeModalState}>查看已上传图片</Button>
+              }
               </Col>
             </FormGroup>
           </div>
@@ -263,6 +278,24 @@ export default class AddCase extends Component {
             closeOnClick
             pauseOnHover
           />
+
+          <Modal show={this.state.showFilesList} onHide={this.changeModalState}>
+          <Modal.Header closeButton>
+            <Modal.Title>文件列表</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+          {filesList && 
+            filesList.map((file,index)=>{
+            return (
+            <p>{file.split('/')[3]}</p>
+            )
+          })
+          }
+          </Modal.Body>
+          <Modal.Footer>
+            <Button onClick={this.changeModalState}>Close</Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     )
   }
