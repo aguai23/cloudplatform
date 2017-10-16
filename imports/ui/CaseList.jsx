@@ -39,12 +39,23 @@ export class CaseList extends Component {
   }
 
   onClickViewImage(caseId, index) {
-    Meteor.call('getDicoms', caseId, index, (error, result) => {
+    Meteor.call('prepareDicoms', caseId, (error, result) => {
       if(error) {
         return console.log("error", error);
       }
 
-      // console.log("result", result);
+      if(result.status === 'SUCCESS') {
+        Meteor.call('getDicom', 1, (error, res) => {
+          if(error) {
+            return console.log("error", error);
+          }
+
+          var pixelDataElement = res.pixelData;
+          var pixelData = new Uint16Array(res.imageInfo.buffer, pixelDataElement.dataOffset, pixelDataElement.length/2);
+        });
+      }
+
+
     });
   }
 
