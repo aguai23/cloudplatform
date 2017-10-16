@@ -1,3 +1,8 @@
+/**
+ * Implement parser-related functions, that are responsible for
+ * parsing data form DICOM files on the server side
+ */
+
 import { Meteor } from 'meteor/meteor';
 
 import { Cases } from '../imports/api/cases';
@@ -8,37 +13,46 @@ var fs = require('fs');
 var dicomObj = {};
 
 Meteor.methods({
- prepareDicoms(caseId) {
-    console.log("caseId", caseId);
 
-    // console.log("dicomParser", dicomParser);
+  /**
+   * Parse all DICOMs that belongs to the requested case
+     @param caseId the id of requested caseId
+     @returns {status: FAILURE/SUCCESS}
+   */
+  prepareDicoms(caseId) {
+    var result = {status: 'FAILURE'};
+
+    /**
+     * get requested case
+     */
     var foundCase = Cases.findOne({_id: caseId});
 
-    // console.log("foundCase", foundCase);
-
-    for(var i = 0; i < foundCase.files.length; i++) {
-      var data = fs.readFileSync(foundCase.files[i]);
-
-
-        //buffer = new ArrayBuffer(data);
-        //byteArray = new Uint8Array(buffer);
-
+    /**
+     * parse all DICOMs and save
+     */
+    if(foundCase.files && foundCase.files.length > 0) {
+      for(var i = 0; i < foundCase.files.length; i++) {
+        var data = fs.readFileSync(foundCase.files[i]);
         var dataset = dicomParser.parseDicom(data);
         var index = parseInt(dataset.string('x00200013'));
 
-        // console.log("dataset", dataset);
-
         dicomObj[index-1] = dataset;
-    }
+      }
 
-    var result = {status: 'SUCCESS'};
+      result.status = "SUCCESS";
+    }
 
     return result;
 
   },
 
+  /**
+   * Get specific DICOM according to the request
+   * @param index index of the DICOM file
+   * @return {Object} contains the status and parsed information for the DICOM
+   */
   getDicom(index) {
-    if(!dicomObj[index-1])  return {status: 'FAILED'};
+    if(!dicomObj[index-1])  return {status: 'FAILURE'};
 
     var result = {};
 
