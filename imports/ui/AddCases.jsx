@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
-
+import { HTTP } from 'meteor/http'
 import { Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Modal} from 'react-bootstrap';
 import Gallery from 'react-fine-uploader';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
@@ -65,6 +65,7 @@ export default class AddCase extends Component {
     this.submitCases = this.submitCases.bind(this);
     this.modifyCase = this.modifyCase.bind(this);
     this.changeModalState = this.changeModalState.bind(this);
+    // this.deleteFile = this.deleteFile.bind(this);
   }
   componentDidMount() {
   }
@@ -144,6 +145,17 @@ export default class AddCase extends Component {
     const showState = this.state.showFilesList
     this.setState({
       showFilesList : !showState
+    })
+  }
+
+  deleteFile(id){
+    //TODO: refresh files list
+    HTTP.call("DELETE",`/delete/${id}`,(err,result)=>{
+      if(err){
+        toast.error(`somethings wrong${error.reason}`, {position: toast.POSITION.BOTTOM_RIGHT});
+      } else {
+        toast.success("图片删除成功", {position: toast.POSITION.BOTTOM_RIGHT});
+      }
     })
   }
 
@@ -287,7 +299,7 @@ export default class AddCase extends Component {
           {filesList && 
             filesList.map((file,index)=>{
             return (
-            <p>{file.split('/')[3]}</p>
+            <p>{file.split('/')[3]}<a onClick={this.deleteFile.bind(this,file.split('/')[2])}>删除</a></p>
             )
           })
           }
