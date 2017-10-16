@@ -7,9 +7,8 @@ var fs = require('fs');
 var dicomObj = {};
 
 Meteor.methods({
- prepareDicoms(caseId, index) {
+ prepareDicoms(caseId) {
     console.log("caseId", caseId);
-    console.log("index", index);
 
     // console.log("dicomParser", dicomParser);
     var foundCase = Cases.findOne({_id: caseId});
@@ -31,7 +30,7 @@ Meteor.methods({
         dicomObj[index-1] = dataset;
     }
 
-    var result = {status: "SUCCESS"};
+    var result = {status: 'SUCCESS'};
 
     return result;
 
