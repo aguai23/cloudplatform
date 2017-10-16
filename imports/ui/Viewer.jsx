@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor';
 import dicomParse from 'dicom-parser';
 import FS from 'fs'
 import cornerstone from 'cornerstone-core'
-
+import cornerstoneTools from 'cornerstone-tools'
 const style = {
   top: {
     height: '50px',
@@ -41,7 +41,7 @@ const style = {
     left: '0px',
     height: '100px',
     width: '100px',
-    backgroundColor: 'black'
+    // backgroundColor: 'black'
   },
   dicomInfo: {
     position: 'absolute',
@@ -49,7 +49,7 @@ const style = {
     right: '0px',
     height: '100px',
     width: '100px',
-    backgroundColor: 'orange'
+    // backgroundColor: 'orange'
   },
   number: {
     position: 'absolute',
@@ -57,7 +57,7 @@ const style = {
     left: '0px',
     height: '100px',
     width: '100px',
-    backgroundColor: 'black'
+    // backgroundColor: 'black'
   },
   timeInfo: {
     position: 'absolute',
@@ -65,59 +65,173 @@ const style = {
     right: '0px',
     height: '100px',
     width: '100px',
-    backgroundColor: 'orange'
+    // backgroundColor: 'orange'
   }
 
-}
+};
 
 export default class Viewer extends Component {
+    /**
+     * constructor, run at first
+     * @param props
+     */
   constructor(props) {
     super(props);
     this.state = {
-      container: {},
-      dicomObj: {}
-    }
-    // console.log(this.state.dicomObj)
+        container: {},
+        dicomObj: {},
+        index:1,
+        imageNumber:0
+
+    };
     this.setSlice = this.setSlice.bind(this);
+    this.increaseSlice = this.increaseSlice.bind(this);
+    this.decreaseSlice = this.decreaseSlice.bind(this);
+    this.setScrollTool = this.setScrollTool.bind(this);
+    this.setWindowTool = this.setWindowTool.bind(this);
+    this.setZoomTool = this.setZoomTool.bind(this);
+    this.setDrawTool = this.setDrawTool.bind(this);
   }
+
+    /**
+     * will run after elements rendered
+     */
   componentDidMount() {
-    cornerstone.enable(ReactDOM.findDOMNode(this.refs.viewerContainer))
+    cornerstone.enable(document.getElementById("viewer"));
     this.setState({
       container: ReactDOM.findDOMNode(this.refs.viewerContainer)
     });
-    let that = this;
-    Meteor.call('prepareDicoms', this.props.location.query.caseId, (error) => {
+    Meteor.call('prepareDicoms', this.props.location.query.caseId, (error, result) => {
       if (error) {
         console.log(error)
       } else {
-        that.setSlice(1)
+        if (result.status == "SUCCESS") {
+            this.setState({
+                imageNumber:result.imageNumber
+            });
+            this.setSlice(this.state.index);
+        }
+
       }
     })
   }
 
+    /**
+     * increase slice number
+     */
+  increaseSlice(){
+    if (this.state.index < this.state.imageNumber) {
+        this.setState({
+            index:this.state.index + 1
+        });
+        this.setSlice(this.state.index);
+    }
+  }
+
+    /**
+     * decrease slice number
+     */
+  decreaseSlice(){
+    if (this.state.index > 1) {
+        this.setState({
+            index:this.state.index - 1
+        });
+        this.setSlice(this.state.index);
+    }
+
+  }
+
+    /**
+     * set image slice
+     * @param index image index
+     */
   setSlice(index) {
-    // console.log(this.state.dicomObj)
     if (!this.state.dicomObj[index]) {
       Meteor.call('getDicom', index, (err, result) => {
         let image = result;
-        // console.log(image)
-
-        let pixelDataElement = image.pixelData;
         let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
         image.getPixelData = function(){
           return pixelData
-        }
+        };
         let currentObj = this.state.dicomObj
         currentObj[index] = image
         this.setState({
           dicomObj: currentObj
-        })
-        console.log(this.state.dicomObj)
+        });
         cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
       })
     } else {
       cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
     }
+  }
+
+    /**
+     * activate scroll tool, enable both mousewheel and mouse select
+     */
+  setScrollTool() {
+
+    let element = $("#viewer");
+    let self = this;
+    element.off();
+    element.bind("mousewheel", function (e) {
+        let event = window.event || e;
+        let up = event.wheelDelta > 0;
+        if (up) {
+          self.increaseSlice();
+        } else {
+          self.decreaseSlice();
+        }
+    });
+    let step = element.height() / this.state.imageNumber;
+    let startPoint = 0;
+    element.mousemove(function (e) {
+        if (e.which == 1) {
+            if (e.pageY - startPoint > step) {
+                self.increaseSlice();
+                startPoint = e.pageY;
+            } else if (e.pageY - startPoint < -step) {
+                self.decreaseSlice();
+                startPoint = e.pageY;
+            }
+        }
+    });
+  }
+
+    /**
+     * activate window width and window level function
+     */
+  setWindowTool() {
+    let element = $("#viewer");
+    element.off();
+    cornerstoneTools.mouseInput.enable(element);
+    cornerstoneTools.mouseWheelInput.enable(element);
+    cornerstoneTools.wwwc.activate(element,1);
+  }
+
+    /**
+     * activate zoom and pan function
+     */
+  setZoomTool() {
+    let element = $("#viewer");
+    element.off();
+    cornerstoneTools.mouseInput.enable(element);
+    cornerstoneTools.mouseWheelInput.enable(element);
+    cornerstoneTools.pan.activate(element,1);
+    cornerstoneTools.zoom.activate(element,4);
+    cornerstoneTools.zoomWheel.activate(element);
+  }
+
+    /**
+     * activate rectangle draw function
+     */
+  setDrawTool() {
+    let element = $("#viewer");
+    element.off();
+    element = this.state.container;
+    cornerstoneTools.mouseInput.enable(element);
+    cornerstoneTools.mouseWheelInput.enable(element);
+    cornerstoneTools.rectangleRoi.enable(element);
+    cornerstoneTools.rectangleRoi.activate(element, 1);
   }
 
   render() {
@@ -127,10 +241,10 @@ export default class Viewer extends Component {
           <Navbar inverse collapseOnSelect>
             <Navbar.Collapse>
               <Nav>
-                <NavItem eventKey={1} href="#">scroll</NavItem>
-                <NavItem eventKey={2} href="#">wl/wc</NavItem>
-                <NavItem eventKey={3} href="#">zoom/pan</NavItem>
-                <NavItem eventKey={4} href="#">draw</NavItem>
+                <NavItem eventKey={1} href="#" onClick={this.setScrollTool}>scroll</NavItem>
+                <NavItem eventKey={2} href="#" onClick={this.setWindowTool}>wl/wc</NavItem>
+                <NavItem eventKey={3} href="#" onClick={this.setZoomTool}>zoom/pan</NavItem>
+                <NavItem eventKey={4} href="#" onClick={this.setDrawTool}>draw</NavItem>
               </Nav>
             </Navbar.Collapse>
           </Navbar>

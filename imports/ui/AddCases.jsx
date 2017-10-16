@@ -69,7 +69,7 @@ export default class AddCase extends Component {
 
   onCaseChange(input) {
     const { Case } = this.state;
-    Case[input.target.id] = input.target.value
+    Case[input.target.id] = input.target.value;
     if (input.target.id === 'age' && input.target.value <= 0) {
       toast.error("年龄错误", {position: toast.POSITION.BOTTOM_RIGHT});
       return;

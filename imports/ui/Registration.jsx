@@ -1,16 +1,9 @@
 import { Meteor } from 'meteor/meteor';
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
-
 import { Accounts } from 'meteor/accounts-base';
-
 import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
-
-import Header from './Header';
-import Footer from './Footer';
-
 
 const styles = {
   loginBox: {
@@ -31,13 +24,13 @@ const styles = {
   linkAlreadyHaveAccount: {
     fontSize: '12px'
   }
-}
+};
 
 validateEmail = function() {
   var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   console.log(re.test(this.emailInput.value));
   return re.test(this.emailInput.value);
-}
+};
 
 export default class Registration extends Component {
   constructor(props) {
@@ -45,7 +38,6 @@ export default class Registration extends Component {
   }
 
   register = function() {
-    // console.log('register()');
 
     if(this.emailInput.value === undefined || this.emailInput.value === "") {
       toast.warning("注册失败：Email不能为空");
@@ -76,13 +68,10 @@ export default class Registration extends Component {
         return console.log("Registration Failed. " + error);
       }
 
-      // console.log(Meteor.user());
-
       localStorage.setItem('userInfo', JSON.stringify(Meteor.user()));
-
       browserHistory.push('/datasets');
     });
-  }
+  };
 
   render() {
     return (

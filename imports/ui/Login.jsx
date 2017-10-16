@@ -1,9 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
-
-import { Accounts } from 'meteor/accounts-base';
-
 import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 
