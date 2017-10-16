@@ -91,8 +91,8 @@ export default class Login extends Component {
         <ToastContainer
             position="top-center"
             type="info"
-            autoClose={5000}
-            hideProgressBar={false}
+            autoClose={2000}
+            hideProgressBar={true}
             newestOnTop={false}
             closeOnClick
             pauseOnHover

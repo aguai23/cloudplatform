@@ -8,7 +8,6 @@ import ReactDOM from 'react-dom';
 import { Button, ButtonToolbar, DropdownButton, FormControl, FormGroup, MenuItem, Nav, NavItem, SplitButton } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.min.css';
 
 import AccountsWrapper from './AccountsWrapper';
 import AccountState from './AccountState'
