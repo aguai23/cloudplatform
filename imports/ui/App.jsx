@@ -1,5 +1,8 @@
+import { Meteor } from 'meteor/meteor'
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { browserHistory } from 'react-router';
+import { ToastContainer, toast } from 'react-toastify';
 
 import Header from './Header';
 import Footer from './Footer';
@@ -14,6 +17,13 @@ const styles = {
 export default class App extends Component {
   constructor(props) {
     super(props);
+  }
+
+  componentDidMount() {
+    if(!Meteor.userId()) {
+      browserHistory.replace('/login');
+      toast.warning("请先登录再进行操作");
+    }
   }
 
   render() {

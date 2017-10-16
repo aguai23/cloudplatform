@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { Button, Navbar, NavItem, Nav, NavDropdown, MenuItem, Jumbotron } from 'react-bootstrap';
 import { Meteor } from 'meteor/meteor';
-import dicomParse from 'dicom-parser';
-import FS from 'fs'
-import cornerstone from 'cornerstone-core'
+import cornerstone from 'cornerstone-core';
 
 const style = {
   top: {

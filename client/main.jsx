@@ -29,7 +29,7 @@ Meteor.startup(() => {
       <Route path="viewer" component={Viewer}></Route>
       <Route path="login" component={Login}></Route>
       <Route path="registration" component={Registration}></Route>
-      <Route path="*" component={Login}></Route>
+      <Redirect from="*" to="/login" />
     </Router>
 ), document.getElementById('render-target'));
 });
