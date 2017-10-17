@@ -99,6 +99,7 @@ export default class Viewer extends Component {
     this.setWindowTool = this.setWindowTool.bind(this);
     this.setZoomTool = this.setZoomTool.bind(this);
     this.setDrawTool = this.setDrawTool.bind(this);
+    this.resetViewport = this.resetViewport.bind(this);
     this.disableAllTools = this.disableAllTools.bind(this);
   }
 
@@ -116,12 +117,14 @@ export default class Viewer extends Component {
 
         this.setState({
             container: document.getElementById("viewer")
-        }, (err, result) => {
+        }, (err) => {
             if (err) {
-                console.log(err);
+              return console.log(err);
             }
+
             cornerstone.enable(document.getElementById("viewer"));
         });
+
 
         Meteor.call('prepareDicoms', this.props.location.query.caseId, (error, result) => {
 
@@ -183,7 +186,12 @@ export default class Viewer extends Component {
             this.setState({
               dicomObj: currentObj
             });
-            cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
+
+            var viewport = {};
+            if(index === 1) {
+              viewport.scale = 1.0;
+            }
+            cornerstone.displayImage(this.state.container, this.state.dicomObj[index], viewport);
           })
         } else {
           cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
@@ -235,6 +243,15 @@ export default class Viewer extends Component {
      */
   setZoomTool() {
     this.disableAllTools();
+
+    var config = {
+        // invert: true,
+        minScale: 0.25,
+        maxScale: 20.0,
+        preventZoomOutsideImage: true
+    };
+    cornerstoneTools.zoom.setConfiguration(config);
+
     let element = this.state.container;
     cornerstoneTools.pan.activate(element,1);
     cornerstoneTools.zoom.activate(element,4);
@@ -248,6 +265,17 @@ export default class Viewer extends Component {
         this.disableAllTools();
         cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
     }
+
+    /**
+     * reset viewport to default state
+     */
+    resetViewport() {
+      let canvas = $('#viewer canvas').get(0);
+      let enabledElement = cornerstone.getEnabledElement(this.state.container);
+      let viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image);
+      viewport.scale = 1.0;
+      cornerstone.setViewport(this.state.container, viewport);
+     }
 
     /**
      * disable tools
@@ -295,6 +323,12 @@ export default class Viewer extends Component {
                     <FontAwesome name='square-o' size='2x'/>
                   </div>
                   <span>draw</span>
+                </NavItem>
+                <NavItem eventKey={5} href="#" onClick={this.resetViewport}>
+                  <div>
+                    <FontAwesome name='refresh' size='2x'/>
+                  </div>
+                  <span>reset</span>
                 </NavItem>
               </Nav>
             </Navbar.Collapse>
