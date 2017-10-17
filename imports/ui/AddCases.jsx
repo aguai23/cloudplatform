@@ -8,6 +8,7 @@ import { Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Mo
 import Gallery from 'react-fine-uploader';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
+import { withTracker } from 'meteor/react-meteor-data';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 import 'react-fine-uploader/gallery/gallery.css';
@@ -15,13 +16,11 @@ import 'react-fine-uploader/gallery/gallery.css';
 var isUploadFinished = true,
   imageArray = [];
 
-export default class AddCase extends Component {
+export class AddCase extends Component {
   constructor(props) {
     super(props);
-    const oldCase = Cases.findOne({ _id: this.props.location.query.id });
-
     var that = this;
-
+    const oldCase = Cases.findOne({ _id: props.location.query.id });
     this.uploader = new FineUploaderTraditional({
       options: {
         chunking: {
@@ -55,7 +54,7 @@ export default class AddCase extends Component {
     });
 
     this.state = {
-      collectionId: Session.get('collectionId'),
+      collectionId: this.props.location.query.collection,
       Case: {},
       oldFileList: oldCase ? oldCase.files : [],
       oldCase: oldCase,
@@ -71,17 +70,41 @@ export default class AddCase extends Component {
   componentDidMount() {
   }
 
-  onCaseChange(input) {
-    const { Case } = this.state;
-    Case[input.target.id] = input.target.value;
-    if (input.target.id === 'age' && input.target.value <= 0) {
-      toast.error("年龄错误", { position: toast.POSITION.BOTTOM_RIGHT });
-      return;
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.case !== this.state.oldCase) {
+      this.setState({
+        oldCase: nextProps.case,
+        oldFileList: nextProps.case.files
+      });
     }
-    this.setState({
-      Case
-    })
+  }
 
+  onCaseChange(input) {
+    if (this.state.oldCase) {
+      const { oldCase } = this.state;
+      if (['age', 'gender', 'source', 'description'].indexOf(input.target.id) < 0) {
+        oldCase[input.target.id] = input.target.value;
+      } else {
+        if (input.target.id === 'age' && input.target.value < 0) {
+          toast.error("年龄错误", { position: toast.POSITION.BOTTOM_RIGHT });
+          return;
+        }
+        oldCase.profile[input.target.id] = input.target.value
+      }
+      this.setState({
+        oldCase
+      })
+    } else {
+      const { Case } = this.state;
+      Case[input.target.id] = input.target.value;
+      if (input.target.id === 'age' && input.target.value < 0) {
+        toast.error("年龄错误", { position: toast.POSITION.BOTTOM_RIGHT });
+        return;
+      }
+      this.setState({
+        Case
+      })
+    }
   }
 
   submitCases(event) {
@@ -108,7 +131,7 @@ export default class AddCase extends Component {
           description: Case.description
         },
         createAt: Case.createAt,
-        collectionId: this.state.collectionId ? this.state.collectionId : 'test',
+        collectionId: this.state.collectionId,
         ownerId: Meteor.userId(),
       }
       Meteor.call('insertCase', standardCase, (error) => {
@@ -124,16 +147,9 @@ export default class AddCase extends Component {
 
   modifyCase(event) {
     event.preventDefault();
-    //遍历Case
-    const newCase = this.state.oldCase
-    for (let key in this.state.Case) {
-      if (['gender', 'age', 'source', 'description'].indexOf(key) < 0) {
-        newCase[key] = this.state.Case[key]
-      } else {
-        newCase.profile[key] = this.state.Case[key]
-      }
-    }
-    Meteor.call('modifyCase', newCase, (error) => {
+    let oldCase = this.state.oldCase;
+    oldCase.files = oldCase.files.concat(imageArray);
+    Meteor.call('modifyCase', oldCase, (error) => {
       if (error) {
         toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
       } else {
@@ -177,12 +193,13 @@ export default class AddCase extends Component {
 
   render() {
     const wellStyles = { marginTop: '20px' };
-    const toastStyle= { zIndex: 1999 };
-    const oldCase = this.state.oldCase;
+    const toastStyle = { zIndex: 1999 };
     const filesList = this.state.oldFileList;
+    const oldCase = this.state.oldCase;
+    const Case = this.state.Case;
     return (
       <div className="container">
-        <h3>{oldCase ? `修改${oldCase.name}病例` : '添加新病例'}</h3>
+        <h3>{oldCase ? `修改病例` : '添加新病例'}</h3>
         <Form horizontal>
           <div className="well" style={wellStyles}>
             <FormGroup controlId="name">
@@ -190,7 +207,7 @@ export default class AddCase extends Component {
                 病例名称
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.name} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.name : Case.name} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -199,7 +216,7 @@ export default class AddCase extends Component {
                 种类
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.type} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.type : Case.type} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -208,7 +225,7 @@ export default class AddCase extends Component {
                 类别
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.class} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.class : Case.class} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -217,7 +234,7 @@ export default class AddCase extends Component {
                 标签
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.label} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.label : Case.label} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
           </div>
@@ -231,7 +248,7 @@ export default class AddCase extends Component {
               </Col>
               <Col>
                 {oldCase &&
-                  <Button onClick={this.changeModalState}>查看已上传图片</Button>
+                  <Button onClick={this.changeModalState}>查看已有图片</Button>
                 }
               </Col>
             </FormGroup>
@@ -244,7 +261,7 @@ export default class AddCase extends Component {
                 年龄
                       </Col>
               <Col sm={2}>
-                <FormControl defaultValue={oldCase && oldCase.profile.age} onChange={this.onCaseChange} type="number" />
+                <FormControl value={oldCase ? oldCase.profile.age : Case.age} onChange={this.onCaseChange} type="number" />
               </Col>
             </FormGroup>
 
@@ -253,8 +270,8 @@ export default class AddCase extends Component {
                 性别
                       </Col>
               <Col sm={6}>
-                <Radio defaultChecked={oldCase && oldCase.profile.gender === 'male'} onClick={this.onCaseChange} id="gender" name="gender" value="male" inline>男</Radio>{' '}
-                <Radio defaultChecked={oldCase && oldCase.profile.gender === 'female'} onClick={this.onCaseChange} id="gender" name="gender" value="female" inline>女</Radio>{' '}
+                <Radio checked={oldCase ? oldCase.profile.gender === 'male' : Case.gender === 'male'} onChange={this.onCaseChange} id="gender" name="gender" value="male" inline>男</Radio>{' '}
+                <Radio checked={oldCase ? oldCase.profile.gender === 'female' : Case.gender === 'female'} onChange={this.onCaseChange} id="gender" name="gender" value="female" inline>女</Radio>{' '}
               </Col>
             </FormGroup>
 
@@ -263,7 +280,7 @@ export default class AddCase extends Component {
                 来源
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.profile.source} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.profile.source : Case.source} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -272,7 +289,7 @@ export default class AddCase extends Component {
                 描述
                       </Col>
               <Col sm={6}>
-                <FormControl defaultValue={oldCase && oldCase.profile.description} onChange={this.onCaseChange} componentClass="textarea" />
+                <FormControl value={oldCase ? oldCase.profile.description : Case.description} onChange={this.onCaseChange} componentClass="textarea" />
               </Col>
             </FormGroup>
 
@@ -281,7 +298,7 @@ export default class AddCase extends Component {
                 创建时间
                       </Col>
               <Col sm={6}>
-                <input defaultValue={oldCase && oldCase.createAt} id="createAt" type="date" onChange={this.onCaseChange} />
+                <input value={oldCase ? oldCase.createAt : Case.createAt} id="createAt" type="date" onChange={this.onCaseChange} />
               </Col>
             </FormGroup>
 
@@ -317,7 +334,7 @@ export default class AddCase extends Component {
             {filesList &&
               filesList.map((file, index) => {
                 return (
-                  <p>{file}<a onClick={this.deleteFile.bind(this, file)}>删除</a></p>
+                  <p key={file}>{file}<a onClick={this.deleteFile.bind(this, file)}>删除</a></p>
                 )
               })
             }
@@ -334,3 +351,10 @@ export default class AddCase extends Component {
 AddCase.contextTypes = {
   router: React.PropTypes.object
 }
+
+export default withTracker(props => {
+  const handle = Meteor.subscribe('cases');
+  return {
+    case: Cases.findOne({ _id: props.location.query.id }),
+  }
+})(AddCase);

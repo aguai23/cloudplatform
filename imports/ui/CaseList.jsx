@@ -79,14 +79,12 @@ export class CaseList extends Component {
 
   render() {
     const that = this;
-    const newTo = { pathname: "/newCase"};
-
     return (
       <div>
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
-            <Link to={newTo}>新建</Link>
+            <Link to={`/newCase?collection=${this.props.params.caseId}`}>新建</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>
