@@ -13,7 +13,7 @@ export class CaseList extends Component {
     super(props);
 
     this.state = {
-      cases: Cases.find({}).fetch()
+      cases: Cases.find({collectionId: this.props.params.caseId}).fetch()
     };
 
     this.searchCase = this.searchCase.bind(this);
@@ -39,7 +39,7 @@ export class CaseList extends Component {
   }
 
   onClickViewImage(caseId, index) {
-    browserHistory.push(`viewer?caseId=${caseId}`)
+    browserHistory.push(`/viewer?caseId=${caseId}`)
     // Meteor.call('prepareDicoms', caseId, (error, result) => {
     //   if(error) {
     //     return console.log("error", error);
@@ -150,7 +150,7 @@ export default withTracker(props => {
   //cases should be modified as follows later
   //cases: Cases.find({collectionId: collectionId}).fetch()
   return {
-    cases: Cases.find({}).fetch(),
+    cases: Cases.find({collectionId: props.params.caseId}).fetch(),
     listLoading: !handle.ready()
   }
 })(CaseList);
