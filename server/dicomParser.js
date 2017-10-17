@@ -42,6 +42,7 @@ Meteor.methods({
       }
 
       result.status = "SUCCESS";
+      result.imageNumber = foundCase.files.length;
     }
 
     return result;

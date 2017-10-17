@@ -99,43 +99,53 @@ export default class Viewer extends Component {
     this.setWindowTool = this.setWindowTool.bind(this);
     this.setZoomTool = this.setZoomTool.bind(this);
     this.setDrawTool = this.setDrawTool.bind(this);
+    this.disableAllTools = this.disableAllTools.bind(this);
   }
 
     /**
      * will run after elements rendered
      */
-  componentDidMount() {
-    /**
-     * set the dynamic height for container
-     */
-    this.setState({
-      containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px'
-    });
+    componentDidMount() {
 
-    cornerstone.enable(document.getElementById("viewer"));
-    this.setState({
-      container: ReactDOM.findDOMNode(this.refs.viewerContainer)
-    });
-    Meteor.call('prepareDicoms', this.props.location.query.caseId, (error, result) => {
-      if (error) {
-        console.log(error)
-      } else {
-        if (result.status == "SUCCESS") {
-            this.setState({
-                imageNumber:result.imageNumber
-            });
-            this.setSlice(this.state.index);
-        }
+      /**
+       * set the dynamic height for container
+       */
+      this.setState({
+        containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px'
+      });
 
-      }
-    })
-  }
+        this.setState({
+            container: document.getElementById("viewer")
+        }, (err, result) => {
+            if (err) {
+                console.log(err);
+            }
+            cornerstone.enable(document.getElementById("viewer"));
+        });
+
+        Meteor.call('prepareDicoms', this.props.location.query.caseId, (error, result) => {
+
+            if (error) {
+                console.log(error)
+            } else {
+                if (result.status == "SUCCESS") {
+                    this.setState({
+                        imageNumber:result.imageNumber
+                    });
+                    this.setSlice(this.state.index);
+                }
+
+            }
+        });
+
+
+    }
 
     /**
      * increase slice number
      */
   increaseSlice(){
-    if (this.state.index < this.state.imageNumber) {
+      if (this.state.index < this.state.imageNumber) {
         this.setState({
             index:this.state.index + 1
         });
@@ -161,23 +171,23 @@ export default class Viewer extends Component {
      * @param index image index
      */
   setSlice(index) {
-    if (!this.state.dicomObj[index]) {
-      Meteor.call('getDicom', index, (err, result) => {
-        let image = result;
-        let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-        image.getPixelData = function(){
-          return pixelData
-        };
-        let currentObj = this.state.dicomObj
-        currentObj[index] = image
-        this.setState({
-          dicomObj: currentObj
-        });
-        cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
-      })
-    } else {
-      cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
-    }
+        if (!this.state.dicomObj[index]) {
+          Meteor.call('getDicom', index, (err, result) => {
+            let image = result;
+            let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+            image.getPixelData = function(){
+              return pixelData
+            };
+            let currentObj = this.state.dicomObj
+            currentObj[index] = image
+            this.setState({
+              dicomObj: currentObj
+            });
+            cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
+          })
+        } else {
+          cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
+        }
   }
 
     /**
@@ -187,7 +197,7 @@ export default class Viewer extends Component {
 
     let element = $("#viewer");
     let self = this;
-    element.off();
+    this.disableAllTools();
     element.bind("mousewheel", function (e) {
         let event = window.event || e;
         let up = event.wheelDelta > 0;
@@ -215,22 +225,17 @@ export default class Viewer extends Component {
     /**
      * activate window width and window level function
      */
-  setWindowTool() {
-    let element = $("#viewer");
-    element.off();
-    cornerstoneTools.mouseInput.enable(element);
-    cornerstoneTools.mouseWheelInput.enable(element);
-    cornerstoneTools.wwwc.activate(element,1);
-  }
+    setWindowTool() {
+        this.disableAllTools();
+        cornerstoneTools.wwwc.activate(this.state.container,1);
+    }
 
     /**
      * activate zoom and pan function
      */
   setZoomTool() {
-    let element = $("#viewer");
-    element.off();
-    cornerstoneTools.mouseInput.enable(element);
-    cornerstoneTools.mouseWheelInput.enable(element);
+    this.disableAllTools();
+    let element = this.state.container;
     cornerstoneTools.pan.activate(element,1);
     cornerstoneTools.zoom.activate(element,4);
     cornerstoneTools.zoomWheel.activate(element);
@@ -239,15 +244,26 @@ export default class Viewer extends Component {
     /**
      * activate rectangle draw function
      */
-  setDrawTool() {
-    let element = $("#viewer");
-    element.off();
-    element = this.state.container;
-    cornerstoneTools.mouseInput.enable(element);
-    cornerstoneTools.mouseWheelInput.enable(element);
-    cornerstoneTools.rectangleRoi.enable(element);
-    cornerstoneTools.rectangleRoi.activate(element, 1);
-  }
+    setDrawTool() {
+        this.disableAllTools();
+        cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
+    }
+
+    /**
+     * disable tools
+     */
+    disableAllTools() {
+        let element = $("#viewer");
+        element.off("mousewheel");
+        element.off("mousemove");
+        cornerstoneTools.mouseInput.enable(this.state.container);
+        cornerstoneTools.mouseWheelInput.enable(this.state.container);
+        cornerstoneTools.rectangleRoi.deactivate(this.state.container,1);
+        cornerstoneTools.wwwc.deactivate(this.state.container,1);
+        cornerstoneTools.pan.deactivate(this.state.container,1);
+        cornerstoneTools.zoom.deactivate(this.state.container,4);
+        cornerstoneTools.zoomWheel.deactivate(this.state.container);
+    }
 
   render() {
     return (
