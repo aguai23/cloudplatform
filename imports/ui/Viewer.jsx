@@ -146,23 +146,23 @@ export default class Viewer extends Component {
      * @param index image index
      */
   setSlice(index) {
-    if (!this.state.dicomObj[index]) {
-      Meteor.call('getDicom', index, (err, result) => {
-        let image = result;
-        let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-        image.getPixelData = function(){
-          return pixelData
-        };
-        let currentObj = this.state.dicomObj
-        currentObj[index] = image
-        this.setState({
-          dicomObj: currentObj
-        });
-        cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
-      })
-    } else {
-      cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
-    }
+        if (!this.state.dicomObj[index]) {
+          Meteor.call('getDicom', index, (err, result) => {
+            let image = result;
+            let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+            image.getPixelData = function(){
+              return pixelData
+            };
+            let currentObj = this.state.dicomObj
+            currentObj[index] = image
+            this.setState({
+              dicomObj: currentObj
+            });
+            cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
+          })
+        } else {
+          cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
+        }
   }
 
     /**

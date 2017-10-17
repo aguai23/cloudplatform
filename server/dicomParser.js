@@ -42,6 +42,7 @@ Meteor.methods({
       }
 
       result.status = "SUCCESS";
+      result.imageNumber = foundCase.files.length;
     }
 
     return result;
@@ -60,6 +61,7 @@ Meteor.methods({
     var result = {};
     result.imageId = caseid + "#" + index;
     result.status = 'SUCCESS';
+    result
 
     result.imageBuf = dicomObj[userId][index-1].byteArray;
     result.pixelDataOffset = dicomObj[userId][index-1].elements.x7fe00010.dataOffset;
