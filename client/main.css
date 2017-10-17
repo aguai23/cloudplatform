@@ -35,7 +35,8 @@ html {
 }
 
 body {
-  min-height: 100%
+  min-height: 100%,inherit;
+  font-family: 'Roboto', 'OpenSans', 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', 'Helvetica', 'Arial', 'Lucida Grande', 'sans-serif';
 }
 
 #render-target {

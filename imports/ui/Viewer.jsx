@@ -8,6 +8,7 @@ import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import FontAwesome from 'react-fontawesome';
 
+
 const style = {
     body: {
         backgroundColor: 'black',
@@ -41,37 +42,53 @@ const style = {
         position: 'relative',
         margin: '0 auto'
     },
+    textInfo: {
+        color: '#91b9cd',
+        fontSize: '14px',
+        fontWeight: '400'
+    },
     patientInfo: {
         position: 'absolute',
         top: '0px',
-        left: '0px',
+        left: '15px',
         height: '100px',
-        width: '100px',
+        width: '250px',
         color: 'white'
     },
     dicomInfo: {
         position: 'absolute',
         bottom: '0px',
-        right: '0px',
+        right: '25px',
         height: '50px',
         width: '200px',
-        color: 'white'
+        color: 'white',
+        marginBottom: '-20px'
     },
     sliceInfo: {
         position: 'absolute',
         bottom: '0px',
-        left: '0px',
-        height: '100px',
+        left: '15px',
+        height: '50px',
         width: '100px',
-        color: 'white'
+        color: 'white',
+        marginBottom: '-20px'
     },
     timeInfo: {
         position: 'absolute',
         top: '0px',
-        right: '0px',
+        right: '10px',
         height: '100px',
-        width: '100px',
+        width: '200px',
         color: 'white'
+    },
+    scrollBar: {
+      width:'10px',
+      height: '40px',
+      backgroundColor: '#9ccef9',
+      position: 'absolute',
+      right: '0',
+      top: '0',
+      borderRadius: '4px'
     }
 
 };
@@ -87,7 +104,13 @@ export default class Viewer extends Component {
             container: {},
             dicomObj: {},
             index:1,
-            imageNumber:0
+            imageNumber:0,
+            zoomScale: 0,
+            voi: {
+              windowCenter: 0,
+              windowWidth: 0
+            },
+            dateTime: new Date().toLocaleString()
 
         };
         this.setSlice = this.setSlice.bind(this);
@@ -124,6 +147,11 @@ export default class Viewer extends Component {
             cornerstone.enable(document.getElementById("viewer"));
         });
 
+        window.setInterval(() => {
+          this.setState({
+            dateTime: new Date().toLocaleString()
+          });
+        });
 
         Meteor.call('prepareDicoms', this.props.location.query.caseId, (error, result) => {
 
@@ -155,13 +183,13 @@ export default class Viewer extends Component {
      */
     updateInfo(e) {
         let viewport = cornerstone.getViewport(e.target);
-        $("#dicomInfo").text("WW/WC: " + Math.round(viewport.voi.windowWidth) +
-            "/" + Math.round(viewport.voi.windowCenter) + "\n" +
-            "Zoom： " + viewport.scale.toFixed(2));
-        $('#patientInfo').text("patient name: " + this.state.patientName + "\n" +
-        "patient Id: " + this.state.patientId);
-        $('#sliceInfo').text("slice: " + this.state.index + "/" + this.state.imageNumber);
-        $('#timeInfo').text(new Date().toLocaleString());
+        this.setState({
+          voi: {
+            windowWidth: viewport.voi.windowWidth,
+            windowCenter: viewport.voi.windowCenter
+          },
+          zoomScale: viewport.scale.toFixed(2)
+        });
     }
 
     /**
@@ -314,6 +342,7 @@ export default class Viewer extends Component {
     }
 
   render() {
+    // style={{color: '#9ccef9'}}
     return (
       <div id="body" style={style.body}>
         <div id="top" style={style.top}>
@@ -322,9 +351,11 @@ export default class Viewer extends Component {
               <Nav>
                 <NavItem eventKey={1} href="#" onClick={this.setScrollTool}>
                   <div>
-                    <FontAwesome name='gear' size='2x'/>
+                    <div>
+                      <FontAwesome name='gear' size='2x'/>
+                    </div>
+                    <span>scroll</span>
                   </div>
-                  <span>scroll</span>
                 </NavItem>
                 <NavItem eventKey={2} href="#" onClick={this.setWindowTool}>
                   <div>
@@ -355,16 +386,31 @@ export default class Viewer extends Component {
           </Navbar>
         </div>
         <div style={{...style.container, ...{height: this.state.containerHeight}}} className="container">
+          <div style={style.scrollBar} onMouseDown={(e)=>console.log(e)}></div>
           <div style={style.viewer} ref="viewerContainer" id="viewer" >
-            <div style={style.patientInfo} id="patientInfo"></div>
-            <div style={style.dicomInfo} id="dicomInfo"></div>
-            <div style={style.number} id="number"></div>
-            <div style={style.timeInfo} id="timeInfo"></div>
+            <div style={{...style.patientInfo, ...style.textInfo}} id="patientInfo">
+              <div>
+                <span>Patient name: {this.state.patientName}</span>
+                <br/>
+                <span>Patient id: {this.state.patientId}</span>
+              </div>
+            </div>
+            <div style={{...style.dicomInfo, ...style.textInfo}} id="dicomInfo">
+              <span className="pull-right">WW/WC: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
+              <br/>
+              <span className="pull-right">Zoom: {this.state.zoomScale}</span>
+            </div>
+            <div style={{...style.sliceInfo, ...style.textInfo}} id="sliceInfo">
+              <span style={{position: 'absolute', bottom: '10px'}}>{this.state.index}/{this.state.imageNumber}</span>
+            </div>
+            <div style={{...style.timeInfo, ...style.textInfo}} id="timeInfo">
+              <span className="pull-right">{this.state.dateTime}</span>
+            </div>
           </div>
         </div>
 
-                <div style={style.bottom}></div>
-            </div>
-        )
-    }
+        <div style={style.bottom}></div>
+      </div>
+    )
+  }
 }
