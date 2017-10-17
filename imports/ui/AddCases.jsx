@@ -106,6 +106,7 @@ export default class AddCase extends Component {
           source: Case.source,
           description: Case.description
         },
+        createAt: Case.createAt,
         collectionId: this.state.collectionId ? this.state.collectionId : 'test',
         ownerId: Meteor.userId(),
       }
