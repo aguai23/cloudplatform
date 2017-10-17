@@ -89,18 +89,6 @@ export default class Viewer extends Component {
             index:1,
             imageNumber:0
 
-<<<<<<< HEAD
-    this.setSlice = this.setSlice.bind(this);
-    this.increaseSlice = this.increaseSlice.bind(this);
-    this.decreaseSlice = this.decreaseSlice.bind(this);
-    this.setScrollTool = this.setScrollTool.bind(this);
-    this.setWindowTool = this.setWindowTool.bind(this);
-    this.setZoomTool = this.setZoomTool.bind(this);
-    this.setDrawTool = this.setDrawTool.bind(this);
-    this.resetViewport = this.resetViewport.bind(this);
-    this.disableAllTools = this.disableAllTools.bind(this);
-  }
-=======
         };
         this.setSlice = this.setSlice.bind(this);
         this.increaseSlice = this.increaseSlice.bind(this);
@@ -109,10 +97,10 @@ export default class Viewer extends Component {
         this.setWindowTool = this.setWindowTool.bind(this);
         this.setZoomTool = this.setZoomTool.bind(this);
         this.setDrawTool = this.setDrawTool.bind(this);
+        this.resetViewport = this.resetViewport.bind(this);
         this.disableAllTools = this.disableAllTools.bind(this);
         this.updateInfo = this.updateInfo.bind(this);
     }
->>>>>>> 8ad0b90bda97b20223fd938761c6ce1f60b6bd9e
 
     /**
      * will run after elements rendered
@@ -207,7 +195,6 @@ export default class Viewer extends Component {
      */
     setSlice(index) {
         if (!this.state.dicomObj[index]) {
-<<<<<<< HEAD
           Meteor.call('getDicom', index, (err, result) => {
             let image = result;
             let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
@@ -225,22 +212,7 @@ export default class Viewer extends Component {
               viewport.scale = 1.0;
             }
             cornerstone.displayImage(this.state.container, this.state.dicomObj[index], viewport);
-          })
-=======
-            Meteor.call('getDicom', index, (err, result) => {
-                let image = result;
-                let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-                image.getPixelData = function(){
-                    return pixelData
-                };
-                let currentObj = this.state.dicomObj
-                currentObj[index] = image
-                this.setState({
-                    dicomObj: currentObj
-                });
-                cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
-            })
->>>>>>> 8ad0b90bda97b20223fd938761c6ce1f60b6bd9e
+          });
         } else {
             cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
         }
