@@ -9,6 +9,8 @@
     "bcrypt": "^1.0.2",
     "chart.js": "^2.6.0",
     "cornerstone-core": "^0.12.2",
+    "cornerstone-tools": "^0.9.1",
+    "dicom-parser": "^1.7.5",
     "express": "^4.16.2",
     "fine-uploader": "^5.15.0",
     "fine-uploader-wrappers": "^1.0.1",

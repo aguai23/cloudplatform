@@ -29,3 +29,15 @@
   -webkit-tap-highlight-color: transparent;
   will-change: opacity, transform;
 }
+
+html {
+  height: 100%
+}
+
+body {
+  min-height: 100%
+}
+
+#render-target {
+  height: 100vh
+}
