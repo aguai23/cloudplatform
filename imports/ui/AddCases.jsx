@@ -55,7 +55,18 @@ export class AddCase extends Component {
 
     this.state = {
       collectionId: this.props.location.query.collection,
-      Case: {},
+      Case: {
+        name: undefined,
+        type: undefined,
+        class: undefined,
+        label: undefined,
+        files: undefined,
+        gender: undefined,
+        age: undefined,
+        source: undefined,
+        description: undefined,
+        createAt: undefined,
+      },
       oldFileList: oldCase ? oldCase.files : [],
       oldCase: oldCase,
       isUploadFinished: true,
