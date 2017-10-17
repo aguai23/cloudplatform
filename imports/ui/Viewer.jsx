@@ -97,6 +97,7 @@ export default class Viewer extends Component {
         this.setWindowTool = this.setWindowTool.bind(this);
         this.setZoomTool = this.setZoomTool.bind(this);
         this.setDrawTool = this.setDrawTool.bind(this);
+        this.resetViewport = this.resetViewport.bind(this);
         this.disableAllTools = this.disableAllTools.bind(this);
         this.updateInfo = this.updateInfo.bind(this);
     }
@@ -115,12 +116,14 @@ export default class Viewer extends Component {
 
         this.setState({
             container: document.getElementById("viewer")
-        }, (err, result) => {
+        }, (err) => {
             if (err) {
-                console.log(err);
+              return console.log(err);
             }
+
             cornerstone.enable(document.getElementById("viewer"));
         });
+
 
         Meteor.call('prepareDicoms', this.props.location.query.caseId, (error, result) => {
 
@@ -192,19 +195,24 @@ export default class Viewer extends Component {
      */
     setSlice(index) {
         if (!this.state.dicomObj[index]) {
-            Meteor.call('getDicom', index, (err, result) => {
-                let image = result;
-                let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-                image.getPixelData = function(){
-                    return pixelData
-                };
-                let currentObj = this.state.dicomObj
-                currentObj[index] = image
-                this.setState({
-                    dicomObj: currentObj
-                });
-                cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
-            })
+          Meteor.call('getDicom', index, (err, result) => {
+            let image = result;
+            let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+            image.getPixelData = function(){
+              return pixelData
+            };
+            let currentObj = this.state.dicomObj
+            currentObj[index] = image
+            this.setState({
+              dicomObj: currentObj
+            });
+
+            var viewport = {};
+            if(index === 1) {
+              viewport.scale = 1.0;
+            }
+            cornerstone.displayImage(this.state.container, this.state.dicomObj[index], viewport);
+          });
         } else {
             cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
         }
@@ -253,13 +261,22 @@ export default class Viewer extends Component {
     /**
      * activate zoom and pan function
      */
-    setZoomTool() {
-        this.disableAllTools();
-        let element = this.state.container;
-        cornerstoneTools.pan.activate(element,1);
-        cornerstoneTools.zoom.activate(element,4);
-        cornerstoneTools.zoomWheel.activate(element);
-    }
+  setZoomTool() {
+    this.disableAllTools();
+
+    var config = {
+        // invert: true,
+        minScale: 0.25,
+        maxScale: 20.0,
+        preventZoomOutsideImage: true
+    };
+    cornerstoneTools.zoom.setConfiguration(config);
+
+    let element = this.state.container;
+    cornerstoneTools.pan.activate(element,1);
+    cornerstoneTools.zoom.activate(element,4);
+    cornerstoneTools.zoomWheel.activate(element);
+  }
 
     /**
      * activate rectangle draw function
@@ -268,6 +285,17 @@ export default class Viewer extends Component {
         this.disableAllTools();
         cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
     }
+
+    /**
+     * reset viewport to default state
+     */
+    resetViewport() {
+      let canvas = $('#viewer canvas').get(0);
+      let enabledElement = cornerstone.getEnabledElement(this.state.container);
+      let viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image);
+      viewport.scale = 1.0;
+      cornerstone.setViewport(this.state.container, viewport);
+     }
 
     /**
      * disable tools
@@ -285,49 +313,55 @@ export default class Viewer extends Component {
         cornerstoneTools.zoomWheel.deactivate(this.state.container);
     }
 
-    render() {
-        return (
-            <div id="body" style={style.body}>
-                <div id="top" style={style.top}>
-                    <Navbar inverse collapseOnSelect style={{marginBottom: '0'}}>
-                        <Navbar.Collapse>
-                            <Nav>
-                                <NavItem eventKey={1} href="#" onClick={this.setScrollTool}>
-                                    <div>
-                                        <FontAwesome name='gear' size='2x'/>
-                                    </div>
-                                    <span>scroll</span>
-                                </NavItem>
-                                <NavItem eventKey={2} href="#" onClick={this.setWindowTool}>
-                                    <div>
-                                        <FontAwesome name='adjust' size='2x'/>
-                                    </div>
-                                    <span>wl/wc</span>
-                                </NavItem>
-                                <NavItem eventKey={3} href="#" onClick={this.setZoomTool}>
-                                    <div>
-                                        <FontAwesome name='search' size='2x'/>
-                                    </div>
-                                    <span>zoom/pan</span>
-                                </NavItem>
-                                <NavItem eventKey={4} href="#" onClick={this.setDrawTool}>
-                                    <div>
-                                        <FontAwesome name='square-o' size='2x'/>
-                                    </div>
-                                    <span>draw</span>
-                                </NavItem>
-                            </Nav>
-                        </Navbar.Collapse>
-                    </Navbar>
-                </div>
-                <div style={{...style.container, ...{height: this.state.containerHeight}}} className="container">
-                    <div style={style.viewer} ref="viewerContainer" id="viewer" >
-                        <div style={style.patientInfo} id="patientInfo"></div>
-                        <div style={style.dicomInfo} id="dicomInfo"></div>
-                        <div style={style.sliceInfo} id="sliceInfo"></div>
-                        <div style={style.timeInfo} id="timeInfo"></div>
-                    </div>
-                </div>
+  render() {
+    return (
+      <div id="body" style={style.body}>
+        <div id="top" style={style.top}>
+          <Navbar inverse collapseOnSelect style={{marginBottom: '0'}}>
+            <Navbar.Collapse>
+              <Nav>
+                <NavItem eventKey={1} href="#" onClick={this.setScrollTool}>
+                  <div>
+                    <FontAwesome name='gear' size='2x'/>
+                  </div>
+                  <span>scroll</span>
+                </NavItem>
+                <NavItem eventKey={2} href="#" onClick={this.setWindowTool}>
+                  <div>
+                    <FontAwesome name='adjust' size='2x'/>
+                  </div>
+                  <span>wl/wc</span>
+                </NavItem>
+                <NavItem eventKey={3} href="#" onClick={this.setZoomTool}>
+                  <div>
+                    <FontAwesome name='search' size='2x'/>
+                  </div>
+                  <span>zoom/pan</span>
+                </NavItem>
+                <NavItem eventKey={4} href="#" onClick={this.setDrawTool}>
+                  <div>
+                    <FontAwesome name='square-o' size='2x'/>
+                  </div>
+                  <span>draw</span>
+                </NavItem>
+                <NavItem eventKey={5} href="#" onClick={this.resetViewport}>
+                  <div>
+                    <FontAwesome name='refresh' size='2x'/>
+                  </div>
+                  <span>reset</span>
+                </NavItem>
+              </Nav>
+            </Navbar.Collapse>
+          </Navbar>
+        </div>
+        <div style={{...style.container, ...{height: this.state.containerHeight}}} className="container">
+          <div style={style.viewer} ref="viewerContainer" id="viewer" >
+            <div style={style.patientInfo} id="patientInfo"></div>
+            <div style={style.dicomInfo} id="dicomInfo"></div>
+            <div style={style.number} id="number"></div>
+            <div style={style.timeInfo} id="timeInfo"></div>
+          </div>
+        </div>
 
                 <div style={style.bottom}></div>
             </div>
