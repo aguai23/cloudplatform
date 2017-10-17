@@ -33,16 +33,21 @@ Meteor.methods({
      * parse all DICOMs and save
      */
     if(userId && foundCase.files && foundCase.files.length > 0) {
+      var patientName = undefined;
+      var patientId = undefined;
       for(var i = 0; i < foundCase.files.length; i++) {
         var data = fs.readFileSync(foundCase.files[i]);
         var dataset = dicomParser.parseDicom(data);
         var index = parseInt(dataset.string('x00200013'));
-
+        patientName = dataset.string('x00100010');
+        patientId = dataset.string('x00100020');
         dicomObj[userId][index-1] = dataset;
       }
 
       result.status = "SUCCESS";
       result.imageNumber = foundCase.files.length;
+      result.patientName = patientName;
+      result.patientId = patientId;
     }
 
     return result;

@@ -9,72 +9,70 @@ import cornerstoneTools from 'cornerstone-tools';
 import FontAwesome from 'react-fontawesome';
 
 const style = {
-  body: {
-    backgroundColor: 'black',
-    minHeight: '100%'
-  },
-  top: {
-    height: 'auto',
-    backgroundColor: '#7f7f7f',
-    width: '100%',
-    position: 'relative',
-    left: '0px',
-  },
-  bottom: {
-    position: 'fixed',
-    width: '100%',
-    left: '0',
-    bottom: '0',
-    height: '0',
-    backgroundColor: '#7f7f7f'
-  },
-  container: {
-    position: 'relative',
-    width: '100%',
-    left: '0px',
-    border: '1px solid #42f4ee'
-  },
-  viewer: {
-    top: '30px',
-    height: '800px',
-    width: '100%',
-    position: 'relative',
-    backgroundColor: 'green',
-    position: 'relative',
-    margin: '0 auto'
-  },
-  patientInfo: {
-    position: 'absolute',
-    top: '0px',
-    left: '0px',
-    height: '100px',
-    width: '100px',
-    // backgroundColor: 'black'
-  },
-  dicomInfo: {
-    position: 'absolute',
-    top: '0px',
-    right: '0px',
-    height: '100px',
-    width: '100px',
-    // backgroundColor: 'orange'
-  },
-  number: {
-    position: 'absolute',
-    bottom: '0px',
-    left: '0px',
-    height: '100px',
-    width: '100px',
-    // backgroundColor: 'black'
-  },
-  timeInfo: {
-    position: 'absolute',
-    bottom: '0px',
-    right: '0px',
-    height: '100px',
-    width: '100px',
-    // backgroundColor: 'orange'
-  }
+    body: {
+        backgroundColor: 'black',
+        minHeight: '100%'
+    },
+    top: {
+        height: 'auto',
+        backgroundColor: '#7f7f7f',
+        width: '100%',
+        position: 'relative',
+        left: '0px',
+    },
+    bottom: {
+        position: 'fixed',
+        width: '100%',
+        left: '0',
+        bottom: '0',
+        height: '0',
+        backgroundColor: '#7f7f7f'
+    },
+    container: {
+        position: 'relative',
+        width: '100%',
+        left: '0px',
+        border: '1px solid #42f4ee'
+    },
+    viewer: {
+        top: '30px',
+        height: '800px',
+        width: '100%',
+        position: 'relative',
+        margin: '0 auto'
+    },
+    patientInfo: {
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        height: '100px',
+        width: '100px',
+        color: 'white'
+    },
+    dicomInfo: {
+        position: 'absolute',
+        bottom: '0px',
+        right: '0px',
+        height: '50px',
+        width: '200px',
+        color: 'white'
+    },
+    sliceInfo: {
+        position: 'absolute',
+        bottom: '0px',
+        left: '0px',
+        height: '100px',
+        width: '100px',
+        color: 'white'
+    },
+    timeInfo: {
+        position: 'absolute',
+        top: '0px',
+        right: '0px',
+        height: '100px',
+        width: '100px',
+        color: 'white'
+    }
 
 };
 
@@ -83,15 +81,15 @@ export default class Viewer extends Component {
      * constructor, run at first
      * @param props
      */
-  constructor(props) {
-    super(props);
-    this.state = {
-        container: {},
-        dicomObj: {},
-        index:1,
-        imageNumber:0
-    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            container: {},
+            dicomObj: {},
+            index:1,
+            imageNumber:0
 
+<<<<<<< HEAD
     this.setSlice = this.setSlice.bind(this);
     this.increaseSlice = this.increaseSlice.bind(this);
     this.decreaseSlice = this.decreaseSlice.bind(this);
@@ -102,18 +100,31 @@ export default class Viewer extends Component {
     this.resetViewport = this.resetViewport.bind(this);
     this.disableAllTools = this.disableAllTools.bind(this);
   }
+=======
+        };
+        this.setSlice = this.setSlice.bind(this);
+        this.increaseSlice = this.increaseSlice.bind(this);
+        this.decreaseSlice = this.decreaseSlice.bind(this);
+        this.setScrollTool = this.setScrollTool.bind(this);
+        this.setWindowTool = this.setWindowTool.bind(this);
+        this.setZoomTool = this.setZoomTool.bind(this);
+        this.setDrawTool = this.setDrawTool.bind(this);
+        this.disableAllTools = this.disableAllTools.bind(this);
+        this.updateInfo = this.updateInfo.bind(this);
+    }
+>>>>>>> 8ad0b90bda97b20223fd938761c6ce1f60b6bd9e
 
     /**
      * will run after elements rendered
      */
     componentDidMount() {
 
-      /**
-       * set the dynamic height for container
-       */
-      this.setState({
-        containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px'
-      });
+        /**
+         * set the dynamic height for container
+         */
+        this.setState({
+            containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px'
+        });
 
         this.setState({
             container: document.getElementById("viewer")
@@ -133,48 +144,70 @@ export default class Viewer extends Component {
             } else {
                 if (result.status == "SUCCESS") {
                     this.setState({
-                        imageNumber:result.imageNumber
+                        imageNumber:result.imageNumber,
+                        patientId : result.patientId,
+                        patientName: result.patientName
                     });
                     this.setSlice(this.state.index);
+                    //set info here
+                    let element = $("#viewer");
+                    element.on("CornerstoneImageRendered", this.updateInfo);
                 }
 
             }
         });
 
 
+
+    }
+
+    /**
+     * update info dynamically
+     * @param e
+     */
+    updateInfo(e) {
+        let viewport = cornerstone.getViewport(e.target);
+        $("#dicomInfo").text("WW/WC: " + Math.round(viewport.voi.windowWidth) +
+            "/" + Math.round(viewport.voi.windowCenter) + "\n" +
+            "Zoom： " + viewport.scale.toFixed(2));
+        $('#patientInfo').text("patient name: " + this.state.patientName + "\n" +
+        "patient Id: " + this.state.patientId);
+        $('#sliceInfo').text("slice: " + this.state.index + "/" + this.state.imageNumber);
+        $('#timeInfo').text(new Date().toLocaleString());
     }
 
     /**
      * increase slice number
      */
-  increaseSlice(){
-      if (this.state.index < this.state.imageNumber) {
-        this.setState({
-            index:this.state.index + 1
-        });
-        this.setSlice(this.state.index);
+    increaseSlice(){
+        if (this.state.index < this.state.imageNumber) {
+            this.setState({
+                index:this.state.index + 1
+            });
+            this.setSlice(this.state.index);
+        }
     }
-  }
 
     /**
      * decrease slice number
      */
-  decreaseSlice(){
-    if (this.state.index > 1) {
-        this.setState({
-            index:this.state.index - 1
-        });
-        this.setSlice(this.state.index);
-    }
+    decreaseSlice(){
+        if (this.state.index > 1) {
+            this.setState({
+                index:this.state.index - 1
+            });
+            this.setSlice(this.state.index);
+        }
 
-  }
+    }
 
     /**
      * set image slice
      * @param index image index
      */
-  setSlice(index) {
+    setSlice(index) {
         if (!this.state.dicomObj[index]) {
+<<<<<<< HEAD
           Meteor.call('getDicom', index, (err, result) => {
             let image = result;
             let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
@@ -193,42 +226,57 @@ export default class Viewer extends Component {
             }
             cornerstone.displayImage(this.state.container, this.state.dicomObj[index], viewport);
           })
+=======
+            Meteor.call('getDicom', index, (err, result) => {
+                let image = result;
+                let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+                image.getPixelData = function(){
+                    return pixelData
+                };
+                let currentObj = this.state.dicomObj
+                currentObj[index] = image
+                this.setState({
+                    dicomObj: currentObj
+                });
+                cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
+            })
+>>>>>>> 8ad0b90bda97b20223fd938761c6ce1f60b6bd9e
         } else {
-          cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
+            cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
         }
-  }
+    }
 
     /**
      * activate scroll tool, enable both mousewheel and mouse select
      */
-  setScrollTool() {
+    setScrollTool() {
 
-    let element = $("#viewer");
-    let self = this;
-    this.disableAllTools();
-    element.bind("mousewheel", function (e) {
-        let event = window.event || e;
-        let up = event.wheelDelta > 0;
-        if (up) {
-          self.increaseSlice();
-        } else {
-          self.decreaseSlice();
-        }
-    });
-    let step = element.height() / this.state.imageNumber;
-    let startPoint = 0;
-    element.mousemove(function (e) {
-        if (e.which == 1) {
-            if (e.pageY - startPoint > step) {
+        let element = $("#viewer");
+        let self = this;
+        this.disableAllTools();
+        element.bind("mousewheel", function (e) {
+            let event = window.event || e;
+            let up = event.wheelDelta > 0;
+            if (up) {
                 self.increaseSlice();
-                startPoint = e.pageY;
-            } else if (e.pageY - startPoint < -step) {
+            } else {
                 self.decreaseSlice();
-                startPoint = e.pageY;
             }
-        }
-    });
-  }
+        });
+        let step = element.height() / this.state.imageNumber;
+        let startPoint = 0;
+        element.mousemove(function (e) {
+            if (e.which == 1) {
+                if (e.pageY - startPoint > step) {
+                    self.increaseSlice();
+                    startPoint = e.pageY;
+                } else if (e.pageY - startPoint < -step) {
+                    self.decreaseSlice();
+                    startPoint = e.pageY;
+                }
+            }
+        });
+    }
 
     /**
      * activate window width and window level function
@@ -343,8 +391,8 @@ export default class Viewer extends Component {
           </div>
         </div>
 
-        <div style={style.bottom}></div>
-      </div>
-    )
-  }
+                <div style={style.bottom}></div>
+            </div>
+        )
+    }
 }
