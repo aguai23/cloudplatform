@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
-import { HTTP } from 'meteor/http'
-import { Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Modal} from 'react-bootstrap';
+import { HTTP } from 'meteor/http';
+import { Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Modal } from 'react-bootstrap';
 import Gallery from 'react-fine-uploader';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
@@ -13,7 +13,7 @@ import 'react-toastify/dist/ReactToastify.min.css';
 import 'react-fine-uploader/gallery/gallery.css';
 
 var isUploadFinished = true,
-    imageArray = [];
+  imageArray = [];
 
 export default class AddCase extends Component {
   constructor(props) {
@@ -25,7 +25,7 @@ export default class AddCase extends Component {
     this.uploader = new FineUploaderTraditional({
       options: {
         chunking: {
-            enabled: false
+          enabled: false
         },
         deleteFile: {
           enabled: true,
@@ -39,16 +39,16 @@ export default class AddCase extends Component {
           enableAuto: true
         },
         callbacks: {
-          onAllComplete: function() {
+          onAllComplete: function () {
             // console.log("imageArray", imageArray);
-            that.setState({isUploadFinished: true});
+            that.setState({ isUploadFinished: true });
           },
-          onComplete: function(id, name, response) {
+          onComplete: function (id, name, response) {
             // console.log('response', response);
             imageArray.push(response.filePath);
           },
-          onUpload: function() {
-            that.setState({isUploadFinished: false});
+          onUpload: function () {
+            that.setState({ isUploadFinished: false });
           }
         }
       }
@@ -57,6 +57,7 @@ export default class AddCase extends Component {
     this.state = {
       collectionId: Session.get('collectionId'),
       Case: {},
+      oldFileList: oldCase ? oldCase.files : [],
       oldCase: oldCase,
       isUploadFinished: true,
       showFilesList: false
@@ -74,7 +75,7 @@ export default class AddCase extends Component {
     const { Case } = this.state;
     Case[input.target.id] = input.target.value;
     if (input.target.id === 'age' && input.target.value <= 0) {
-      toast.error("年龄错误", {position: toast.POSITION.BOTTOM_RIGHT});
+      toast.error("年龄错误", { position: toast.POSITION.BOTTOM_RIGHT });
       return;
     }
     this.setState({
@@ -86,12 +87,12 @@ export default class AddCase extends Component {
   submitCases(event) {
     event.preventDefault();
 
-    if(!isUploadFinished)  return;
+    if (!isUploadFinished) return;
 
     const { Case } = this.state;
     const flag = Case.name && Case.type && Case.class && Case.label && Case.gender && Case.age && Case.source && Case.source && Case.description && Case.createAt
     if (!flag) {
-      toast.error("请检验并完善信息", {position: toast.POSITION.BOTTOM_RIGHT});
+      toast.error("请检验并完善信息", { position: toast.POSITION.BOTTOM_RIGHT });
       return;
     } else {
       const standardCase = {
@@ -106,15 +107,16 @@ export default class AddCase extends Component {
           source: Case.source,
           description: Case.description
         },
+        createAt: Case.createAt,
         collectionId: this.state.collectionId ? this.state.collectionId : 'test',
         ownerId: Meteor.userId(),
       }
       Meteor.call('insertCase', standardCase, (error) => {
         if (error) {
-          toast.error(`somethings wrong${error.reason}`, {position: toast.POSITION.BOTTOM_RIGHT});
+          toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
         } else {
-          toast.success("病例添加成功", {position: toast.POSITION.BOTTOM_RIGHT});
-          Meteor.setTimeout(browserHistory.goBack,2000)
+          toast.success("病例添加成功", { position: toast.POSITION.BOTTOM_RIGHT });
+          Meteor.setTimeout(browserHistory.goBack, 2000)
         }
       });
     }
@@ -125,44 +127,59 @@ export default class AddCase extends Component {
     //遍历Case
     const newCase = this.state.oldCase
     for (let key in this.state.Case) {
-      if (['gender','age','source','description'].indexOf(key) < 0) {
+      if (['gender', 'age', 'source', 'description'].indexOf(key) < 0) {
         newCase[key] = this.state.Case[key]
       } else {
         newCase.profile[key] = this.state.Case[key]
       }
     }
-    Meteor.call('modifyCase',newCase,(error)=>{
-      if(error) {
-        toast.error(`somethings wrong${error.reason}`, {position: toast.POSITION.BOTTOM_RIGHT});
+    Meteor.call('modifyCase', newCase, (error) => {
+      if (error) {
+        toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
       } else {
-        toast.success("病例修改成功", {position: toast.POSITION.BOTTOM_RIGHT});
-        Meteor.setTimeout(browserHistory.goBack,2000)
+        toast.success("病例修改成功", { position: toast.POSITION.BOTTOM_RIGHT });
+        Meteor.setTimeout(browserHistory.goBack, 2000)
       }
     })
   }
 
-  changeModalState(){
+  changeModalState() {
     const showState = this.state.showFilesList
     this.setState({
-      showFilesList : !showState
+      showFilesList: !showState
     })
   }
 
-  deleteFile(id){
-    //TODO: refresh files list
-    HTTP.call("DELETE",`/delete/${id}`,(err,result)=>{
-      if(err){
-        toast.error(`somethings wrong${error.reason}`, {position: toast.POSITION.BOTTOM_RIGHT});
+  deleteFile(file) {
+    let fileInfo = file.split('/');
+    HTTP.call("DELETE", `/delete/${fileInfo[2]}`, (err, result) => {
+      if (err) {
+        toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
       } else {
-        toast.success("图片删除成功", {position: toast.POSITION.BOTTOM_RIGHT});
+        let list = this.state.oldFileList;
+        let position = list.indexOf(file);
+        list.splice(position, 1);
+        let newCase = this.state.oldCase;
+        newCase.files = list
+        Meteor.call('modifyCase', newCase, (error) => {
+          if (error) {
+            toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+          } else {
+            this.setState({
+              oldFileList: list
+            });
+          }
+        });
+        toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
       }
     })
   }
 
   render() {
     const wellStyles = { marginTop: '20px' };
+    const toastStyle= { zIndex: 1999 };
     const oldCase = this.state.oldCase;
-    const filesList = oldCase ? oldCase.files : []
+    const filesList = this.state.oldFileList;
     return (
       <div className="container">
         <h3>{oldCase ? `修改${oldCase.name}病例` : '添加新病例'}</h3>
@@ -210,12 +227,12 @@ export default class AddCase extends Component {
                 图片
                       </Col>
               <Col sm={6}>
-                <Gallery uploader={ this.uploader }/>
+                <Gallery uploader={this.uploader} />
               </Col>
               <Col>
-              { oldCase &&
-                <Button onClick={this.changeModalState}>查看已上传图片</Button>
-              }
+                {oldCase &&
+                  <Button onClick={this.changeModalState}>查看已上传图片</Button>
+                }
               </Col>
             </FormGroup>
           </div>
@@ -282,27 +299,28 @@ export default class AddCase extends Component {
           </FormGroup>
         </Form>
         <ToastContainer
-            position="bottom-right"
-            type="info"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            pauseOnHover
-          />
+          position="bottom-right"
+          type="info"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnHover
+          style={toastStyle}
+        />
 
-          <Modal show={this.state.showFilesList} onHide={this.changeModalState}>
+        <Modal show={this.state.showFilesList} onHide={this.changeModalState}>
           <Modal.Header closeButton>
             <Modal.Title>文件列表</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-          {filesList && 
-            filesList.map((file,index)=>{
-            return (
-            <p>{file.split('/')[3]}<a onClick={this.deleteFile.bind(this,file.split('/')[2])}>删除</a></p>
-            )
-          })
-          }
+            {filesList &&
+              filesList.map((file, index) => {
+                return (
+                  <p>{file}<a onClick={this.deleteFile.bind(this, file)}>删除</a></p>
+                )
+              })
+            }
           </Modal.Body>
           <Modal.Footer>
             <Button onClick={this.changeModalState}>Close</Button>

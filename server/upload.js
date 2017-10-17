@@ -31,7 +31,7 @@ Picker.route('/uploads', function(params, req, res, next) {
 });
 
 Picker.route('/delete/:uuid', function(params, req, res, next) {
-  console.log("params", params);
+  // console.log("params", params);
   // console.log("req", req);
   var uuid = params.uuid,
       dirToDelete = uploadedFilesPath + uuid;
