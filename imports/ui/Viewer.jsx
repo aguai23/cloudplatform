@@ -7,6 +7,7 @@ import FS from 'fs';
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import FontAwesome from 'react-fontawesome';
+import { Marks } from '../api/marks';
 
 
 const style = {
@@ -123,6 +124,9 @@ export default class Viewer extends Component {
         this.resetViewport = this.resetViewport.bind(this);
         this.disableAllTools = this.disableAllTools.bind(this);
         this.updateInfo = this.updateInfo.bind(this);
+        this.onSaveClick = this.onSaveClick.bind(this);
+        this.onRestoreClick = this.onRestoreClick.bind(this);
+        this.setEllipticalTool = this.setEllipticalTool.bind(this);
     }
 
     /**
@@ -310,8 +314,37 @@ export default class Viewer extends Component {
      * activate rectangle draw function
      */
     setDrawTool() {
-        this.disableAllTools();
-        cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
+      let color = cornerstoneTools.toolColors.setToolColor("#ffcc33");
+      this.disableAllTools();
+      cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
+    }
+
+    setEllipticalTool(){
+      this.disableAllTools();
+      cornerstoneTools.ellipticalRoi.activate(this.state.container, 1);
+    }
+
+    onSaveClick(){
+      this.disableAllTools();
+      let elements = [this.state.container];
+      let appState = cornerstoneTools.appState.save(elements);
+      let serializedState = JSON.stringify(appState);
+      this.setState({
+        rectangle: serializedState
+      })
+      console.log(serializedState)
+    }
+
+    onRestoreClick(){
+      this.disableAllTools();
+      // let enabledElement = cornerstone.getEnabledElement(this.state.container)
+      // let context = enabledElement.canvas.getContext('2d');
+      // console.log(context)
+      // cornerstoneTools.drawCircle(context, {x:200,y:100}, 20, '#FF0000');
+      // cornerstoneTools.drawCircle(context, {x:100,y:200}, 20, '#FF0000');
+      let serializedState = this.state.rectangle;
+      let appState = JSON.parse(serializedState);
+      cornerstoneTools.appState.restore(appState)
     }
 
     /**
@@ -335,6 +368,7 @@ export default class Viewer extends Component {
         cornerstoneTools.mouseInput.enable(this.state.container);
         cornerstoneTools.mouseWheelInput.enable(this.state.container);
         cornerstoneTools.rectangleRoi.deactivate(this.state.container,1);
+        cornerstoneTools.ellipticalRoi.deactivate(this.state.container,1);
         cornerstoneTools.wwwc.deactivate(this.state.container,1);
         cornerstoneTools.pan.deactivate(this.state.container,1);
         cornerstoneTools.zoom.deactivate(this.state.container,4);
@@ -375,11 +409,29 @@ export default class Viewer extends Component {
                   </div>
                   <span>draw</span>
                 </NavItem>
+                <NavItem eventKey={4} href="#" onClick={this.setEllipticalTool}>
+                  <div>
+                    <FontAwesome name='circle-o' size='2x'/>
+                  </div>
+                  <span>circle</span>
+                </NavItem>
                 <NavItem eventKey={5} href="#" onClick={this.resetViewport}>
                   <div>
                     <FontAwesome name='refresh' size='2x'/>
                   </div>
                   <span>reset</span>
+                </NavItem>
+                <NavItem eventKey={5} href="#" onClick={this.onSaveClick}>
+                  <div>
+                    <FontAwesome name='save' size='2x'/>
+                  </div>
+                  <span>save</span>
+                </NavItem>
+                <NavItem eventKey={5} href="#" onClick={this.onRestoreClick}>
+                  <div>
+                    <FontAwesome name='paste' size='2x'/>
+                  </div>
+                  <span>restore</span>
                 </NavItem>
               </Nav>
             </Navbar.Collapse>

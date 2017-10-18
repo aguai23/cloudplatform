@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { DataCollections } from '../imports/api/dataCollections';
-import { Cases } from '../imports/api/cases'
+import { Cases } from '../imports/api/cases';
+import { Marks } from '../imports/api/marks';
 
 
 //this to the way to use methods for security
@@ -29,5 +30,19 @@ Meteor.methods({
 
   deleteCase(CaseId){
     Cases.remove(CaseId);
-  }
+  },
+
+  insertMark(Mark){
+    Marks.insert(Mark)
+  },
+
+  modifyMark(Mark){
+    Marks.update(Mark._id,
+      { $set: Mark})
+  },
+
+  removeMark(MarkId){
+    Marks.remove(MarkId)
+  },
+
 });
