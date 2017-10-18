@@ -86,9 +86,25 @@ const style = {
       height: '40px',
       backgroundColor: '#9ccef9',
       position: 'absolute',
-      right: '0',
-      top: '0',
-      borderRadius: '4px'
+      right: '5px',
+      top: '10px',
+      borderRadius: '4px',
+      opacity: '0.5',
+
+      userDrag: 'none',
+      userSelect: 'none',
+      MozUserSelect: 'none',
+      WebkitUserDrag: 'none',
+      WebkitUserSelect: 'none',
+      MsUserSelect: 'none'
+    },
+    disableSelection: {
+      userSelect: 'none',
+      MozUserSelect: 'none',
+      KhtmlUserSelect: 'none',
+      WebkitUserSelect: 'none',
+      OUserSelect: 'none',
+      cursor: 'default'
     }
 
 };
@@ -110,7 +126,13 @@ export default class Viewer extends Component {
               windowCenter: 0,
               windowWidth: 0
             },
-            dateTime: new Date().toLocaleString()
+            dateTime: new Date().toLocaleString(),
+            isScrollBarHovered: false,
+            isScrollBarClicked: false,
+            scrollBarStyle: style.scrollBar,
+            timer: undefined,
+            lastY: 0,
+            startY: 0
 
         };
         this.setSlice = this.setSlice.bind(this);
@@ -129,12 +151,15 @@ export default class Viewer extends Component {
      * will run after elements rendered
      */
     componentDidMount() {
-
+        console.log($('#scrollBar').position().top);
+        console.log($('#scrollBar').position().top + $('#viewer').height());
         /**
          * set the dynamic height for container
          */
         this.setState({
-            containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px'
+            containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px',
+            scrollbarTopMin: $('#scrollBar').position().top,
+            scrollbarTopMax: $('#scrollBar').position().top + $('#viewer').height()
         });
 
         this.setState({
@@ -195,10 +220,18 @@ export default class Viewer extends Component {
     /**
      * increase slice number
      */
-    increaseSlice(){
+    increaseSlice(scrollStep){
         if (this.state.index < this.state.imageNumber) {
+          let position = $('#scrollBar').position();
             this.setState({
                 index:this.state.index + 1
+            }, function() {
+              var newTop = position.top + scrollStep;
+
+              newTop = Math.max(this.state.scrollbarTopMin,
+                         Math.min(newTop, this.state.scrollbarTopMax));
+
+              $('#scrollBar').css({top: newTop});
             });
             this.setSlice(this.state.index);
         }
@@ -207,14 +240,21 @@ export default class Viewer extends Component {
     /**
      * decrease slice number
      */
-    decreaseSlice(){
+    decreaseSlice(scrollStep){
+      let position = $('#scrollBar').position();
         if (this.state.index > 1) {
             this.setState({
                 index:this.state.index - 1
+            }, function(){
+              var newTop = position.top - scrollStep;
+
+              newTop = Math.max(this.state.scrollbarTopMin,
+                         Math.min(newTop, this.state.scrollbarTopMax));
+
+              $('#scrollBar').css({top: newTop});
             });
             this.setSlice(this.state.index);
         }
-
     }
 
     /**
@@ -237,7 +277,7 @@ export default class Viewer extends Component {
 
             var viewport = {};
             if(index === 1) {
-              viewport.scale = 1.0;
+              viewport.scale = 1.2;
             }
             cornerstone.displayImage(this.state.container, this.state.dicomObj[index], viewport);
           });
@@ -250,32 +290,32 @@ export default class Viewer extends Component {
      * activate scroll tool, enable both mousewheel and mouse select
      */
     setScrollTool() {
-
         let element = $("#viewer");
         let self = this;
+        let step = element.height() / this.state.imageNumber;
+        let startPoint = 0;
         this.disableAllTools();
         element.bind("mousewheel", function (e) {
             let event = window.event || e;
-            let up = event.wheelDelta > 0;
-            if (up) {
-                self.increaseSlice();
+            let down = event.wheelDelta < 0;
+            if (down) {
+                self.increaseSlice(step);
             } else {
-                self.decreaseSlice();
+                self.decreaseSlice(step);
             }
         });
-        let step = element.height() / this.state.imageNumber;
-        let startPoint = 0;
-        element.mousemove(function (e) {
-            if (e.which == 1) {
-                if (e.pageY - startPoint > step) {
-                    self.increaseSlice();
-                    startPoint = e.pageY;
-                } else if (e.pageY - startPoint < -step) {
-                    self.decreaseSlice();
-                    startPoint = e.pageY;
-                }
-            }
-        });
+
+        // element.mousemove(function (e) {
+        //     if (e.which == 1) {
+        //         if (e.pageY - startPoint > step/2) {
+        //             self.increaseSlice(step);
+        //             startPoint = e.pageY;
+        //         } else if (e.pageY - startPoint < -step/2) {
+        //             self.decreaseSlice(step);
+        //             startPoint = e.pageY;
+        //         }
+        //     }
+        // });
     }
 
     /**
@@ -321,7 +361,7 @@ export default class Viewer extends Component {
       let canvas = $('#viewer canvas').get(0);
       let enabledElement = cornerstone.getEnabledElement(this.state.container);
       let viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image);
-      viewport.scale = 1.0;
+      viewport.scale = 1.2;
       cornerstone.setViewport(this.state.container, viewport);
      }
 
@@ -341,10 +381,98 @@ export default class Viewer extends Component {
         cornerstoneTools.zoomWheel.deactivate(this.state.container);
     }
 
+  /**
+   * handler for hovering the scroll bar
+   * @param evt mouse hover event
+   */
+  toggleScrollBarHover(evt){
+    this.setState({isScrollBarHovered: !this.state.isScrollBarHovered}, () => {
+      if(this.state.isScrollBarHovered) {
+        this.state.scrollBarStyle = {
+          ...style.scrollBar,
+          cursor: 'pointer',
+          opacity: 1.0
+        }
+      } else {
+        this.state.scrollBarStyle = {
+          ...style.scrollBar,
+          cursor: 'default',
+          opacity: 0.5
+        }
+      }
+    });
+
+    //this.toggleScrollBarClick(evt);
+  }
+
+  /**
+   * handler for clicking the scroll bar
+   * @param evt mouse events
+   */
+  toggleScrollBarClick(evt) {
+    console.log(evt.type);
+    if(evt.type === 'mouseup' || evt.type === 'mouseleave') {
+      if(this.state.isScrollBarClicked) {
+        this.setState({isScrollBarClicked: false});
+      }
+    } else {
+      if(evt.button === 0) {
+        if(evt.type === 'mousedown' || evt.type === 'mouseenter') {
+          this.setState({isScrollBarClicked: true, lastY: evt.pageY});
+        }
+      }
+    }
+  }
+
+  /**
+   * handler for draging the scroll bar, moves scrollbar position and changes image
+   * @param evt mousemove event
+   */
+  onDragScrollBar(evt) {
+    let step = $("#viewer").height() / this.state.imageNumber;
+
+    if(this.state.isScrollBarClicked) {
+      let self = this,
+          scrollBar = $('#scrollBar'),
+          newTop = scrollBar.position().top + evt.pageY - this.state.lastY;
+
+      newTop = Math.max(this.state.scrollbarTopMin,
+                 Math.min(newTop, this.state.scrollbarTopMax));
+
+      scrollBar.css({top: newTop});
+
+      if(this.state.timer) {
+        window.clearTimeout(this.state.timer);
+      }
+
+      let pageY = evt.pageY;
+
+      if(this.state.startY === 0) {
+        this.setState({startY: pageY});
+      }
+
+      this.setState({
+        timer: window.setTimeout(function() {
+          let index = self.state.index + Math.round((pageY - self.state.startY) / step);
+
+          index = Math.max(1, Math.min(index, self.state.imageNumber));
+
+          self.setState({startY: pageY, index: index});
+          self.setSlice(index);
+
+        }, 100),
+        lastY: evt.pageY
+      });
+    }
+
+  }
+
   render() {
     // style={{color: '#9ccef9'}}
     return (
-      <div id="body" style={style.body}>
+      <div id="body" style={style.body}
+        onMouseMove={(evt) => {this.onDragScrollBar(evt)}}  onMouseUp={(evt) => {this.toggleScrollBarClick(evt)}}
+        onMouseLeave={(evt) => {this.toggleScrollBarClick(evt)}}>
         <div id="top" style={style.top}>
           <Navbar inverse collapseOnSelect style={{marginBottom: '0'}}>
             <Navbar.Collapse>
@@ -386,24 +514,27 @@ export default class Viewer extends Component {
           </Navbar>
         </div>
         <div style={{...style.container, ...{height: this.state.containerHeight}}} className="container">
-          <div style={style.scrollBar} onMouseDown={(e)=>console.log(e)}></div>
+          <div id="scrollBar" style={this.state.scrollBarStyle}
+            onMouseDown={(evt) => {this.toggleScrollBarClick(evt)}}
+            onMouseEnter={(evt) => this.toggleScrollBarHover(evt)} onMouseLeave={(evt) => this.toggleScrollBarHover(evt)}>
+          </div>
           <div style={style.viewer} ref="viewerContainer" id="viewer" >
-            <div style={{...style.patientInfo, ...style.textInfo}} id="patientInfo">
+            <div style={{...style.patientInfo, ...style.textInfo, ...style.disableSelection}} id="patientInfo">
               <div>
                 <span>Patient name: {this.state.patientName}</span>
                 <br/>
                 <span>Patient id: {this.state.patientId}</span>
               </div>
             </div>
-            <div style={{...style.dicomInfo, ...style.textInfo}} id="dicomInfo">
+            <div style={{...style.dicomInfo, ...style.textInfo, ...style.disableSelection}} id="dicomInfo">
               <span className="pull-right">WW/WC: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
               <br/>
               <span className="pull-right">Zoom: {this.state.zoomScale}</span>
             </div>
-            <div style={{...style.sliceInfo, ...style.textInfo}} id="sliceInfo">
+            <div style={{...style.sliceInfo, ...style.textInfo, ...style.disableSelection}} id="sliceInfo">
               <span style={{position: 'absolute', bottom: '10px'}}>{this.state.index}/{this.state.imageNumber}</span>
             </div>
-            <div style={{...style.timeInfo, ...style.textInfo}} id="timeInfo">
+            <div style={{...style.timeInfo, ...style.textInfo, ...style.disableSelection}} id="timeInfo">
               <span className="pull-right">{this.state.dateTime}</span>
             </div>
           </div>
