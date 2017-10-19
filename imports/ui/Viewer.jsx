@@ -335,7 +335,7 @@ export default class Viewer extends Component {
                 break;
 
             case 10:
-                this.predict();
+                this.switchState();
                 break;
 
 
@@ -366,18 +366,6 @@ export default class Viewer extends Component {
                 self.decreaseSlice(step);
             }
         });
-
-        // element.mousemove(function (e) {
-        //     if (e.which == 1) {
-        //         if (e.pageY - startPoint > step/2) {
-        //             self.increaseSlice(step);
-        //             startPoint = e.pageY;
-        //         } else if (e.pageY - startPoint < -step/2) {
-        //             self.decreaseSlice(step);
-        //             startPoint = e.pageY;
-        //         }
-        //     }
-        // });
     }
 
     /**
@@ -656,39 +644,37 @@ export default class Viewer extends Component {
                         <Navbar.Collapse>
                             <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
                                 <NavItem eventKey={1} href="#">
-                                    <div>
-                                        <div>
-                                            <FontAwesome name='gear' size='2x'/>
-                                        </div>
-                                        <span>scroll</span>
+                                    <div style={style.icon}>
+                                        <FontAwesome name='gear' size='2x'/>
                                     </div>
+                                    <span>scroll</span>
                                 </NavItem>
                                 <NavItem eventKey={2} href="#">
-                                    <div>
+                                    <div style={style.icon}>
                                         <FontAwesome name='adjust' size='2x'/>
                                     </div>
                                     <span>wl/wc</span>
                                 </NavItem>
                                 <NavItem eventKey={3} href="#">
-                                    <div>
+                                    <div style={style.icon}>
                                         <FontAwesome name='search' size='2x'/>
                                     </div>
                                     <span>zoom/pan</span>
                                 </NavItem>
                                 <NavItem eventKey={4} href="#">
-                                    <div>
+                                    <div style={style.icon}>
                                         <FontAwesome name='arrows-h' size='2x'/>
                                     </div>
                                     <span>length</span>
                                 </NavItem>
                                 <NavItem eventKey={5} href="#">
-                                    <div>
+                                    <div style={style.icon}>
                                         <FontAwesome name='square-o' size='2x'/>
                                     </div>
                                     <span>draw</span>
                                 </NavItem>
                                 <NavItem eventKey={6} href="#">
-                                    <div>
+                                    <div style={style.icon}>
                                         <FontAwesome name='circle-o' size='2x'/>
                                     </div>
                                     <span>circle</span>
