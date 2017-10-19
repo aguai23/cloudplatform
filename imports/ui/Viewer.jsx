@@ -164,7 +164,7 @@ export default class Viewer extends Component {
             }
 
             cornerstone.enable(document.getElementById("viewer"));
-            cornerstoneTools.setElementToolStateManager(this.state.container, cornerstoneTools.newImageIdSpecificToolStateManager());
+            cornerstoneTools.addStackStateManager(this.state.container, ['stack']);
         });
 
         window.setInterval(() => {
@@ -438,6 +438,8 @@ export default class Viewer extends Component {
         caseId: this.props.location.query.caseId,
         ownerId: Meteor.userId(),
       };
+
+      console.log(mark);
 
       let oldState = Marks.findOne({ownerId: Meteor.userId(), caseId: this.props.location.query.caseId});
       if(oldState){
