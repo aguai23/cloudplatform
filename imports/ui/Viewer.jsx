@@ -511,13 +511,13 @@ export default class Viewer extends Component {
     switchState(){
       this.disableAllTools();
       if(this.state.circleVisible){
-        cornerstoneTools.ellipticalRoi.activate(this.state.container, 1);
-        // cornerstoneTools.ellipticalRoi.disable(this.state.container, 1);
+        cornerstoneTools.ellipticalRoi.disable(this.state.container, 1);
         this.setState({
           circleVisible: false
         })
       } else {
-        cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
+        cornerstoneTools.ellipticalRoi.activate(this.state.container, 1);
+        // cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
         this.setState({
           circleVisible: true
         })
