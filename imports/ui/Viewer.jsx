@@ -8,6 +8,8 @@ import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import FontAwesome from 'react-fontawesome';
 import { Marks } from '../api/marks';
+import { ToastContainer, toast } from 'react-toastify';
+import { _ } from 'underscore';
 
 
 const style = {
@@ -148,7 +150,6 @@ export default class Viewer extends Component {
         this.updateInfo = this.updateInfo.bind(this);
         this.onSaveClick = this.onSaveClick.bind(this);
         this.onRestoreClick = this.onRestoreClick.bind(this);
-        this.setEllipticalTool = this.setEllipticalTool.bind(this);
     }
 
     /**
@@ -359,32 +360,77 @@ export default class Viewer extends Component {
       cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
     }
 
-    setEllipticalTool(){
-      this.disableAllTools();
-      cornerstoneTools.ellipticalRoi.activate(this.state.container, 1);
-    }
-
+    /**
+     * save mark to database
+     */
     onSaveClick(){
       this.disableAllTools();
       let elements = [this.state.container];
       let appState = cornerstoneTools.appState.save(elements);
-      let serializedState = JSON.stringify(appState);
-      this.setState({
-        rectangle: serializedState
-      })
-      console.log(serializedState)
+      _.mapObject(appState.imageIdToolState,(val,imageId)=>{
+        _.mapObject(val,(val2,toolName)=>{
+          if(toolName === 'ellipticalRoi'){
+            appState.imageIdToolState[imageId][toolName] = {}
+          }
+        })
+      });
+
+      let mark = {
+        imageIdToolState: appState.imageIdToolState,
+        elementToolState: appState.elementToolState,
+        elementViewport: appState.elementViewport,
+        source: 'USER',
+        createAt: new Date(),
+        caseId: this.props.location.query.caseId,
+        ownerId: Meteor.userId(),
+      };
+
+      let oldState = Marks.findOne({ownerId: Meteor.userId(), caseId: this.props.location.query.caseId});
+      if(oldState){
+        mark._id = oldState._id;
+        Meteor.call('modifyMark',mark,(error)=>{
+          if(error){
+            toast.error(`标注保存失败,${error.reacon}`)
+          } else {
+            toast.success("标注保存成功!");
+          }    
+        })
+      } else {
+        Meteor.call('insertMark',mark,(error)=>{
+          if(error){
+            toast.error(`标注保存失败,${error.reacon}`)
+          } else {
+            toast.success("标注保存成功!");
+          }    
+        })
+      }
     }
 
+    /**
+     * reload mark from database
+     */
     onRestoreClick(){
       this.disableAllTools();
-      // let enabledElement = cornerstone.getEnabledElement(this.state.container)
-      // let context = enabledElement.canvas.getContext('2d');
-      // console.log(context)
-      // cornerstoneTools.drawCircle(context, {x:200,y:100}, 20, '#FF0000');
-      // cornerstoneTools.drawCircle(context, {x:100,y:200}, 20, '#FF0000');
-      let serializedState = this.state.rectangle;
-      let appState = JSON.parse(serializedState);
-      cornerstoneTools.appState.restore(appState)
+      let elements = [this.state.container];
+      let currentState = cornerstoneTools.appState.save(elements);
+      let oldState = Marks.findOne({ownerId: Meteor.userId(), caseId: this.props.location.query.caseId});
+
+    /**
+     * save system mark to old mark
+     */
+      _.mapObject(currentState.imageIdToolState,(currentVal,currentImageId)=>{
+        _.mapObject(oldState.imageIdToolState,(oldVal,oldImageId)=>{
+          if(currentImageId === oldImageId){
+            _.mapObject(currentVal,(data,type)=>{
+              if(type === 'ellipticalRoi'){
+                oldState[oldImageId].ellipticalRoi = data
+              }
+            })
+          }
+        })
+      })
+
+      cornerstoneTools.appState.restore(oldState)
     }
 
     /**
@@ -537,12 +583,6 @@ export default class Viewer extends Component {
                   </div>
                   <span>draw</span>
                 </NavItem>
-                <NavItem eventKey={4} href="#" onClick={this.setEllipticalTool}>
-                  <div>
-                    <FontAwesome name='circle-o' size='2x'/>
-                  </div>
-                  <span>circle</span>
-                </NavItem>
                 <NavItem eventKey={5} href="#" onClick={this.resetViewport}>
                   <div>
                     <FontAwesome name='refresh' size='2x'/>
@@ -593,7 +633,17 @@ export default class Viewer extends Component {
         </div>
 
         <div style={style.bottom}></div>
+        <ToastContainer
+            position="bottom-right"
+            type="info"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+          />
       </div>
     )
   }
 }
+Meteor.subscribe('marks');
