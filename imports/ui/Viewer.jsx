@@ -420,7 +420,8 @@ export default class Viewer extends Component {
     saveState(){
       this.disableAllTools();
       let elements = [this.state.container];
-      let appState = cornerstoneTools.appState.save(elements);
+      let currentState = cornerstoneTools.appState.save(elements);
+      let appState = JSON.parse(JSON.stringify(currentState))
       _.mapObject(appState.imageIdToolState,(val,imageId)=>{
         _.mapObject(val,(data,toolName)=>{
           if(toolName === 'ellipticalRoi'){
@@ -438,8 +439,6 @@ export default class Viewer extends Component {
         caseId: this.props.location.query.caseId,
         ownerId: Meteor.userId(),
       };
-
-      console.log(mark);
 
       let oldState = Marks.findOne({ownerId: Meteor.userId(), caseId: this.props.location.query.caseId});
       if(oldState){
