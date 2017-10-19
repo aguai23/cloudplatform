@@ -422,9 +422,9 @@ export default class Viewer extends Component {
       let elements = [this.state.container];
       let appState = cornerstoneTools.appState.save(elements);
       _.mapObject(appState.imageIdToolState,(val,imageId)=>{
-        _.mapObject(val,(val2,toolName)=>{
+        _.mapObject(val,(data,toolName)=>{
           if(toolName === 'ellipticalRoi'){
-            appState.imageIdToolState[imageId][toolName] = {}
+            appState.imageIdToolState[imageId].ellipticalRoi.data = []
           }
         })
       });
@@ -479,7 +479,7 @@ export default class Viewer extends Component {
           if(currentImageId === oldImageId){
             _.mapObject(currentVal,(data,type)=>{
               if(type === 'ellipticalRoi'){
-                oldState[oldImageId].ellipticalRoi = data
+                oldState.imageIdToolState[oldImageId]['ellipticalRoi']['data'] = data.data
               }
             })
           }
