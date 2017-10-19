@@ -139,6 +139,8 @@ export default class Viewer extends Component {
 
         };
         this.updateInfo = this.updateInfo.bind(this);
+
+        Meteor.subscribe('cases');
     }
 
     /**
@@ -162,6 +164,7 @@ export default class Viewer extends Component {
             }
 
             cornerstone.enable(document.getElementById("viewer"));
+            cornerstoneTools.setElementToolStateManager(this.state.container, cornerstoneTools.newImageIdSpecificToolStateManager());
         });
 
         window.setInterval(() => {
@@ -444,7 +447,7 @@ export default class Viewer extends Component {
             toast.error(`标注保存失败,${error.reacon}`)
           } else {
             toast.success("标注保存成功!");
-          }    
+          }
         })
       } else {
         Meteor.call('insertMark',mark,(error)=>{
@@ -452,7 +455,7 @@ export default class Viewer extends Component {
             toast.error(`标注保存失败,${error.reacon}`)
           } else {
             toast.success("标注保存成功!");
-          }    
+          }
         })
       }
     }
