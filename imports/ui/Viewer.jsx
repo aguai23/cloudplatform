@@ -8,6 +8,7 @@ import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import FontAwesome from 'react-fontawesome';
 import { Marks } from '../api/marks';
+import { Cases }  from '../api/cases' ;
 
 
 const style = {
@@ -137,6 +138,8 @@ export default class Viewer extends Component {
 
         };
         this.updateInfo = this.updateInfo.bind(this);
+
+        Meteor.subscribe('cases');
     }
 
     /**
@@ -160,6 +163,7 @@ export default class Viewer extends Component {
             }
 
             cornerstone.enable(document.getElementById("viewer"));
+            cornerstoneTools.setElementToolStateManager(this.state.container, cornerstoneTools.newImageIdSpecificToolStateManager());
         });
 
         window.setInterval(() => {
@@ -410,6 +414,7 @@ export default class Viewer extends Component {
       let elements = [this.state.container];
       let appState = cornerstoneTools.appState.save(elements);
       let serializedState = JSON.stringify(appState);
+
       this.setState({
         rectangle: serializedState
       })
