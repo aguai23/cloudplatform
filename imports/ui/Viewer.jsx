@@ -122,6 +122,7 @@ export default class Viewer extends Component {
         this.state = {
             container: {},
             dicomObj: {},
+            circleVisible: true,
             index:1,
             imageNumber:0,
             zoomScale: 0,
@@ -165,6 +166,7 @@ export default class Viewer extends Component {
 
             cornerstone.enable(document.getElementById("viewer"));
             cornerstoneTools.addStackStateManager(this.state.container, ['stack']);
+            let color = cornerstoneTools.toolColors.setToolColor("#ffcc33");
         });
 
         window.setInterval(() => {
@@ -328,6 +330,11 @@ export default class Viewer extends Component {
           break;
 
         case 10:
+          this.switchState();
+          break;
+
+        case 11:
+          this.closeState();
           break;
 
         default:
@@ -399,7 +406,6 @@ export default class Viewer extends Component {
      * activate rectangle draw function
      */
     setDrawTool() {
-      let color = cornerstoneTools.toolColors.setToolColor("#ffcc33");
       this.disableAllTools();
       cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
     }
@@ -500,6 +506,25 @@ export default class Viewer extends Component {
      }
 
     /**
+     * switch circle visible state
+     */
+    switchState(){
+      this.disableAllTools();
+      if(this.state.circleVisible){
+        cornerstoneTools.ellipticalRoi.activate(this.state.container, 1);
+        // cornerstoneTools.ellipticalRoi.disable(this.state.container, 1);
+        this.setState({
+          circleVisible: false
+        })
+      } else {
+        cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
+        this.setState({
+          circleVisible: true
+        })
+      }
+    }
+
+    /**
      * disable tools
      */
     disableAllTools() {
@@ -509,7 +534,7 @@ export default class Viewer extends Component {
         cornerstoneTools.mouseInput.enable(this.state.container);
         cornerstoneTools.mouseWheelInput.enable(this.state.container);
         cornerstoneTools.rectangleRoi.deactivate(this.state.container,1);
-        cornerstoneTools.ellipticalRoi.deactivate(this.state.container,1);
+        this.state.circleVisible && cornerstoneTools.ellipticalRoi.deactivate(this.state.container,1);
         cornerstoneTools.wwwc.deactivate(this.state.container,1);
         cornerstoneTools.pan.deactivate(this.state.container,1);
         cornerstoneTools.zoom.deactivate(this.state.container,4);
@@ -667,6 +692,12 @@ export default class Viewer extends Component {
                     <FontAwesome name='paste' size='2x'/>
                   </div>
                   <span>restore</span>
+                </NavItem>
+                <NavItem eventKey={10} href="#">
+                  <div>
+                    <FontAwesome name={this.state.circleVisible?'eye-slash':'eye'} size='2x'/>
+                  </div>
+                  <span>{this.state.circleVisible?'hide':'show'}</span>
                 </NavItem>
               </Nav>
             </Navbar.Collapse>
