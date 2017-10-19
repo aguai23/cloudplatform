@@ -70,7 +70,7 @@ const style = {
         bottom: '0px',
         left: '15px',
         height: '50px',
-        width: '100px',
+        width: '400px',
         color: 'white',
         marginBottom: '-20px'
     },
@@ -173,11 +173,15 @@ export default class Viewer extends Component {
             if (error) {
                 console.log(error)
             } else {
-                if (result.status == "SUCCESS") {
+                if (result.status === "SUCCESS") {
                     this.setState({
                         imageNumber:result.imageNumber,
                         patientId : result.patientId,
-                        patientName: result.patientName
+                        patientName: result.patientName,
+                        rows: result.rows,
+                        cols: result.cols,
+                        pixelSpacing: result.pixelSpacing,
+                        thickness: result.thickness
                     });
                     this.setSlice(this.state.index);
                     //set info here
@@ -631,7 +635,12 @@ export default class Viewer extends Component {
               <span className="pull-right">Zoom: {this.state.zoomScale}</span>
             </div>
             <div style={{...style.sliceInfo, ...style.textInfo, ...style.disableSelection}} id="sliceInfo">
-              <span style={{position: 'absolute', bottom: '10px'}}>{this.state.index}/{this.state.imageNumber}</span>
+                <span className="pull-left">size: {this.state.rows}*{this.state.cols}</span>
+                <br/>
+                <span className="pull-left">Slice: {this.state.index}/{this.state.imageNumber}</span>
+                <br/>
+                <span className="pull-left">thick: {this.state.thickness} spacing: {this.state.pixelSpacing}</span>
+
             </div>
             <div style={{...style.timeInfo, ...style.textInfo, ...style.disableSelection}} id="timeInfo">
               <span className="pull-right">{this.state.dateTime}</span>
