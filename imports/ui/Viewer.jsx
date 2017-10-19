@@ -8,12 +8,8 @@ import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import FontAwesome from 'react-fontawesome';
 import { Marks } from '../api/marks';
-<<<<<<< HEAD
-import { Cases }  from '../api/cases' ;
-=======
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
->>>>>>> 0277672bf7eb496176ef2f07e6ac92882669f197
 
 
 const style = {
