@@ -35,19 +35,32 @@ Meteor.methods({
     if(userId && foundCase.files && foundCase.files.length > 0) {
       var patientName = undefined;
       var patientId = undefined;
+      var rows = undefined;
+      var cols = undefined;
+      var pixelSpacing = undefined;
+      var thickness = undefined;
       for(var i = 0; i < foundCase.files.length; i++) {
         var data = fs.readFileSync(foundCase.files[i]);
         var dataset = dicomParser.parseDicom(data);
         var index = parseInt(dataset.string('x00200013'));
         patientName = dataset.string('x00100010');
         patientId = dataset.string('x00100020');
+        rows = dataset.string('x00280010');
+        cols = dataset.string('x00280011');
+        pixelSpacing = dataset.string('x00280030');
+        thickness = dataset.string('x00180050');
         dicomObj[userId][index-1] = dataset;
       }
-
+      console.log(rows);
+      console.log(pixelSpacing);
       result.status = "SUCCESS";
       result.imageNumber = foundCase.files.length;
       result.patientName = patientName;
       result.patientId = patientId;
+      result.rows = rows;
+      result.cols = cols;
+      result.pixelSpacing = pixelSpacing;
+      result.thickness = thickness;
     }
 
     return result;

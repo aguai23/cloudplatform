@@ -8,7 +8,12 @@ import cornerstone from 'cornerstone-core';
 import cornerstoneTools from 'cornerstone-tools';
 import FontAwesome from 'react-fontawesome';
 import { Marks } from '../api/marks';
+<<<<<<< HEAD
 import { Cases }  from '../api/cases' ;
+=======
+import { ToastContainer, toast } from 'react-toastify';
+import { _ } from 'underscore';
+>>>>>>> 0277672bf7eb496176ef2f07e6ac92882669f197
 
 
 const style = {
@@ -71,7 +76,7 @@ const style = {
         bottom: '0px',
         left: '15px',
         height: '50px',
-        width: '100px',
+        width: '400px',
         color: 'white',
         marginBottom: '-20px'
     },
@@ -177,11 +182,15 @@ export default class Viewer extends Component {
             if (error) {
                 console.log(error)
             } else {
-                if (result.status == "SUCCESS") {
+                if (result.status === "SUCCESS") {
                     this.setState({
                         imageNumber:result.imageNumber,
                         patientId : result.patientId,
-                        patientName: result.patientName
+                        patientName: result.patientName,
+                        rows: result.rows,
+                        cols: result.cols,
+                        pixelSpacing: result.pixelSpacing,
+                        thickness: result.thickness
                     });
                     this.setSlice(this.state.index);
                     //set info here
@@ -409,28 +418,77 @@ export default class Viewer extends Component {
       cornerstoneTools.length.activate(this.state.container, 1);
     }
 
+    /**
+     * save mark to database
+     */
     saveState(){
       this.disableAllTools();
       let elements = [this.state.container];
       let appState = cornerstoneTools.appState.save(elements);
-      let serializedState = JSON.stringify(appState);
+      _.mapObject(appState.imageIdToolState,(val,imageId)=>{
+        _.mapObject(val,(val2,toolName)=>{
+          if(toolName === 'ellipticalRoi'){
+            appState.imageIdToolState[imageId][toolName] = {}
+          }
+        })
+      });
 
-      this.setState({
-        rectangle: serializedState
-      })
-      console.log(serializedState)
+      let mark = {
+        imageIdToolState: appState.imageIdToolState,
+        elementToolState: appState.elementToolState,
+        elementViewport: appState.elementViewport,
+        source: 'USER',
+        createAt: new Date(),
+        caseId: this.props.location.query.caseId,
+        ownerId: Meteor.userId(),
+      };
+
+      let oldState = Marks.findOne({ownerId: Meteor.userId(), caseId: this.props.location.query.caseId});
+      if(oldState){
+        mark._id = oldState._id;
+        Meteor.call('modifyMark',mark,(error)=>{
+          if(error){
+            toast.error(`标注保存失败,${error.reacon}`)
+          } else {
+            toast.success("标注保存成功!");
+          }
+        })
+      } else {
+        Meteor.call('insertMark',mark,(error)=>{
+          if(error){
+            toast.error(`标注保存失败,${error.reacon}`)
+          } else {
+            toast.success("标注保存成功!");
+          }
+        })
+      }
     }
 
+    /**
+     * reload mark from database
+     */
     restoreState(){
       this.disableAllTools();
-      // let enabledElement = cornerstone.getEnabledElement(this.state.container)
-      // let context = enabledElement.canvas.getContext('2d');
-      // console.log(context)
-      // cornerstoneTools.drawCircle(context, {x:200,y:100}, 20, '#FF0000');
-      // cornerstoneTools.drawCircle(context, {x:100,y:200}, 20, '#FF0000');
-      let serializedState = this.state.rectangle;
-      let appState = JSON.parse(serializedState);
-      cornerstoneTools.appState.restore(appState)
+      let elements = [this.state.container];
+      let currentState = cornerstoneTools.appState.save(elements);
+      let oldState = Marks.findOne({ownerId: Meteor.userId(), caseId: this.props.location.query.caseId});
+
+    /**
+     * save system mark to old mark
+     */
+      _.mapObject(currentState.imageIdToolState,(currentVal,currentImageId)=>{
+        _.mapObject(oldState.imageIdToolState,(oldVal,oldImageId)=>{
+          if(currentImageId === oldImageId){
+            _.mapObject(currentVal,(data,type)=>{
+              if(type === 'ellipticalRoi'){
+                oldState[oldImageId].ellipticalRoi = data
+              }
+            })
+          }
+        })
+      })
+
+      cornerstoneTools.appState.restore(oldState)
     }
 
     /**
@@ -636,7 +694,12 @@ export default class Viewer extends Component {
               <span className="pull-right">Zoom: {this.state.zoomScale}</span>
             </div>
             <div style={{...style.sliceInfo, ...style.textInfo, ...style.disableSelection}} id="sliceInfo">
-              <span style={{position: 'absolute', bottom: '10px'}}>{this.state.index}/{this.state.imageNumber}</span>
+                <span className="pull-left">size: {this.state.rows}*{this.state.cols}</span>
+                <br/>
+                <span className="pull-left">Slice: {this.state.index}/{this.state.imageNumber}</span>
+                <br/>
+                <span className="pull-left">thick: {this.state.thickness} spacing: {this.state.pixelSpacing}</span>
+
             </div>
             <div style={{...style.timeInfo, ...style.textInfo, ...style.disableSelection}} id="timeInfo">
               <span className="pull-right">{this.state.dateTime}</span>
@@ -645,7 +708,17 @@ export default class Viewer extends Component {
         </div>
 
         <div style={style.bottom}></div>
+        <ToastContainer
+            position="bottom-right"
+            type="info"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+          />
       </div>
     )
   }
 }
+Meteor.subscribe('marks');

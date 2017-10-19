@@ -15,8 +15,20 @@ Marks.deny({
 });
 
 const MarkSchema = new SimpleSchema({
-  markDetail: {
-    label: '图像信息',
+  imageIdToolState: {
+    label: '图像标注信息',
+    type: Object,
+    blackbox: true,
+    optional: false
+  },
+  elementToolState: {
+    label: '工具状态',
+    type: Object,
+    blackbox: true,
+    optional: false
+  },
+  elementViewport: {
+    label: '视角信息',
     type: Object,
     blackbox: true,
     optional: false
@@ -27,7 +39,7 @@ const MarkSchema = new SimpleSchema({
   },
   createAt: {
     label: '时间',
-    type: String
+    type: Date
   },
   caseId: {
     label: '所属病例',
