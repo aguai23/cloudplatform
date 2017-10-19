@@ -136,27 +136,13 @@ export default class Viewer extends Component {
             startY: 0
 
         };
-        this.setSlice = this.setSlice.bind(this);
-        this.increaseSlice = this.increaseSlice.bind(this);
-        this.decreaseSlice = this.decreaseSlice.bind(this);
-        this.setScrollTool = this.setScrollTool.bind(this);
-        this.setWindowTool = this.setWindowTool.bind(this);
-        this.setZoomTool = this.setZoomTool.bind(this);
-        this.setDrawTool = this.setDrawTool.bind(this);
-        this.resetViewport = this.resetViewport.bind(this);
-        this.disableAllTools = this.disableAllTools.bind(this);
         this.updateInfo = this.updateInfo.bind(this);
-        this.onSaveClick = this.onSaveClick.bind(this);
-        this.onRestoreClick = this.onRestoreClick.bind(this);
-        this.setEllipticalTool = this.setEllipticalTool.bind(this);
     }
 
     /**
      * will run after elements rendered
      */
     componentDidMount() {
-        console.log($('#scrollBar').position().top);
-        console.log($('#scrollBar').position().top + $('#viewer').height());
         /**
          * set the dynamic height for container
          */
@@ -291,6 +277,56 @@ export default class Viewer extends Component {
     }
 
     /**
+     * handle tool selection
+     * @param selectedKey the key of selected MenuItem
+     */
+    navSelectHandler(selectedKey) {
+      switch(selectedKey) {
+        case 1:
+          this.setScrollTool();
+          break;
+
+        case 2:
+          this.setWindowTool();
+          break;
+
+        case 3:
+          this.setZoomTool();
+          break;
+
+        case 4:
+          this.setLengthTool();
+          break;
+
+        case 5:
+          this.setDrawTool();
+          break;
+
+        case 6:
+          this.setEllipticalTool();
+          break;
+
+        case 7:
+          this.resetViewport();
+          break;
+
+        case 8:
+          this.saveState();
+          break;
+
+        case 9:
+          this.restoreState();
+          break;
+
+        case 10:
+          break;
+
+        default:
+          console.log(error);
+      }
+    }
+
+    /**
      * activate scroll tool, enable both mousewheel and mouse select
      */
     setScrollTool() {
@@ -364,7 +400,12 @@ export default class Viewer extends Component {
       cornerstoneTools.ellipticalRoi.activate(this.state.container, 1);
     }
 
-    onSaveClick(){
+    setLengthTool() {
+      this.disableAllTools();
+      cornerstoneTools.length.activate(this.state.container, 1);
+    }
+
+    saveState(){
       this.disableAllTools();
       let elements = [this.state.container];
       let appState = cornerstoneTools.appState.save(elements);
@@ -375,7 +416,7 @@ export default class Viewer extends Component {
       console.log(serializedState)
     }
 
-    onRestoreClick(){
+    restoreState(){
       this.disableAllTools();
       // let enabledElement = cornerstone.getEnabledElement(this.state.container)
       // let context = enabledElement.canvas.getContext('2d');
@@ -413,6 +454,7 @@ export default class Viewer extends Component {
         cornerstoneTools.pan.deactivate(this.state.container,1);
         cornerstoneTools.zoom.deactivate(this.state.container,4);
         cornerstoneTools.zoomWheel.deactivate(this.state.container);
+        cornerstoneTools.length.deactivate(this.state.container, 1);
     }
 
   /**
@@ -444,7 +486,6 @@ export default class Viewer extends Component {
    * @param evt mouse events
    */
   toggleScrollBarClick(evt) {
-    console.log(evt.type);
     if(evt.type === 'mouseup' || evt.type === 'mouseleave') {
       if(this.state.isScrollBarClicked) {
         this.setState({isScrollBarClicked: false});
@@ -510,8 +551,8 @@ export default class Viewer extends Component {
         <div id="top" style={style.top}>
           <Navbar inverse collapseOnSelect style={{marginBottom: '0'}}>
             <Navbar.Collapse>
-              <Nav>
-                <NavItem eventKey={1} href="#" onClick={this.setScrollTool}>
+              <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
+                <NavItem eventKey={1} href="#">
                   <div>
                     <div>
                       <FontAwesome name='gear' size='2x'/>
@@ -519,43 +560,49 @@ export default class Viewer extends Component {
                     <span>scroll</span>
                   </div>
                 </NavItem>
-                <NavItem eventKey={2} href="#" onClick={this.setWindowTool}>
+                <NavItem eventKey={2} href="#">
                   <div>
                     <FontAwesome name='adjust' size='2x'/>
                   </div>
                   <span>wl/wc</span>
                 </NavItem>
-                <NavItem eventKey={3} href="#" onClick={this.setZoomTool}>
+                <NavItem eventKey={3} href="#">
                   <div>
                     <FontAwesome name='search' size='2x'/>
                   </div>
                   <span>zoom/pan</span>
                 </NavItem>
-                <NavItem eventKey={4} href="#" onClick={this.setDrawTool}>
+                <NavItem eventKey={4} href="#">
+                  <div>
+                    <FontAwesome name='arrows-h' size='2x'/>
+                  </div>
+                  <span>length</span>
+                </NavItem>
+                <NavItem eventKey={5} href="#">
                   <div>
                     <FontAwesome name='square-o' size='2x'/>
                   </div>
                   <span>draw</span>
                 </NavItem>
-                <NavItem eventKey={4} href="#" onClick={this.setEllipticalTool}>
+                <NavItem eventKey={6} href="#">
                   <div>
                     <FontAwesome name='circle-o' size='2x'/>
                   </div>
                   <span>circle</span>
                 </NavItem>
-                <NavItem eventKey={5} href="#" onClick={this.resetViewport}>
+                <NavItem eventKey={7} href="#">
                   <div>
                     <FontAwesome name='refresh' size='2x'/>
                   </div>
                   <span>reset</span>
                 </NavItem>
-                <NavItem eventKey={5} href="#" onClick={this.onSaveClick}>
+                <NavItem eventKey={8} href="#">
                   <div>
                     <FontAwesome name='save' size='2x'/>
                   </div>
                   <span>save</span>
                 </NavItem>
-                <NavItem eventKey={5} href="#" onClick={this.onRestoreClick}>
+                <NavItem eventKey={9} href="#">
                   <div>
                     <FontAwesome name='paste' size='2x'/>
                   </div>
