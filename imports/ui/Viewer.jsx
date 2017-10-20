@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor';
 import dicomParse from 'dicom-parser';
 import FS from 'fs';
 import cornerstone from 'cornerstone-core';
-import cornerstoneTools from 'cornerstone-tools';
+import cornerstoneTools from '../library/cornerstoneTools';
 import FontAwesome from 'react-fontawesome';
 import io from '../library/socket';
 import { Marks } from '../api/marks';
