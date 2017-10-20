@@ -11,13 +11,15 @@ import io from '../library/socket';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
+import { Motion, spring } from 'react-motion';
 import "./css/viewer.css"
 
 
 const style = {
     body: {
         backgroundColor: 'black',
-        minHeight: '100%'
+        minHeight: '100%',
+        maxHeight: '100%'
     },
     top: {
         height: 'auto',
@@ -35,10 +37,11 @@ const style = {
         backgroundColor: '#7f7f7f'
     },
     container: {
-        position: 'relative',
-        width: '100%',
-        left: '0px',
-        border: '1px solid #42f4ee'
+        position: 'absolute',
+        border: '1px solid #42f4ee',
+        display: 'inline-block',
+        float: 'left',
+        width: '80%'
     },
     viewer: {
         top: '30px',
@@ -77,7 +80,6 @@ const style = {
         width: '400px',
         color: 'white',
         marginBottom: '-20px'
-
     },
     timeInfo: {
         position: 'absolute',
@@ -109,6 +111,13 @@ const style = {
     icon: {
         textAlign: "center",
         verticalAlign: "center",
+    },
+    diagnosisInfo: {
+      position: 'relative',
+      width: '20%',
+      backgroundColor: 'red',
+      display: 'inline-block',
+      float: 'left'
     }
 
 };
@@ -137,7 +146,9 @@ export default class Viewer extends Component {
             scrollBarStyle: style.scrollBar,
             timer: undefined,
             lastY: 0,
-            startY: 0
+            startY: 0,
+
+            isDiagnosisPanelOpened: false
 
         };
         this.updateInfo = this.updateInfo.bind(this);
@@ -151,10 +162,24 @@ export default class Viewer extends Component {
      */
     componentDidMount() {
         /**
+         * re-render when window resized
+         */
+        window.addEventListener('resize', () => this.updateDimensions());
+
+        /**
+         * disable right click in canvas
+         */
+        document.getElementById('outerContainer').oncontextmenu = function(e) {
+          e.preventDefault();
+        };
+
+        /**
          * set the dynamic height for container
          */
+         console.log(document.getElementById('diagnosisInfo').clientWidth);
         this.setState({
             containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px',
+            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth) + 'px',
             topValue: (window.innerHeight - document.getElementById('top').clientHeight)/2 + "px",
             rightValue: -((window.innerHeight - document.getElementById('top').clientHeight)/2 - 10) + 'px'
         });
@@ -168,7 +193,7 @@ export default class Viewer extends Component {
 
             cornerstone.enable(document.getElementById("viewer"));
             cornerstoneTools.addStackStateManager(this.state.container, ['stack']);
-            let color = cornerstoneTools.toolColors.setToolColor("#ffcc33");
+            cornerstoneTools.toolColors.setToolColor("#ffcc33");
         });
 
         window.setInterval(() => {
@@ -205,6 +230,10 @@ export default class Viewer extends Component {
 
     }
 
+    componentWillUnmount() {
+        window.removeEventListener("resize", () => this.updateDimensions());
+    }
+
     /**
      * update info dynamically
      * @param e
@@ -218,6 +247,17 @@ export default class Viewer extends Component {
             },
             zoomScale: viewport.scale.toFixed(2)
         });
+    }
+
+    /**
+     * updates window dimensions
+     */
+    updateDimensions() {
+      console.log('resize');
+      this.setState({
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight
+      })
     }
 
     /**
@@ -320,7 +360,7 @@ export default class Viewer extends Component {
 
 
             case 11:
-                this.closeState();
+                this.diagnose();
                 break;
 
             default:
@@ -510,6 +550,17 @@ export default class Viewer extends Component {
     }
 
     /**
+     * get diagnosis information from backend
+     */
+    diagnose() {
+        this.setState({
+          isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened
+        }, function() {
+          console.log(this.state.isDiagnosisPanelOpened);
+        });
+    }
+
+    /**
      * disable tools
      */
     disableAllTools() {
@@ -605,11 +656,19 @@ export default class Viewer extends Component {
                                     </div>
                                     <span>{this.state.circleVisible?'hide':'show'}</span>
                                 </NavItem>
+                                <NavItem eventKey={11} href="#">
+                                    <div>
+                                        <FontAwesome name='stethoscope' size='2x'/>
+                                    </div>
+                                    <span>Diagnose</span>
+                                </NavItem>
                             </Nav>
                         </Navbar.Collapse>
                     </Navbar>
                 </div>
-                <div style={{...style.container, ...{height: this.state.containerHeight}}} className="container">
+                <div id="diagnosisInfo" style={{...style.diagnosisInfo, ...{height: this.state.containerHeight}}}></div>
+
+                <div id="outerContainer" style={{...style.container, ...{height: this.state.containerHeight}}} className="container">
                     <input type={"range"}
                            id={"scrollbar"}
                            min={1}
