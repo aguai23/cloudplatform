@@ -13,7 +13,6 @@ import AccountsWrapper from './AccountsWrapper';
 import AccountState from './AccountState'
 import CaseList from './CaseList';
 import { Cases }  from '../api/cases' ;
-import CollectionList from './Collection-list';
 import { DataCollections } from '../api/dataCollections';
 import Edit from './EditDataCollection';
 import ModalAddCollection from './ModalAddCollection';
@@ -122,13 +121,6 @@ export class Main extends Component {
         this.setState({dataCollections: nextProps.favoriteDataCollections});
       }
     }
-  }
-
-  renderDataCollection() {
-    console.log("this.props.dataCollections", this.props.dataCollections);
-    return this.props.dataCollections.map((dataCollection) => (
-      <CollectionList onAddCasesClick={this.onAddCasesClick} key={dataCollection._id} dataCollection={dataCollection} updateCurrentDataCollection={this.updateCurrentDataCollection} />
-    ));
   }
 
   setSearchButtonHovered(val) {
