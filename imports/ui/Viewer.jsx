@@ -632,6 +632,7 @@ export default class Viewer extends Component {
               "drawnIndependently": true,
               "allowedOutsideImage": true,
               "hasBoundingBox": true,
+              "index": 1,
             }
           },
         }
@@ -639,8 +640,10 @@ export default class Viewer extends Component {
         standard.handles.start.y = obj.x0;
         standard.handles.end.x = obj.y1;
         standard.handles.end.y = obj.x1;
+        standard.handles.textBox.index = obj.num;
         tempList.push(standard)
       })
+      console.log(tempList)
       currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: tempList }
     })
     this.setState({
