@@ -6046,8 +6046,8 @@ function onImageRendered(e, eventData) {
       // textLines.push(meanText);
       // textLines.push(stdDevText);
     }
-    if (config.nodule_index) {
-      textLines.push(config.nodule_index);
+    if (data.handles.textBox.index !== undefined) {
+      textLines.push(data.handles.textBox.index);
     }
 
     // If the area is a sane value, display it
