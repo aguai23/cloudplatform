@@ -40,8 +40,7 @@ const style = {
     position: 'absolute',
     border: '1px solid #3bc7f9',
     display: 'inline-block',
-    float: 'left',
-    width: '80%'
+    float: 'left'
   },
   viewer: {
     top: '30px',
@@ -51,9 +50,9 @@ const style = {
     margin: '0 auto'
   },
   textInfo: {
-    color: '#91b9cd',
+    color: '#9ccef9',
     fontSize: '14px',
-    fontWeight: '400'
+    fontWeight: '300'
   },
   patientInfo: {
     position: 'absolute',
@@ -112,12 +111,29 @@ const style = {
     textAlign: "center",
     verticalAlign: "center",
   },
-  diagnosisInfo: {
+  diagnosisBox: {
     position: 'relative',
     width: '20%',
     display: 'none',
     float: 'left',
     border: '1px solid #aaf7f4',
+    padding: '10px 20px 10px 20px'
+  },
+  diagnosisHeader: {
+    textAlign: 'center',
+    fontWeight: '200'
+  },
+  diagnosisTableHead: {
+    fontSize: '16px'
+  },
+  diagnosisRow: {
+    marginTop: '20px'
+  },
+  diagnosisProb: {
+    textAlign: 'right'
+  },
+  diagnosisLink: {
+    cursor: 'pointer'
   }
 
 };
@@ -591,6 +607,10 @@ export default class Viewer extends Component {
       "5_66": { "y1": 148, "y0": 110, "x0": 253, "x1": 295, "prob": 0.982299394580053 }
     };
 
+    if(!this.state.diagnosisResult) {
+      this.extract(temp);
+    }
+
     let picList = {}
     _.mapObject(temp, (val, key) => {
       val.num = key.split("_")[0];
@@ -652,7 +672,7 @@ export default class Viewer extends Component {
         $('#diagnosisInfo').fadeIn({
           start: function () {
             self.setState({
-              containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 7) + 'px'
+              containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 5) + 'px'
             }, function () {
               cornerstone.resize(this.state.container, false);
             });
@@ -670,6 +690,26 @@ export default class Viewer extends Component {
         });
       }
     });
+  }
+
+  /**
+   * extract information in data
+   */
+  extract(data) {
+    let diagnosisResult = {};
+    for(key in data) {
+      let strs = key.split("_");
+
+      if(diagnosisResult[strs[0]]) {
+        diagnosisResult[strs[0]].lastSlice = parseInt(strs[1]);
+      } else {
+        diagnosisResult[strs[0]] = {};
+        diagnosisResult[strs[0]].firstSlice = parseInt(strs[1]);
+        diagnosisResult[strs[0]].prob = parseFloat(data[key].prob).toFixed(3);
+      }
+    }
+
+    this.setState({diagnosisResult: diagnosisResult});
   }
 
   /**
@@ -701,9 +741,26 @@ export default class Viewer extends Component {
   }
 
   render() {
-    // style={{color: '#9ccef9'}}
+    let results = [];
+
+    if(this.state.diagnosisResult) {
+      for(let key in this.state.diagnosisResult) {
+        results.push(
+          <div className="row" style={style.diagnosisRow} key={'diagnosis-item-' + key}>
+            <div className="col-xs-3">{key}</div>
+            <div className="col-xs-3">{this.state.diagnosisResult[key].firstSlice + ' - ' + this.state.diagnosisResult[key].lastSlice}</div>
+            <div className="col-xs-4"  style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
+            <div className="col-xs-2 pull-right">
+              <div style={style.diagnosisLink} onClick={() => this.setSlice(this.state.diagnosisResult[key].firstSlice)}>
+                <FontAwesome name='link'/>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    }
     return (
-      <div id="body" style={style.body}>
+      <div id="body" style={{...style.body, ...style.textInfo}}>
         <div id="top" style={style.top}>
           <Navbar inverse collapseOnSelect style={{ marginBottom: '0' }}>
             <Navbar.Collapse>
@@ -778,7 +835,20 @@ export default class Viewer extends Component {
             </Navbar.Collapse>
           </Navbar>
         </div>
-        <div id="diagnosisInfo" style={{ ...style.diagnosisInfo, ...{ height: this.state.containerHeight } }}></div>
+
+        <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
+          <div style={style.diagnosisHeader}>
+            <h3>Diagnosis</h3>
+          </div>
+          <hr style={{borderColor: '#aaf7f4'}}/>
+          <div className="row" style={style.diagnosisTableHead}>
+            <div className="col-xs-3">No.</div>
+            <div className="col-xs-3">Range</div>
+            <div className="col-xs-4" style={style.diagnosisProb}>Prob</div>
+            <div className="col-xs-2"></div>
+          </div>
+          {results}
+        </div>
 
         <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: this.state.containerWidth } }} className="container">
           <input type={"range"}

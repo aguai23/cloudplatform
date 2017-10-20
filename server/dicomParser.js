@@ -51,8 +51,7 @@ Meteor.methods({
         thickness = dataset.string('x00180050');
         dicomObj[userId][index-1] = dataset;
       }
-      console.log(rows);
-      console.log(pixelSpacing);
+
       result.status = "SUCCESS";
       result.imageNumber = foundCase.files.length;
       result.patientName = patientName;
