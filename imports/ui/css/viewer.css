@@ -1,0 +1,12 @@
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 10px;
+    width: 30px;
+    border-radius: 30%;
+    background: cornflowerblue;
+    margin-top: -4px;
+}
+input[type=range]::-webkit-slider-thumb:active {
+    background-color: aqua;
+}

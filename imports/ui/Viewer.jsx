@@ -11,6 +11,7 @@ import io from '../library/socket';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
+import "./css/viewer.css"
 
 
 const style = {
@@ -76,6 +77,7 @@ const style = {
         width: '400px',
         color: 'white',
         marginBottom: '-20px'
+
     },
     timeInfo: {
         position: 'absolute',
@@ -87,12 +89,14 @@ const style = {
     },
     scrollBar: {
         height:'10px',
-        backgroundColor: '#9ccef9',
+        backgroundColor: 'black',
         position: 'absolute',
         borderRadius: '4px',
         opacity: '0.5',
         WebkitAppearance: "none",
         WebkitTransform: "rotate(90deg)",
+        border: "none",
+        outline: "none",
     },
     disableSelection: {
         userSelect: 'none',
