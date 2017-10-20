@@ -606,14 +606,11 @@ export default class Viewer extends Component {
       "5_65": { "y1": 152, "y0": 107, "x0": 243, "x1": 296, "prob": 0.982299394580053 },
       "5_64": { "y1": 148, "y0": 110, "x0": 253, "x1": 295, "prob": 0.982299394580053 }
     };
-<<<<<<< HEAD
 
     if(!this.state.diagnosisResult) {
       this.extract(temp);
     }
 
-=======
->>>>>>> 4234d8634f7bb767ccd2fe868ec0c37be0ea7461
     let picList = {}
     _.mapObject(temp, (val, key) => {
       val.num = key.split("_")[0];
