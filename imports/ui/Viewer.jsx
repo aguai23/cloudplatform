@@ -86,21 +86,13 @@ const style = {
         color: 'white'
     },
     scrollBar: {
-        width:'10px',
-        height: '40px',
+        height:'10px',
         backgroundColor: '#9ccef9',
         position: 'absolute',
-        right: '5px',
-        top: '10px',
         borderRadius: '4px',
         opacity: '0.5',
-
-        userDrag: 'none',
-        userSelect: 'none',
-        MozUserSelect: 'none',
-        WebkitUserDrag: 'none',
-        WebkitUserSelect: 'none',
-        MsUserSelect: 'none'
+        WebkitAppearance: "none",
+        WebkitTransform: "rotate(90deg)",
     },
     disableSelection: {
         userSelect: 'none',
@@ -145,7 +137,8 @@ export default class Viewer extends Component {
 
         };
         this.updateInfo = this.updateInfo.bind(this);
-
+        this.setSlice = this.setSlice.bind(this);
+        this.onDragScrollBar = this.onDragScrollBar.bind(this);
         Meteor.subscribe('cases');
     }
 
@@ -158,8 +151,8 @@ export default class Viewer extends Component {
          */
         this.setState({
             containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px',
-            scrollbarTopMin: $('#scrollBar').position().top,
-            scrollbarTopMax: $('#scrollBar').position().top + $('#viewer').height()
+            topValue: (window.innerHeight - document.getElementById('top').clientHeight)/2 + "px",
+            rightValue: -((window.innerHeight - document.getElementById('top').clientHeight)/2 - 10) + 'px'
         });
 
         this.setState({
@@ -226,40 +219,18 @@ export default class Viewer extends Component {
     /**
      * increase slice number
      */
-    increaseSlice(scrollStep){
+    increaseSlice(){
         if (this.state.index < this.state.imageNumber) {
-            let position = $('#scrollBar').position();
-            this.setState({
-                index:this.state.index + 1
-            }, function() {
-                var newTop = position.top + scrollStep;
-
-                newTop = Math.max(this.state.scrollbarTopMin,
-                    Math.min(newTop, this.state.scrollbarTopMax));
-
-                $('#scrollBar').css({top: newTop});
-            });
-            this.setSlice(this.state.index);
+            this.setSlice(this.state.index + 1);
         }
     }
 
     /**
      * decrease slice number
      */
-    decreaseSlice(scrollStep){
-        let position = $('#scrollBar').position();
+    decreaseSlice(){
         if (this.state.index > 1) {
-            this.setState({
-                index:this.state.index - 1
-            }, function(){
-                var newTop = position.top - scrollStep;
-
-                newTop = Math.max(this.state.scrollbarTopMin,
-                    Math.min(newTop, this.state.scrollbarTopMax));
-
-                $('#scrollBar').css({top: newTop});
-            });
-            this.setSlice(this.state.index);
+            this.setSlice(this.state.index - 1);
         }
     }
 
@@ -275,8 +246,8 @@ export default class Viewer extends Component {
                 image.getPixelData = function(){
                     return pixelData
                 };
-                let currentObj = this.state.dicomObj
-                currentObj[index] = image
+                let currentObj = this.state.dicomObj;
+                currentObj[index] = image;
                 this.setState({
                     dicomObj: currentObj
                 });
@@ -290,6 +261,11 @@ export default class Viewer extends Component {
         } else {
             cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
         }
+        let scrollbar = document.getElementById("scrollbar");
+        scrollbar.value = index;
+        this.setState({
+            index: index
+        });
     }
 
     /**
@@ -354,16 +330,14 @@ export default class Viewer extends Component {
     setScrollTool() {
         let element = $("#viewer");
         let self = this;
-        let step = element.height() / this.state.imageNumber;
-        let startPoint = 0;
         this.disableAllTools();
         element.bind("mousewheel", function (e) {
             let event = window.event || e;
             let down = event.wheelDelta < 0;
             if (down) {
-                self.increaseSlice(step);
+                self.increaseSlice();
             } else {
-                self.decreaseSlice(step);
+                self.decreaseSlice();
             }
         });
     }
@@ -495,7 +469,8 @@ export default class Viewer extends Component {
                     })
                 }
             })
-        })
+        });
+        console.log(oldState);
 
         cornerstoneTools.appState.restore(oldState)
     }
@@ -548,97 +523,20 @@ export default class Viewer extends Component {
         cornerstoneTools.length.deactivate(this.state.container, 1);
     }
 
-    /**
-     * handler for hovering the scroll bar
-     * @param evt mouse hover event
-     */
-    toggleScrollBarHover(evt){
-        this.setState({isScrollBarHovered: !this.state.isScrollBarHovered}, () => {
-            if(this.state.isScrollBarHovered) {
-                this.state.scrollBarStyle = {
-                    ...style.scrollBar,
-                    cursor: 'pointer',
-                    opacity: 1.0
-                }
-            } else {
-                this.state.scrollBarStyle = {
-                    ...style.scrollBar,
-                    cursor: 'default',
-                    opacity: 0.5
-                }
-            }
-        });
-
-        //this.toggleScrollBarClick(evt);
-    }
-
-    /**
-     * handler for clicking the scroll bar
-     * @param evt mouse events
-     */
-    toggleScrollBarClick(evt) {
-        if(evt.type === 'mouseup' || evt.type === 'mouseleave') {
-            if(this.state.isScrollBarClicked) {
-                this.setState({isScrollBarClicked: false});
-            }
-        } else {
-            if(evt.button === 0) {
-                if(evt.type === 'mousedown' || evt.type === 'mouseenter') {
-                    this.setState({isScrollBarClicked: true, lastY: evt.pageY});
-                }
-            }
-        }
-    }
 
     /**
      * handler for draging the scroll bar, moves scrollbar position and changes image
      * @param evt mousemove event
      */
-    onDragScrollBar(evt) {
-        let step = $("#viewer").height() / this.state.imageNumber;
-
-        if(this.state.isScrollBarClicked) {
-            let self = this,
-                scrollBar = $('#scrollBar'),
-                newTop = scrollBar.position().top + evt.pageY - this.state.lastY;
-
-            newTop = Math.max(this.state.scrollbarTopMin,
-                Math.min(newTop, this.state.scrollbarTopMax));
-
-            scrollBar.css({top: newTop});
-
-            if(this.state.timer) {
-                window.clearTimeout(this.state.timer);
-            }
-
-            let pageY = evt.pageY;
-
-            if(this.state.startY === 0) {
-                this.setState({startY: pageY});
-            }
-
-            this.setState({
-                timer: window.setTimeout(function() {
-                    let index = self.state.index + Math.round((pageY - self.state.startY) / step);
-
-                    index = Math.max(1, Math.min(index, self.state.imageNumber));
-
-                    self.setState({startY: pageY, index: index});
-                    self.setSlice(index);
-
-                }, 100),
-                lastY: evt.pageY
-            });
-        }
-
+    onDragScrollBar() {
+        let scrollbar = document.getElementById("scrollbar");
+        this.setSlice(parseInt(scrollbar.value));
     }
 
     render() {
         // style={{color: '#9ccef9'}}
         return (
-            <div id="body" style={style.body}
-                 onMouseMove={(evt) => {this.onDragScrollBar(evt)}}  onMouseUp={(evt) => {this.toggleScrollBarClick(evt)}}
-                 onMouseLeave={(evt) => {this.toggleScrollBarClick(evt)}}>
+            <div id="body" style={style.body}>
                 <div id="top" style={style.top}>
                     <Navbar inverse collapseOnSelect style={{marginBottom: '0'}}>
                         <Navbar.Collapse>
@@ -708,10 +606,14 @@ export default class Viewer extends Component {
                     </Navbar>
                 </div>
                 <div style={{...style.container, ...{height: this.state.containerHeight}}} className="container">
-                    <div id="scrollBar" style={this.state.scrollBarStyle}
-                         onMouseDown={(evt) => {this.toggleScrollBarClick(evt)}}
-                         onMouseEnter={(evt) => this.toggleScrollBarHover(evt)} onMouseLeave={(evt) => this.toggleScrollBarHover(evt)}>
-                    </div>
+                    <input type={"range"}
+                           id={"scrollbar"}
+                           min={1}
+                           max={this.state.imageNumber}
+                           step={1}
+                           onInput={this.onDragScrollBar}
+                           style={{...style.scrollBar, ...{width: this.state.containerHeight},
+                               ...{top: this.state.topValue},...{right: this.state.rightValue}}}/>
                     <div style={style.viewer} ref="viewerContainer" id="viewer" >
                         <div style={{...style.patientInfo, ...style.textInfo, ...style.disableSelection}} id="patientInfo">
                             <div>
