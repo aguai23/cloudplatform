@@ -97,6 +97,13 @@ Meteor.methods({
     result.height = result.rows;
     result.sizeInBytes = result.rows * result.columns * 2;
 
+    var pixelspacing = dicomObj[userId][index - 1].string('x00280030');
+    var spacings = pixelspacing.split("\\");
+    if (spacings.length === 2) {
+      result.rowPixelSpacing = parseFloat(spacings[0]);
+      result.columnPixelSpacing = parseFloat(spacings[1]);
+    }
+
     return result;
   }
 
