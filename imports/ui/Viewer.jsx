@@ -11,7 +11,6 @@ import io from '../library/socket';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
-import { Motion, spring } from 'react-motion';
 
 
 const style = {
@@ -37,7 +36,7 @@ const style = {
     },
     container: {
         position: 'absolute',
-        border: '1px solid #42f4ee',
+        border: '1px solid #3bc7f9',
         display: 'inline-block',
         float: 'left',
         width: '80%'
@@ -112,9 +111,9 @@ const style = {
     diagnosisInfo: {
       position: 'relative',
       width: '20%',
-      backgroundColor: 'red',
-      display: 'inline-block',
-      float: 'left'
+      display: 'none',
+      float: 'left',
+      border: '1px solid #aaf7f4',
     }
 
 };
@@ -173,11 +172,10 @@ export default class Viewer extends Component {
         /**
          * set the dynamic height for container
          */
-         console.log(document.getElementById('diagnosisInfo').clientWidth);
         this.setState({
             containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px',
             containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth) + 'px',
-            topValue: (window.innerHeight - document.getElementById('top').clientHeight)/2 + "px",
+            topValue: (window.innerHeight - document.getElementById('top').clientHeight)/2 - 8 + "px",
             rightValue: -((window.innerHeight - document.getElementById('top').clientHeight)/2 - 10) + 'px'
         });
 
@@ -553,7 +551,28 @@ export default class Viewer extends Component {
         this.setState({
           isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened
         }, function() {
-          console.log(this.state.isDiagnosisPanelOpened);
+          var self = this;
+          if(this.state.isDiagnosisPanelOpened) {
+            $('#diagnosisInfo').fadeIn({
+              start: function() {
+                self.setState({
+                  containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 7) + 'px'
+                }, function() {
+                  cornerstone.resize(this.state.container, false);
+                });
+              }
+            });
+          } else {
+            $('#diagnosisInfo').fadeOut({
+              done: function() {
+                self.setState({
+                  containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth) + 'px'
+                }, function() {
+                  cornerstone.resize(this.state.container, false);
+                });
+              }
+            });
+          }
         });
     }
 
@@ -665,7 +684,7 @@ export default class Viewer extends Component {
                 </div>
                 <div id="diagnosisInfo" style={{...style.diagnosisInfo, ...{height: this.state.containerHeight}}}></div>
 
-                <div id="outerContainer" style={{...style.container, ...{height: this.state.containerHeight}}} className="container">
+                <div id="outerContainer" style={{...style.container, ...{height: this.state.containerHeight, width: this.state.containerWidth}}} className="container">
                     <input type={"range"}
                            id={"scrollbar"}
                            min={1}
