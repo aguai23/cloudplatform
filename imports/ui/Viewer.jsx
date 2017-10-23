@@ -556,7 +556,7 @@ export default class Viewer extends Component {
         circleVisible: false
       })
     } else {
-      cornerstoneTools.ellipticalRoi.activate(this.state.container, 1);
+      cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
       // cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
       this.setState({
         circleVisible: true
@@ -612,6 +612,7 @@ export default class Viewer extends Component {
     }
 
     let picList = {}
+    cornerstoneTools.ellipticalRoi.enable(this.state.container,1);
     _.mapObject(temp, (val, key) => {
       val.num = key.split("_")[0];
       if (picList[key.split("_")[1]] != undefined) {
@@ -656,7 +657,7 @@ export default class Viewer extends Component {
               "index": 1,
             }
           },
-        }
+        };
         standard.handles.start.x = obj.y0;
         standard.handles.start.y = obj.x0;
         standard.handles.end.x = obj.y1;
