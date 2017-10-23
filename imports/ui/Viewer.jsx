@@ -354,27 +354,23 @@ export default class Viewer extends Component {
         break;
 
       case 6:
-        this.setEllipticalTool();
-        break;
-
-      case 7:
         this.resetViewport();
         break;
 
-      case 8:
+      case 7:
         this.saveState();
         break;
 
-      case 9:
+      case 8:
         this.restoreState();
         break;
 
-      case 10:
+      case 9:
         this.switchState();
         break;
 
 
-      case 11:
+      case 10:
         this.diagnose();
         break;
 
@@ -449,11 +445,6 @@ export default class Viewer extends Component {
     cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
   }
 
-  setEllipticalTool() {
-    this.disableAllTools();
-    cornerstoneTools.ellipticalRoi.activate(this.state.container, 1);
-  }
-
   setLengthTool() {
     this.disableAllTools();
     cornerstoneTools.length.activate(this.state.container, 1);
@@ -463,6 +454,7 @@ export default class Viewer extends Component {
    * save mark to database
    */
   saveState() {
+    return
     this.disableAllTools();
     let elements = [this.state.container];
     let currentState = cornerstoneTools.appState.save(elements);
@@ -773,67 +765,61 @@ export default class Viewer extends Component {
                   <div style={style.icon}>
                     <FontAwesome name='gear' size='2x' />
                   </div>
-                  <span>scroll</span>
+                  <span>图层</span>
                 </NavItem>
                 <NavItem eventKey={2} href="#">
                   <div style={style.icon}>
                     <FontAwesome name='adjust' size='2x' />
                   </div>
-                  <span>wl/wc</span>
+                  <span>对比度</span>
                 </NavItem>
                 <NavItem eventKey={3} href="#">
                   <div style={style.icon}>
                     <FontAwesome name='search' size='2x' />
                   </div>
-                  <span>zoom/pan</span>
+                  <span>缩放</span>
                 </NavItem>
                 <NavItem eventKey={4} href="#">
                   <div style={style.icon}>
                     <FontAwesome name='arrows-h' size='2x' />
                   </div>
-                  <span>length</span>
+                  <span>测量</span>
                 </NavItem>
                 <NavItem eventKey={5} href="#">
                   <div style={style.icon}>
                     <FontAwesome name='square-o' size='2x' />
                   </div>
-                  <span>draw</span>
+                  <span>标注</span>
                 </NavItem>
                 <NavItem eventKey={6} href="#">
-                  <div style={style.icon}>
-                    <FontAwesome name='circle-o' size='2x' />
-                  </div>
-                  <span>circle</span>
-                </NavItem>
-                <NavItem eventKey={7} href="#">
                   <div>
                     <FontAwesome name='refresh' size='2x' />
                   </div>
-                  <span>reset</span>
+                  <span>重设</span>
                 </NavItem>
-                <NavItem eventKey={8} href="#">
+                <NavItem eventKey={7} href="#">
                   <div>
                     <FontAwesome name='save' size='2x' />
                   </div>
-                  <span>save</span>
+                  <span>保存</span>
                 </NavItem>
-                <NavItem eventKey={9} href="#">
+                <NavItem eventKey={8} href="#">
                   <div>
                     <FontAwesome name='paste' size='2x' />
                   </div>
-                  <span>restore</span>
+                  <span>载入</span>
                 </NavItem>
-                <NavItem eventKey={10} href="#">
+                <NavItem eventKey={9} href="#">
                   <div>
                     <FontAwesome name={this.state.circleVisible ? 'eye-slash' : 'eye'} size='2x' />
                   </div>
-                  <span>{this.state.circleVisible ? 'hide' : 'show'}</span>
+                  <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
                 </NavItem>
-                <NavItem eventKey={11} href="#">
+                <NavItem eventKey={10} href="#">
                   <div>
                     <FontAwesome name='stethoscope' size='2x' />
                   </div>
-                  <span>Diagnose</span>
+                  <span>诊断</span>
                 </NavItem>
               </Nav>
             </Navbar.Collapse>
