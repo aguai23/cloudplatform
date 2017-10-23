@@ -568,7 +568,7 @@ export default class Viewer extends Component {
         circleVisible: false
       })
     } else {
-      cornerstoneTools.ellipticalRoi.activate(this.state.container, 1);
+      cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
       // cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
       this.setState({
         circleVisible: true
@@ -624,6 +624,7 @@ export default class Viewer extends Component {
     }
 
     let picList = {}
+    cornerstoneTools.ellipticalRoi.enable(this.state.container,1);
     _.mapObject(temp, (val, key) => {
       val.num = key.split("_")[0];
       if (picList[key.split("_")[1]] != undefined) {
@@ -668,7 +669,7 @@ export default class Viewer extends Component {
               "index": 1,
             }
           },
-        }
+        };
         standard.handles.start.x = obj.y0;
         standard.handles.start.y = obj.x0;
         standard.handles.end.x = obj.y1;
@@ -883,22 +884,22 @@ export default class Viewer extends Component {
           <div style={style.viewer} ref="viewerContainer" id="viewer" >
             <div style={{ ...style.patientInfo, ...style.textInfo, ...style.disableSelection }} id="patientInfo">
               <div>
-                <span>Patient name: {this.state.patientName}</span>
+                <span>病人姓名: {this.state.patientName}</span>
                 <br />
-                <span>Patient id: {this.state.patientId}</span>
+                <span>病人id: {this.state.patientId}</span>
               </div>
             </div>
             <div style={{ ...style.dicomInfo, ...style.textInfo, ...style.disableSelection }} id="dicomInfo">
-              <span className="pull-right">WW/WC: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
+              <span className="pull-right">窗宽/窗位: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
               <br />
-              <span className="pull-right">Zoom: {this.state.zoomScale}</span>
+              <span className="pull-right">缩放: {this.state.zoomScale}</span>
             </div>
             <div style={{ ...style.sliceInfo, ...style.textInfo, ...style.disableSelection }} id="sliceInfo">
-              <span className="pull-left">size: {this.state.rows}*{this.state.cols}</span>
+              <span className="pull-left">图像大小: {this.state.rows}*{this.state.cols}</span>
               <br />
-              <span className="pull-left">Slice: {this.state.index}/{this.state.imageNumber}</span>
+              <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
               <br />
-              <span className="pull-left">thick: {this.state.thickness} spacing: {this.state.pixelSpacing}</span>
+              <span className="pull-left">层厚: {this.state.thickness} spacing: {this.state.pixelSpacing}</span>
 
             </div>
             <div style={{ ...style.timeInfo, ...style.textInfo, ...style.disableSelection }} id="timeInfo">
