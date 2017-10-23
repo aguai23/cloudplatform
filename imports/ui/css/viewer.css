@@ -7,6 +7,33 @@ input[type=range]::-webkit-slider-thumb {
     background: cornflowerblue;
     margin-top: -4px;
 }
+
 input[type=range]::-webkit-slider-thumb:active {
     background-color: aqua;
 }
+
+.active-nav-item {
+  color: white!important;
+}
+
+@keyframes hover-effect {
+  from {background-color: black;}
+  to {background-color: #22bef7;}
+
+  from {color: #9ccef9;}
+  to {color: black;}
+}
+
+.diagnosisRow:hover {
+  cursor: pointer;
+  background-color: #22bef7;
+  color: black;
+
+  animation-name: hover-effect;
+  animation-duration: .75s;
+}
+
+.active-diagnosis-row {
+   background-color: #20a5d6;
+   color: black;
+ }

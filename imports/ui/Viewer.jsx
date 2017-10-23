@@ -127,7 +127,7 @@ const style = {
     fontSize: '16px'
   },
   diagnosisRow: {
-    marginTop: '20px'
+    padding: '10px 5px 10px 5px'
   },
   diagnosisProb: {
     textAlign: 'right'
@@ -178,6 +178,14 @@ export default class Viewer extends Component {
    */
   componentDidMount() {
     /**
+     * make NavItems would not lose focus when clicked on the spare place in the page
+     */
+    $('li a').click(function (e) {
+            $('a').removeClass('active-nav-item');
+            $(this).addClass('active-nav-item');
+        });
+
+    /**
      * re-render when window resized
      */
     window.addEventListener('resize', () => this.updateDimensions());
@@ -211,14 +219,19 @@ export default class Viewer extends Component {
       cornerstoneTools.toolColors.setToolColor("#ffcc33");
     });
 
+    /**
+     * get current date and time
+     */
     window.setInterval(() => {
       this.setState({
         dateTime: new Date().toLocaleString()
       });
     });
 
+    /**
+     * send a request to require server load all cases first
+     */
     Meteor.call('prepareDicoms', this.props.location.query.caseId, (error, result) => {
-
       if (error) {
         console.log(error)
       } else {
@@ -529,7 +542,6 @@ export default class Viewer extends Component {
         }
       })
     });
-    console.log(oldState);
 
     cornerstoneTools.appState.restore(oldState)
   }
@@ -664,7 +676,6 @@ export default class Viewer extends Component {
         standard.handles.textBox.index = obj.num;
         tempList.push(standard)
       })
-      console.log(tempList)
       currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: tempList }
     })
     this.setState({
@@ -716,6 +727,15 @@ export default class Viewer extends Component {
   }
 
   /**
+   * click handler for diagnosisRow, which changes styles and then jumps to the target slice
+   */
+  onClickDiagnosisRow(key) {
+    $('div').removeClass('active-diagnosis-row');
+    $('#diagnosis-item-' + key).addClass('active-diagnosis-row');
+    this.setSlice(Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice));
+  }
+
+  /**
    * disable tools
    */
   disableAllTools() {
@@ -749,15 +769,12 @@ export default class Viewer extends Component {
     if(this.state.diagnosisResult) {
       for(let key in this.state.diagnosisResult) {
         results.push(
-          <div className="row" style={style.diagnosisRow} key={'diagnosis-item-' + key}>
-            <div className="col-xs-3">{key}</div>
-            <div className="col-xs-3">{this.state.diagnosisResult[key].firstSlice + ' - ' + this.state.diagnosisResult[key].lastSlice}</div>
+          <div className="row diagnosisRow" style={style.diagnosisRow} key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
+            onClick={() => this.onClickDiagnosisRow(key)}>
+            <div className="col-xs-4">{key}</div>
+            <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
+                                       + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
             <div className="col-xs-4"  style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
-            <div className="col-xs-2 pull-right">
-              <div style={style.diagnosisLink} onClick={() => this.setSlice(this.state.diagnosisResult[key].firstSlice)}>
-                <FontAwesome name='link'/>
-              </div>
-            </div>
           </div>
         );
       }
@@ -841,14 +858,13 @@ export default class Viewer extends Component {
 
         <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
           <div style={style.diagnosisHeader}>
-            <h3>Diagnosis</h3>
+            <h3>病变列表</h3>
           </div>
           <hr style={{borderColor: '#aaf7f4'}}/>
-          <div className="row" style={style.diagnosisTableHead}>
-            <div className="col-xs-3">No.</div>
-            <div className="col-xs-3">Range</div>
-            <div className="col-xs-4" style={style.diagnosisProb}>Prob</div>
-            <div className="col-xs-2"></div>
+          <div className="row" style={{...style.diagnosisRow, ...style.diagnosisTableHead}}>
+            <div className="col-xs-4">编号</div>
+            <div className="col-xs-4">层面</div>
+            <div className="col-xs-4" style={style.diagnosisProb}>概率</div>
           </div>
           {results}
         </div>
