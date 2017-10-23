@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { Button, Col, Navbar, NavItem, Nav, NavDropdown, MenuItem, Jumbotron } from 'react-bootstrap';
+import { Button, Col, Navbar, NavItem, Nav, Row, MenuItem } from 'react-bootstrap';
 import { Meteor } from 'meteor/meteor';
 import dicomParse from 'dicom-parser';
 import FS from 'fs';
@@ -181,9 +181,9 @@ export default class Viewer extends Component {
      * make NavItems would not lose focus when clicked on the spare place in the page
      */
     $('li a').click(function (e) {
-            $('a').removeClass('active-nav-item');
-            $(this).addClass('active-nav-item');
-        });
+      $('a').removeClass('active-nav-item');
+      $(this).addClass('active-nav-item');
+    });
 
     /**
      * re-render when window resized
@@ -366,27 +366,6 @@ export default class Viewer extends Component {
         this.setDrawTool();
         break;
 
-      case 6:
-        this.resetViewport();
-        break;
-
-      case 7:
-        this.saveState();
-        break;
-
-      case 8:
-        this.restoreState();
-        break;
-
-      case 9:
-        this.switchState();
-        break;
-
-
-      case 10:
-        this.diagnose();
-        break;
-
       default:
         console.log(error);
     }
@@ -467,8 +446,6 @@ export default class Viewer extends Component {
    * save mark to database
    */
   saveState() {
-    return
-    this.disableAllTools();
     let elements = [this.state.container];
     let currentState = cornerstoneTools.appState.save(elements);
     let appState = JSON.parse(JSON.stringify(currentState))
@@ -515,7 +492,6 @@ export default class Viewer extends Component {
    * reload mark from database
    */
   restoreState() {
-    this.disableAllTools();
     let elements = [this.state.container];
     let currentState = cornerstoneTools.appState.save(elements);
     let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.query.caseId });
@@ -553,7 +529,6 @@ export default class Viewer extends Component {
    * switch circle visible state
    */
   switchState() {
-    this.disableAllTools();
     if (this.state.circleVisible) {
       cornerstoneTools.ellipticalRoi.disable(this.state.container, 1);
       this.setState({
@@ -561,7 +536,6 @@ export default class Viewer extends Component {
       })
     } else {
       cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-      // cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
       this.setState({
         circleVisible: true
       })
@@ -611,12 +585,12 @@ export default class Viewer extends Component {
       "5_64": { "y1": 148, "y0": 110, "x0": 253, "x1": 295, "prob": 0.982299394580053 }
     };
 
-    if(!this.state.diagnosisResult) {
+    if (!this.state.diagnosisResult) {
       this.extract(temp);
     }
 
     let picList = {}
-    cornerstoneTools.ellipticalRoi.enable(this.state.container,1);
+    cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
     _.mapObject(temp, (val, key) => {
       val.num = key.split("_")[0];
       if (picList[key.split("_")[1]] != undefined) {
@@ -704,10 +678,10 @@ export default class Viewer extends Component {
    */
   extract(data) {
     let diagnosisResult = {};
-    for(key in data) {
+    for (key in data) {
       let strs = key.split("_");
 
-      if(diagnosisResult[strs[0]]) {
+      if (diagnosisResult[strs[0]]) {
         diagnosisResult[strs[0]].lastSlice = parseInt(strs[1]);
       } else {
         diagnosisResult[strs[0]] = {};
@@ -716,7 +690,7 @@ export default class Viewer extends Component {
       }
     }
 
-    this.setState({diagnosisResult: diagnosisResult});
+    this.setState({ diagnosisResult: diagnosisResult });
   }
 
   /**
@@ -759,21 +733,21 @@ export default class Viewer extends Component {
   render() {
     let results = [];
 
-    if(this.state.diagnosisResult) {
-      for(let key in this.state.diagnosisResult) {
+    if (this.state.diagnosisResult) {
+      for (let key in this.state.diagnosisResult) {
         results.push(
           <div className="row diagnosisRow" style={style.diagnosisRow} key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
             onClick={() => this.onClickDiagnosisRow(key)}>
             <div className="col-xs-4">{key}</div>
             <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
-                                       + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
-            <div className="col-xs-4"  style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
+              + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
+            <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
           </div>
         );
       }
     }
     return (
-      <div id="body" style={{...style.body, ...style.textInfo}}>
+      <div id="body" style={{ ...style.body, ...style.textInfo }}>
         <div id="top" style={style.top}>
           <Navbar inverse collapseOnSelect style={{ marginBottom: '0' }}>
             <Navbar.Collapse>
@@ -808,37 +782,31 @@ export default class Viewer extends Component {
                   </div>
                   <span>标注</span>
                 </NavItem>
-                <NavItem eventKey={6} href="#">
-                  <div>
-                    <FontAwesome name='refresh' size='2x' />
-                  </div>
-                  <span>重设</span>
-                </NavItem>
-                <NavItem eventKey={7} href="#">
-                  <div>
-                    <FontAwesome name='save' size='2x' />
-                  </div>
-                  <span>保存</span>
-                </NavItem>
-                <NavItem eventKey={8} href="#">
-                  <div>
-                    <FontAwesome name='paste' size='2x' />
-                  </div>
-                  <span>载入</span>
-                </NavItem>
-                <NavItem eventKey={9} href="#">
-                  <div>
-                    <FontAwesome name={this.state.circleVisible ? 'eye-slash' : 'eye'} size='2x' />
-                  </div>
-                  <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
-                </NavItem>
-                <NavItem eventKey={10} href="#">
-                  <div>
-                    <FontAwesome name='stethoscope' size='2x' />
-                  </div>
-                  <span>诊断</span>
-                </NavItem>
               </Nav>
+              <Navbar.Text className="button" onClick={this.resetViewport.bind(this)}>
+                <FontAwesome name='refresh' size='2x' /><br />
+                <span>重设</span>
+              </Navbar.Text>
+              <Navbar.Text className="button" onClick={this.saveState.bind(this)}>
+                <FontAwesome name='save' size='2x' />
+                <br/>
+                <span>保存</span>
+              </Navbar.Text>
+              <Navbar.Text className="button" onClick={this.restoreState.bind(this)}>
+                <FontAwesome name='paste' size='2x' />
+                <br/>
+                <span>载入</span>
+              </Navbar.Text>
+              <Navbar.Text className="button" onClick={this.switchState.bind(this)}>
+                <FontAwesome name={this.state.circleVisible ? 'eye-slash' : 'eye'} size='2x' />
+                <br/>
+                <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
+              </Navbar.Text>
+              <Navbar.Text className="button" onClick={this.diagnose.bind(this)}>
+                <FontAwesome name='stethoscope' size='2x' />
+                <br/>
+                <span>诊断</span>
+              </Navbar.Text>
             </Navbar.Collapse>
           </Navbar>
         </div>
@@ -847,8 +815,8 @@ export default class Viewer extends Component {
           <div style={style.diagnosisHeader}>
             <h3>病变列表</h3>
           </div>
-          <hr style={{borderColor: '#aaf7f4'}}/>
-          <div className="row" style={{...style.diagnosisRow, ...style.diagnosisTableHead}}>
+          <hr style={{ borderColor: '#aaf7f4' }} />
+          <div className="row" style={{ ...style.diagnosisRow, ...style.diagnosisTableHead }}>
             <div className="col-xs-4">编号</div>
             <div className="col-xs-4">层面</div>
             <div className="col-xs-4" style={style.diagnosisProb}>概率</div>

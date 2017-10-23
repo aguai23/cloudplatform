@@ -37,3 +37,8 @@ input[type=range]::-webkit-slider-thumb:active {
    background-color: #20a5d6;
    color: black;
  }
+
+ .button:hover{
+   color: #fff;
+   cursor: pointer;   
+ }
