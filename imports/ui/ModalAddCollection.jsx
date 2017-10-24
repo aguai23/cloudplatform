@@ -1,25 +1,25 @@
 import { Meteor } from 'meteor/meteor';
 import React, { Component, PropTypes } from 'react';
 
-import { Button, Checkbox, FieldGroup, Form, FormControl, FormGroup, Modal } from 'react-bootstrap';
+import { Button, Checkbox, ControlLabel, Form, FormControl, Modal } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { ToastContainer, toast } from 'react-toastify';
 
 
-export default class ModalAddCollection extends Component{
+export default class ModalAddCollection extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       showModal: this.props.showModal,
-      isPublic: false
+      isPublic: this.props.dataCollection ? this.props.dataCollection.type === 'PUBLIC' : false
     }
+    this.onClickSubmit = this.onClickSubmit.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
-    // console.log(nextProps.showModal);
-    if(nextProps.showModal !== this.state.showModal) {
-      this.setState({showModal: nextProps.showModal});
+    if (nextProps.showModal !== this.state.showModal) {
+      this.setState({ showModal: nextProps.showModal });
     }
   }
 
@@ -35,47 +35,65 @@ export default class ModalAddCollection extends Component{
       type: this.state.isPublic ? 'PUBLIC' : 'PRIVATE'
     }
 
-    // console.log("dataCollection", dataCollection);
-
-    Meteor.call('insertDataCollection', dataCollection, (error) => {
-      if (error) {
-        console.log("Failed to add new collection. " + error.reason);
-      } else {
-        // console.log("Add new collection successfully");
-        toast.success("数据集添加成功!");
-      }
-      this.setState({ showModal: false });
-    });
+    if (!(this.name.value && this.equip.value)) {
+      toast.error("请完善数据!");
+      return
+    }
+    if (this.props.dataCollection) {
+      dataCollection._id = this.props.dataCollection._id;
+      Meteor.call('updateDataCollection', dataCollection, (error) => {
+        if (error) {
+          console.log("Failed to modify collection. " + error.reason);
+        } else {
+          toast.success("数据集修改成功!");
+        }
+        this.setState({ showModal: false });
+      })
+    } else {
+      Meteor.call('insertDataCollection', dataCollection, (error) => {
+        if (error) {
+          console.log("Failed to add new collection. " + error.reason);
+        } else {
+          toast.success("数据集添加成功!");
+        }
+        this.setState({ showModal: false });
+      });
+    }
   }
 
   render() {
+    const oldData = this.props.dataCollection;
     return (
       <div>
         <Modal show={this.state.showModal} onHide={() => this.close()}>
           <Modal.Header closeButton>
-            <Modal.Title>添加新数据集</Modal.Title>
+            <Modal.Title>{oldData ? `修改${oldData.name}` : '添加新'}数据集</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <div>
               <Form horizontal>
-                <FormControl type="text" placeholder="数据集名称" inputRef={(ref) => this.name=ref}/>
-                <FormControl type="text" placeholder="设备" inputRef={(ref) => this.equip=ref}/>
-                <Checkbox checked={this.state.isPublic} onChange={(evt)=>{this.setState({isPublic: evt.target.checked});}}>设为公有</Checkbox>
-                <Button className="btn btn-success" onClick={() => this.onClickSubmit()}>提交</Button>
+                <ControlLabel>数据集名称</ControlLabel>
+                <FormControl defaultValue={oldData ? oldData.name : ''} type="text" placeholder="数据集名称" inputRef={(ref) => this.name = ref} />
+                <ControlLabel>设备名称</ControlLabel>
+                <FormControl defaultValue={oldData ? oldData.equip : ''} type="text" placeholder="设备" inputRef={(ref) => this.equip = ref} />
+                <Checkbox checked={this.state.isPublic} onChange={(evt) => { this.setState({ isPublic: evt.target.checked }); }}>设为公有</Checkbox>
+                <br />
+                <Button className="btn btn-success" onClick={this.onClickSubmit}>提交</Button>
               </Form>
             </div>
           </Modal.Body>
         </Modal>
 
         <ToastContainer
-            position="bottom-right"
-            type="info"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            pauseOnHover
-          />
+          position="bottom-right"
+          type="info"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          style={{ zIndex: 1999 }}
+          closeOnClick
+          pauseOnHover
+        />
       </div>
     );
   }
