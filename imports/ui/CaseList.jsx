@@ -50,7 +50,6 @@ export class CaseList extends Component {
 
   onClickViewImage(caseId, index) {
     browserHistory.push(`/viewer?caseId=${caseId}`)
-<<<<<<< HEAD
   }
 
   searchCase() {
@@ -63,8 +62,6 @@ export class CaseList extends Component {
     this.setState({
       cases: Cases.find({ name: {$regex: '.*'  + name + '.*' }}).fetch()
     });
-=======
->>>>>>> b9bf85e2bc30281dfdf52397237337ec39200743
   }
 
   reset() {
