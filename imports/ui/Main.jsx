@@ -14,7 +14,6 @@ import AccountState from './AccountState'
 import CaseList from './CaseList';
 import { Cases }  from '../api/cases' ;
 import { DataCollections } from '../api/dataCollections';
-import Edit from './EditDataCollection';
 import ModalAddCollection from './ModalAddCollection';
 import SingleCollectionInList from './SingleCollectionInList';
 import { browserHistory, Link } from 'react-router';
@@ -96,7 +95,6 @@ export class Main extends Component {
       dataCollections: this.props.publicDataCollections
     };
     this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
-    this.showEditForm = this.showEditForm.bind(this);
     this.onAddCasesClick = this.onAddCasesClick.bind(this);
     this.onClickRemoveCollection = this.onClickRemoveCollection.bind(this);
     this.onTabSelectHandler = this.onTabSelectHandler.bind(this);
@@ -163,10 +161,8 @@ export class Main extends Component {
   }
 
   updateCurrentDataCollection(dataCollection) {
-    this.setState({
-      currentDataCollection: dataCollection,
-      showCases: true
-    });
+    this.setState({showAddCollectionModal: true});
+    ReactDOM.render((<ModalAddCollection showModal={true} dataCollection={dataCollection} userInfo={this.props.userData}/>), document.getElementById('modal-base'));    
   }
 
   searchDatabase(){
@@ -178,12 +174,6 @@ export class Main extends Component {
     } else {
       toast.warning("找不到该数据集", {position: toast.POSITION.BOTTOM_RIGHT});
     }
-  }
-
-  showEditForm() {
-    this.setState({
-      showEditDataCollection: true,
-    });
   }
 
   showForm() {
@@ -205,7 +195,7 @@ export class Main extends Component {
             </Nav>
 
             <FormGroup bsSize="small" style={styles.searchBar}>
-              <FormControl type="text" placeholder="输入关键字搜索" style={styles.inputSearch} inputRef={input => { this.textInput = input }}/>
+              <FormControl type="text" placeholder="输入名称搜索" style={styles.inputSearch} inputRef={input => { this.textInput = input }}/>
               <Button onClick={this.searchDatabase.bind(this)} bsSize="xsmall" style={styles.btnSearch} className="pull-right"
                 onMouseEnter={() => this.setSearchButtonHovered(true)}
                 onMouseLeave={() => this.setSearchButtonHovered(false)}
@@ -214,13 +204,13 @@ export class Main extends Component {
             </Button>
             </FormGroup>
 
-            <ButtonToolbar style={styles.btnFeatures}>
+            {/* <ButtonToolbar style={styles.btnFeatures}>
               <DropdownButton bsStyle="default" title="Density: 4" id="dropdown-no-caret">
                 <MenuItem eventKey="1">Density: 2</MenuItem>
                 <MenuItem eventKey="2">Density: 3</MenuItem>
                 <MenuItem eventKey="3">Density: 4</MenuItem>
               </DropdownButton>
-            </ButtonToolbar>
+            </ButtonToolbar> */}
 
             <Button className="pull-right" bsStyle="success" bsSize="small" style={styles.btnAddCollection} onClick={() => this.onClickAddCollection()}>
               新建数据集
@@ -234,7 +224,7 @@ export class Main extends Component {
                 {this.state.dataCollections.map((dataCollection) => {
                   return (
                     <li key={dataCollection._id} >
-                      <SingleCollectionInList dataCollection={dataCollection} onClickRemove={this.onClickRemoveCollection} />
+                      <SingleCollectionInList dataCollection={dataCollection} onClickModify={this.updateCurrentDataCollection} onClickRemove={this.onClickRemoveCollection} />
                       <hr/>
                     </li>
                   );
