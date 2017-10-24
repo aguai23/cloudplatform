@@ -381,6 +381,18 @@ export default class Viewer extends Component {
         this.setDrawTool();
         break;
 
+      case 6:
+        this.setProbeTool();
+        break;
+      
+      case 7:
+        this.setAngleTool();
+        break;
+      
+      case 8:
+        this.setHighlightTool();
+        break;
+
       default:
         console.log(error);
     }
@@ -455,6 +467,21 @@ export default class Viewer extends Component {
   setLengthTool() {
     this.disableAllTools();
     cornerstoneTools.length.activate(this.state.container, 1);
+  }
+
+  setProbeTool() {
+    this.disableAllTools();
+    cornerstoneTools.probe.activate(this.state.container, 1);
+  }
+
+  setAngleTool() {
+    this.disableAllTools();
+    cornerstoneTools.angle.activate(this.state.container, 1);
+  }
+
+  setHighlightTool() {
+    this.disableAllTools();
+    cornerstoneTools.highlight.activate(this.state.container, 1);
   }
 
   /**
@@ -733,6 +760,9 @@ export default class Viewer extends Component {
     cornerstoneTools.zoom.deactivate(this.state.container, 4);
     cornerstoneTools.zoomWheel.deactivate(this.state.container);
     cornerstoneTools.length.deactivate(this.state.container, 1);
+    cornerstoneTools.probe.deactivate(this.state.container, 1);
+    cornerstoneTools.angle.deactivate(this.state.container, 1);
+    cornerstoneTools.highlight.deactivate(this.state.container, 1);
   }
 
 
@@ -796,6 +826,24 @@ export default class Viewer extends Component {
                     <FontAwesome name='square-o' size='2x' />
                   </div>
                   <span>标注</span>
+                </NavItem>
+                <NavItem eventKey={6} href="#">
+                  <div style={style.icon}>
+                    <FontAwesome name='circle-o' size='2x' />
+                  </div>
+                  <span>圆点</span>
+                </NavItem>
+                <NavItem eventKey={7} href="#">
+                  <div style={style.icon}>
+                    <FontAwesome name='chevron-down' size='2x' />
+                  </div>
+                  <span>角度</span>
+                </NavItem>
+                <NavItem eventKey={8} href="#">
+                  <div style={style.icon}>
+                    <FontAwesome name='sun-o' size='2x' />
+                  </div>
+                  <span>高亮</span>
                 </NavItem>
               </Nav>
               <Navbar.Text className="button" onClick={this.resetViewport.bind(this)}>
