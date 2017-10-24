@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { browserHistory } from 'react-router';
 import { Button, Col, Navbar, NavItem, Nav, Row, MenuItem } from 'react-bootstrap';
 import { Meteor } from 'meteor/meteor';
 import dicomParse from 'dicom-parser';
@@ -177,6 +178,11 @@ export default class Viewer extends Component {
    * will run after elements rendered
    */
   componentDidMount() {
+    if(!Meteor.userId()) {
+      browserHistory.replace('/login');
+      toast.warning("请先登录再进行操作");
+    }
+
     /**
      * make NavItems would not lose focus when clicked on the spare place in the page
      */

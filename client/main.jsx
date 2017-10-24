@@ -19,9 +19,10 @@ Meteor.startup(() => {
     <Router history={browserHistory}>
       <Redirect from="/" to="/login"/>
       <Route path="/" component={App} >
-        <Route path="datasets" component={Main}/>
+        <Route path="datasets" component={Main}>
+        </Route>
         <Route path="newCase" component={AddCase}/>
-        <Route path="datasets/:caseId" component={CaseList}/>
+        <Route path="datasets/:collectionId" component={CaseList}/>
       </Route>
         <Route path="login" component={Login}/>
         <Route path="registration" component={Registration}/>

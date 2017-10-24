@@ -7,8 +7,6 @@ import { withTracker } from 'meteor/react-meteor-data';
 import { browserHistory, Link } from 'react-router';
 import { toast, ToastContainer } from 'react-toastify';
 
-var collectionId;
-
 const style = {
   searchResult: {
     marginTop: '10px',
@@ -23,13 +21,11 @@ export class CaseList extends Component {
     super(props);
 
     this.state = {
-      cases: Cases.find({collectionId: this.props.params.caseId}).fetch()
+      cases: Cases.find({collectionId: this.props.params.collectionId}).fetch(),
+      isSearchClicked: false
     };
 
     this.searchCase = this.searchCase.bind(this);
-
-    collectionId = this.props.params.caseId;
-
   }
 
   componentWillReceiveProps(nextProps) {
@@ -48,18 +44,17 @@ export class CaseList extends Component {
     });
   }
 
-  onClickViewImage(caseId, index) {
-    browserHistory.push(`/viewer?caseId=${caseId}`)
-  }
-
   searchCase() {
     let name = this.input.value;
+
+    if(this.state.isSearchClicked) return;
 
     if(name === undefined || name.length === 0) {
       return alert("查询条件不能为空");
     }
 
     this.setState({
+      isSearchClicked: true,
       cases: Cases.find({ name: {$regex: '.*'  + name + '.*' }}).fetch()
     });
   }
@@ -67,13 +62,14 @@ export class CaseList extends Component {
   reset() {
     this.input.value = "";
     this.setState({
+      isSearchClicked: false,
       cases: this.props.cases
     });
   }
 
   render() {
     const that = this;
-    let tHead = this.state.cases.length > 0 ? ( this.state.cases === this.props.cases ?
+    let tHead = this.state.cases.length > 0 ? ( this.state.isSearchClicked ?
                   (<tr>
                       <th>病例名</th>
                       <th>年龄</th>
@@ -93,14 +89,14 @@ export class CaseList extends Component {
                     </tr>)) :
                   <tr><th>未找到符合搜索条件的病例</th></tr>;
 
-    let searchResult = this.state.cases === this.props.cases ? undefined : ("共计" + this.state.cases.length + "条搜索结果");
+    let searchResult = this.state.isSearchClicked ? ("共计" + this.state.cases.length + "条搜索结果") : undefined;
 
     return (
       <div>
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
-            <Link to={`/newCase?collection=${this.props.params.caseId}`}>新建</Link>
+            <Link to={`/newCase?collection=${this.props.params.collectionId}`}>新建</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>
@@ -116,6 +112,7 @@ export class CaseList extends Component {
           </Navbar.Collapse>
         </Navbar>
 
+        <div className="container">
         <div style={style.searchResult}>{searchResult}</div>
         <Table striped bordered condensed hover>
           <thead>
@@ -123,7 +120,7 @@ export class CaseList extends Component {
           </thead>
           <tbody>
             {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
-              let collectionCol = this.state.cases === this.props.cases ? undefined : <td>{specificCase.collectionId}</td>;
+              let collectionCol = this.state.isSearchClicked ? undefined : <td>{specificCase.collectionId}</td>;
               return (
                 <tr key={specificCase._id}>
                   <td>{specificCase.name}</td>
@@ -133,7 +130,7 @@ export class CaseList extends Component {
                   <td>{specificCase.createAt}</td>
                   {collectionCol}
                   <td>
-                    <a className="glyphicon glyphicon-picture" onClick={() => this.onClickViewImage(specificCase._id, 0)}></a>
+                    <Link to={`/viewer?caseId=${specificCase._id}`} className="glyphicon glyphicon-picture"></Link>
                     &nbsp;&nbsp;&nbsp;
                     <Link  to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil"></Link>
                     &nbsp;&nbsp;&nbsp;
@@ -145,6 +142,7 @@ export class CaseList extends Component {
             }
           </tbody>
         </Table>
+      </div>
         <ToastContainer
           position="bottom-right"
           type="info"
@@ -166,10 +164,8 @@ CaseList.contextTypes = {
 export default withTracker(props => {
   const handle = Meteor.subscribe('cases');
 
-  //cases should be modified as follows later
-  //cases: Cases.find({collectionId: collectionId}).fetch()
   return {
-    cases: Cases.find({collectionId: props.params.caseId}).fetch(),
+    cases: Cases.find({collectionId: props.params.collectionId}).fetch(),
     listLoading: !handle.ready()
   }
 })(CaseList);

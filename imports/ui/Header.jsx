@@ -6,6 +6,7 @@ import { Breadcrumb, Button, ButtonToolbar, DropdownButton, MenuItem } from 'rea
 import { browserHistory } from 'react-router';
 
 import Login from './Login';
+import { DataCollections } from '../api/dataCollections';
 
 const styles = {
   divBreadcrumb: {
@@ -31,7 +32,7 @@ const styles = {
 const nameMap = {
   '/': '首页',
   'datasets': '数据集',
-  'newCase': '病例集管理'
+  'newCase': '新建病例'
 }
 
 export default class Header extends Component {
@@ -100,27 +101,44 @@ export default class Header extends Component {
   }
 
   render() {
+    let breadcrumbs = [];
+
+    this.props.routes.map((route, i) => {
+      if(i === this.props.routes.length - 1) {
+        let subroutes = route.path.split('/');
+
+        if(subroutes.length === 1) {
+          breadcrumbs.push (
+            <Breadcrumb.Item href={'/' + subroutes[0]} key={subroutes[0]} active>
+              {nameMap[subroutes[0]]}
+            </Breadcrumb.Item>
+          );
+        } else {
+          breadcrumbs.push (
+            <Breadcrumb.Item href={'/' + subroutes[0]} key={subroutes[0]}>
+              {nameMap[subroutes[0]]}
+            </Breadcrumb.Item>
+          );
+
+          breadcrumbs.push (
+            <Breadcrumb.Item href={route.path} key={subroutes[1]} active>
+              {this.props.params.collectionId}
+            </Breadcrumb.Item>
+          );
+        }
+      } else {
+        breadcrumbs.push (
+          <Breadcrumb.Item href={route.path === '/' ? '/datasets' : route.path} key={route.path}>
+            {nameMap[route.path]}
+          </Breadcrumb.Item>
+        );
+      }
+    });
     return (
       <div style={styles.divBreadcrumb}>
         <Breadcrumb style={styles.breadcrumb}>
           <img src={('public/img/PVmed.jpg')}/>
-        {
-          this.props.routes.map((route, i) => {
-            if(i === this.props.routes.length - 1) {
-              return (
-                <Breadcrumb.Item href={route.path} key={route.path} active>
-                  {nameMap[route.path]}
-                </Breadcrumb.Item>
-              )
-            } else {
-              return (
-                <Breadcrumb.Item href={route.path} key={route.path}>
-                  {nameMap[route.path]}
-                </Breadcrumb.Item>
-              )
-            }
-          })
-        }
+        {breadcrumbs}
         </Breadcrumb>
 
         {
@@ -132,14 +150,3 @@ export default class Header extends Component {
     );
   }
 }
-
-// const NavBar = React.createClass({
-//   render: function() {
-//     return (
-//       xxx
-//       <nav>
-//         yyy
-//       </nav>
-//     );
-//   }
-// });
