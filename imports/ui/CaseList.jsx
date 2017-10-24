@@ -5,8 +5,18 @@ import { DataCollections } from '../api/dataCollections';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import { browserHistory, Link } from 'react-router';
+import { toast, ToastContainer } from 'react-toastify';
 
 var collectionId;
+
+const style = {
+  searchResult: {
+    marginTop: '10px',
+    marginBottom: '20px',
+    paddingLeft: '20px',
+    fontSize: '18px'
+  }
+}
 
 export class CaseList extends Component {
   constructor(props) {
@@ -40,45 +50,51 @@ export class CaseList extends Component {
 
   onClickViewImage(caseId, index) {
     browserHistory.push(`/viewer?caseId=${caseId}`)
-    // Meteor.call('prepareDicoms', caseId, (error, result) => {
-    //   if(error) {
-    //     return console.log("error", error);
-    //   }
-
-    //   if(result.status === 'SUCCESS') {
-    //     Meteor.call('getDicom', 1, (error, res) => {
-    //       if(error) {
-    //         return console.log("error", error);
-    //       }
-
-    //       console.log("res", res);
-
-    //       var pixelDataElement = res.pixelData;
-    //       var pixelData = new Uint16Array(res.imageBuf.buffer, res.pixelDataOffset, res.pixelDataLength/2);
-
-    //       console.log("pixelData", pixelData);
-    //     });
-    //   }
-
-
-    // });
   }
 
   searchCase() {
-    const name = this.input.value;
-    const targetCase = Cases.find({ name: name }).fetch()
-    if (targetCase && targetCase.length) {
-      this.setState({
-        cases: targetCase
-      })
-    } else {
-      alert('找不到该病例')
-      return
+    let name = this.input.value;
+
+    if(name === undefined || name.length === 0) {
+      return alert("查询条件不能为空");
     }
+
+    this.setState({
+      cases: Cases.find({ name: {$regex: '.*'  + name + '.*' }}).fetch()
+    });
+  }
+
+  reset() {
+    this.input.value = "";
+    this.setState({
+      cases: this.props.cases
+    });
   }
 
   render() {
     const that = this;
+    let tHead = this.state.cases.length > 0 ? ( this.state.cases === this.props.cases ?
+                  (<tr>
+                      <th>病例名</th>
+                      <th>年龄</th>
+                      <th>性别</th>
+                      <th>来源</th>
+                      <th>创建时间</th>
+                      <th>操作</th>
+                    </tr>) :
+                    (<tr>
+                      <th>病例名</th>
+                      <th>年龄</th>
+                      <th>性别</th>
+                      <th>来源</th>
+                      <th>创建时间</th>
+                      <th>所属数据集</th>
+                      <th>操作</th>
+                    </tr>)) :
+                  <tr><th>未找到符合搜索条件的病例</th></tr>;
+
+    let searchResult = this.state.cases === this.props.cases ? undefined : ("共计" + this.state.cases.length + "条搜索结果");
+
     return (
       <div>
         <Navbar>
@@ -95,23 +111,19 @@ export class CaseList extends Component {
               </FormGroup>
               {' '}
               <Button onClick={this.searchCase}>查询</Button>
+              <Button onClick={() => this.reset()}>重置</Button>
             </Navbar.Form>
           </Navbar.Collapse>
         </Navbar>
 
+        <div style={style.searchResult}>{searchResult}</div>
         <Table striped bordered condensed hover>
           <thead>
-            <tr>
-              <th>病例名</th>
-              <th>年龄</th>
-              <th>性别</th>
-              <th>来源</th>
-              <th>创建时间</th>
-              <th>操作</th>
-            </tr>
+            {tHead}
           </thead>
           <tbody>
             {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
+              let collectionCol = this.state.cases === this.props.cases ? undefined : <td>{specificCase.collectionId}</td>;
               return (
                 <tr key={specificCase._id}>
                   <td>{specificCase.name}</td>
@@ -119,6 +131,7 @@ export class CaseList extends Component {
                   <td>{specificCase.profile.gender}</td>
                   <td>{specificCase.profile.source}</td>
                   <td>{specificCase.createAt}</td>
+                  {collectionCol}
                   <td>
                     <a className="glyphicon glyphicon-picture" onClick={() => this.onClickViewImage(specificCase._id, 0)}></a>
                     &nbsp;&nbsp;&nbsp;
@@ -132,7 +145,15 @@ export class CaseList extends Component {
             }
           </tbody>
         </Table>
-
+        <ToastContainer
+          position="bottom-right"
+          type="info"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnHover
+        />
       </div>
     )
   }

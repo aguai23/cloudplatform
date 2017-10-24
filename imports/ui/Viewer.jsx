@@ -191,11 +191,14 @@ export default class Viewer extends Component {
     window.addEventListener('resize', () => this.updateDimensions());
 
     /**
-     * disable right click in canvas
+     * disable right click in canvas and diagnosisBox
      */
     document.getElementById('outerContainer').oncontextmenu = function (e) {
       e.preventDefault();
     };
+    document.getElementById('diagnosisInfo').oncontextmenu = function (e) {
+      e.preventDefault();
+    }
 
     /**
      * set the dynamic height for container
@@ -207,6 +210,9 @@ export default class Viewer extends Component {
       rightValue: -((window.innerHeight - document.getElementById('top').clientHeight) / 2 - 10) + 'px'
     });
 
+    /**
+     * enable cornerstone and setup cornerstoneTools
+     */
     this.setState({
       container: document.getElementById("viewer")
     }, (err) => {
@@ -226,7 +232,7 @@ export default class Viewer extends Component {
       this.setState({
         dateTime: new Date().toLocaleString()
       });
-    });
+    }, 1000);
 
     /**
      * send a request to require server load all cases first
@@ -284,8 +290,11 @@ export default class Viewer extends Component {
     console.log('resize');
     this.setState({
       windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight
-    })
+      windowHeight: window.innerHeight,
+      containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3) + 'px'
+    }, function() {
+      cornerstone.resize(this.state.container, false);
+    });
   }
 
   /**
@@ -653,7 +662,7 @@ export default class Viewer extends Component {
         $('#diagnosisInfo').fadeIn({
           start: function () {
             self.setState({
-              containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 5) + 'px'
+              containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3) + 'px'
             }, function () {
               cornerstone.resize(this.state.container, false);
             });
