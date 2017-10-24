@@ -69,7 +69,6 @@ export default class Header extends Component {
   }
 
   onDropdownSelectHandler(eventKey) {
-    console.log(eventKey);
 
     switch(eventKey) {
       case 'CHANGE_PWD':

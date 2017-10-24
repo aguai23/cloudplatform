@@ -40,28 +40,6 @@ export class CaseList extends Component {
 
   onClickViewImage(caseId, index) {
     browserHistory.push(`/viewer?caseId=${caseId}`)
-    // Meteor.call('prepareDicoms', caseId, (error, result) => {
-    //   if(error) {
-    //     return console.log("error", error);
-    //   }
-
-    //   if(result.status === 'SUCCESS') {
-    //     Meteor.call('getDicom', 1, (error, res) => {
-    //       if(error) {
-    //         return console.log("error", error);
-    //       }
-
-    //       console.log("res", res);
-
-    //       var pixelDataElement = res.pixelData;
-    //       var pixelData = new Uint16Array(res.imageBuf.buffer, res.pixelDataOffset, res.pixelDataLength/2);
-
-    //       console.log("pixelData", pixelData);
-    //     });
-    //   }
-
-
-    // });
   }
 
   searchCase() {

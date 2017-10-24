@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { ToastContainer, toast } from 'react-toastify';
 
 export default class Edit extends Component {
 
@@ -9,7 +10,6 @@ export default class Edit extends Component {
   }
 
   editDataCollection(event) {
-    //prevent from refreshing
     event.preventDefault();
 
     let dataCollection = {
@@ -21,9 +21,9 @@ export default class Edit extends Component {
 
     Meteor.call('updateDataCollection', dataCollection, (error) => {
       if (error) {
-        alert("somethings wrong" + error.reason);
+        toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
       } else {
-        alert("DataCollection updated");
+        toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
         this.showTeamStats();
       }
     });
@@ -48,6 +48,16 @@ export default class Edit extends Component {
             <button type="submit">提交</button>
           </div>
         </form>
+        <ToastContainer
+          position="bottom-right"
+          type="info"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnHover
+          style={toastStyle}
+        />
       </div>
     )
   }
