@@ -69,7 +69,7 @@ export class CaseList extends Component {
 
   render() {
     const that = this;
-    let tHead = this.state.cases.length > 0 ? ( this.state.isSearchClicked ?
+    let tHead = this.state.cases.length > 0 ? ( !this.state.isSearchClicked ?
                   (<tr>
                       <th>病例名</th>
                       <th>年龄</th>
@@ -120,7 +120,7 @@ export class CaseList extends Component {
           </thead>
           <tbody>
             {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
-              let collectionCol = this.state.isSearchClicked ? undefined : <td>{specificCase.collectionId}</td>;
+              let collectionCol = this.state.isSearchClicked ? <td>{specificCase.collectionId}</td> : undefined;
               return (
                 <tr key={specificCase._id}>
                   <td>{specificCase.name}</td>
