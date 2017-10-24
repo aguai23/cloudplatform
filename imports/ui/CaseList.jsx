@@ -60,7 +60,7 @@ export class CaseList extends Component {
     }
 
     this.setState({
-      cases: Cases.find({ name: {$regex: '.*'  + name + '.*' }}).fetch()
+      cases: Cases.find({ name: {$regex: '.*'  + name + '.*', $options:"i"}}).fetch()
     });
   }
 
