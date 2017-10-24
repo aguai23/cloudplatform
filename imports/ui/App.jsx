@@ -38,7 +38,7 @@ export default class App extends Component {
 
     return (
       <div>
-        <Header routes={this.props.routes} params={this.props.params}/>
+        <Header routes={this.props.routes} params={this.props.params} location={this.props.location}/>
           {childrenWithProps}
         <Footer style={styles.footer}/>
       </div>

@@ -122,7 +122,7 @@ export default class Header extends Component {
 
           breadcrumbs.push (
             <Breadcrumb.Item href={route.path} key={subroutes[1]} active>
-              {this.props.params.collectionId}
+              {this.props.location.state}
             </Breadcrumb.Item>
           );
         }
