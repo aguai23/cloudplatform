@@ -27,7 +27,7 @@ export default class Login extends Component {
     super(props);
   }
 
-  login = function(){
+  login(){
 
     if(this.emailInput.value === undefined || this.emailInput.value === "") {
       return toast.warning("邮箱不能为空");
@@ -60,7 +60,7 @@ export default class Login extends Component {
         <hr/>
           <Form horizontal>
             <FormGroup>
-              <Col sm={2}>Email</Col>
+              <Col sm={2}>邮箱</Col>
               <Col sm={10}>
                 <FormControl type="email" placeholder="Email" inputRef={function(ref) { this.emailInput = ref; }} />
               </Col>
@@ -73,11 +73,11 @@ export default class Login extends Component {
               </Col>
             </FormGroup>
 
-            <FormGroup>
+            {/* <FormGroup>
               <Col smOffset={2} sm={10}>
                 <Checkbox>Remember me</Checkbox>
               </Col>
-            </FormGroup>
+            </FormGroup> */}
 
             <FormGroup>
               <Col smOffset={2} sm={10}>

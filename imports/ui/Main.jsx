@@ -69,11 +69,6 @@ const styles = {
     fontSize: '18px'
   },
 
-  btnCreateLink: {
-    textDecoration: 'none',
-    color: 'white'
-  },
-
   searchBar: {
     position: 'relative',
     display: 'inline-block',
@@ -135,8 +130,6 @@ export class Main extends Component {
   }
 
   onClickRemoveCollection(id) {
-    // console.log("id", id);
-
     Meteor.call('removeDataCollection', id, (error) => {
       if (error) {
         console.log("Failed to remove DataCollection. " + error.reason);
@@ -148,23 +141,17 @@ export class Main extends Component {
   }
 
   onClickAddCollection() {
-    // console.log("onClickAddCollection()");
-
     this.setState({showAddCollectionModal: true});
 
     ReactDOM.render((<ModalAddCollection showModal={true} userInfo={this.props.userData}/>), document.getElementById('modal-base'));
   }
 
   onTabSelectHandler(eventKey) {
-    // console.log("Tab " + eventKey + " selected" );
-
     event.preventDefault();
 
     if(this.state.tabActiveKey === eventKey)  return;
 
     this.setState({tabActiveKey: eventKey});
-
-    // console.log(DataCollections.find().fetch());
 
     if(eventKey === 'PUB') {
       this.setState({dataCollections: this.props.publicDataCollections});
@@ -182,6 +169,16 @@ export class Main extends Component {
     });
   }
 
+  searchDatabase(){
+    const newValue = DataCollections.find({name:this.textInput.value}).fetch()
+    if(newValue.length){
+      this.setState({
+        dataCollections: newValue
+      })
+    } else {
+      toast.warning("找不到该数据集", {position: toast.POSITION.BOTTOM_RIGHT});
+    }
+  }
 
   showEditForm() {
     this.setState({
@@ -208,8 +205,8 @@ export class Main extends Component {
             </Nav>
 
             <FormGroup bsSize="small" style={styles.searchBar}>
-              <FormControl type="text" placeholder="输入关键字搜索" style={styles.inputSearch}/>
-              <Button bsSize="xsmall" style={styles.btnSearch} className="pull-right"
+              <FormControl type="text" placeholder="输入关键字搜索" style={styles.inputSearch} inputRef={input => { this.textInput = input }}/>
+              <Button onClick={this.searchDatabase.bind(this)} bsSize="xsmall" style={styles.btnSearch} className="pull-right"
                 onMouseEnter={() => this.setSearchButtonHovered(true)}
                 onMouseLeave={() => this.setSearchButtonHovered(false)}
                 className={this.state.searchButtonIsHovered ? 'btnSearchHovered' : null}>
