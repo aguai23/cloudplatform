@@ -165,10 +165,8 @@ export default class Viewer extends Component {
       lastY: 0,
       startY: 0,
 
-      isDiagnosisPanelOpened: false,
-
-      toolTypes: ['angle', 'rectangleRoi', 'length', 'probe']
-
+      isDiagnosisPanelOpened: false
+      
     };
     this.updateInfo = this.updateInfo.bind(this);
     this.setSlice = this.setSlice.bind(this);
@@ -228,8 +226,8 @@ export default class Viewer extends Component {
         return console.log(err);
       }
 
-      cornerstone.enable(document.getElementById("viewer"));
-      cornerstoneTools.addStackStateManager(this.state.container, this.state.toolTypes);
+      cornerstone.enable(this.state.container);
+      cornerstoneTools.addStackStateManager(this.state.container, 'stack');
       cornerstoneTools.toolColors.setToolColor("#ffcc33");
     });
 
@@ -346,6 +344,13 @@ export default class Viewer extends Component {
           viewport.scale = 1.2;
         }
         cornerstone.displayImage(this.state.container, this.state.dicomObj[index], viewport);
+
+        let measurementData = {
+          currentImageIdIndex: this.state.index,
+          imageIds: image.imageId
+        }
+
+        cornerstoneTools.addToolState(this.state.container, 'stack', measurementData);
       });
     } else {
       cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
@@ -751,10 +756,7 @@ export default class Viewer extends Component {
    * clear all tool data, e.g. rec, probe and angle
    */
   clearToolData() {
-    var toolStateManager = cornerstoneTools.getElementToolStateManager(this.state.container);
-    for(let i = 0; i < this.state.toolTypes.length; i++) {
-      delete toolStateManager.toolState[this.state.toolTypes[i]];
-    }
+    cornerstoneTools.globalImageIdSpecificToolStateManager.clear(this.state.container);
     cornerstone.updateImage(this.state.container);
   }
 
