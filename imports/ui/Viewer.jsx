@@ -165,8 +165,15 @@ export default class Viewer extends Component {
       lastY: 0,
       startY: 0,
 
+<<<<<<< HEAD
       isDiagnosisPanelOpened: false
       
+=======
+      isDiagnosisPanelOpened: false,
+
+      toolTypes: ['angle', 'rectangleRoi', 'length', 'probe', 'highlight']
+
+>>>>>>> fd8cab03477e4aad4ad84f02e1c2436d82af163d
     };
     this.updateInfo = this.updateInfo.bind(this);
     this.setSlice = this.setSlice.bind(this);
@@ -178,7 +185,7 @@ export default class Viewer extends Component {
    * will run after elements rendered
    */
   componentDidMount() {
-    if(!Meteor.userId()) {
+    if (!Meteor.userId()) {
       browserHistory.replace('/login');
       toast.warning("请先登录再进行操作");
     }
@@ -298,7 +305,7 @@ export default class Viewer extends Component {
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
       containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3) + 'px'
-    }, function() {
+    }, function () {
       cornerstone.resize(this.state.container, false);
     });
   }
@@ -596,105 +603,122 @@ export default class Viewer extends Component {
    * get diagnosis information from backend
    */
   diagnose() {
-    let temp = {
-      "1_77": { "y1": 127, "y0": 80, "x0": 190, "x1": 227, "prob": 0.99508569469171382 },
-      "1_76": { "y1": 133, "y0": 77, "x0": 189, "x1": 231, "prob": 0.99508569469171382 },
-      "1_75": { "y1": 136, "y0": 77, "x0": 189, "x1": 237, "prob": 0.99508569469171382 },
-      "1_74": { "y1": 135, "y0": 78, "x0": 190, "x1": 240, "prob": 0.99508569469171382 },
-      "1_73": { "y1": 133, "y0": 82, "x0": 197, "x1": 245, "prob": 0.99508569469171382 },
-      "1_72": { "y1": 135, "y0": 85, "x0": 200, "x1": 245, "prob": 0.99508569469171382 },
-      "1_71": { "y1": 135, "y0": 93, "x0": 210, "x1": 245, "prob": 0.99508569469171382 },
-      "1_70": { "y1": 135, "y0": 98, "x0": 211, "x1": 245, "prob": 0.99508569469171382 },
-      "1_69": { "y1": 132, "y0": 107, "x0": 219, "x1": 243, "prob": 0.99508569469171382 },
-      "1_68": { "y1": 128, "y0": 110, "x0": 224, "x1": 243, "prob": 0.99508569469171382 },
-      "2_113": { "y1": 406, "y0": 385, "x0": 163, "x1": 183, "prob": 0.99221461777707087 },
-      "2_112": { "y1": 408, "y0": 382, "x0": 158, "x1": 186, "prob": 0.99221461777707087 },
-      "2_111": { "y1": 406, "y0": 379, "x0": 160, "x1": 186, "prob": 0.99221461777707087 },
-      "2_110": { "y1": 405, "y0": 379, "x0": 163, "x1": 186, "prob": 0.99221461777707087 },
-      "3_87": { "y1": 135, "y0": 109, "x0": 155, "x1": 172, "prob": 0.99058158466960267 },
-      "3_86": { "y1": 148, "y0": 101, "x0": 147, "x1": 186, "prob": 0.99058158466960267 },
-      "3_85": { "y1": 149, "y0": 91, "x0": 147, "x1": 192, "prob": 0.99058158466960267 },
-      "3_84": { "y1": 148, "y0": 90, "x0": 146, "x1": 196, "prob": 0.99058158466960267 },
-      "3_83": { "y1": 146, "y0": 88, "x0": 150, "x1": 200, "prob": 0.99058158466960267 },
-      "3_82": { "y1": 146, "y0": 88, "x0": 154, "x1": 204, "prob": 0.99058158466960267 },
-      "3_81": { "y1": 146, "y0": 88, "x0": 158, "x1": 205, "prob": 0.99058158466960267 },
-      "3_80": { "y1": 146, "y0": 90, "x0": 160, "x1": 205, "prob": 0.99058158466960267 },
-      "3_79": { "y1": 146, "y0": 91, "x0": 165, "x1": 207, "prob": 0.99058158466960267 },
-      "3_78": { "y1": 146, "y0": 93, "x0": 168, "x1": 207, "prob": 0.99058158466960267 },
-      "3_77": { "y1": 141, "y0": 98, "x0": 178, "x1": 202, "prob": 0.99058158466960267 },
-      "4_75": { "y1": 250, "y0": 232, "x0": 333, "x1": 355, "prob": 0.98716848544019287 },
-      "4_74": { "y1": 251, "y0": 230, "x0": 329, "x1": 357, "prob": 0.98716848544019287 },
-      "4_73": { "y1": 251, "y0": 230, "x0": 328, "x1": 360, "prob": 0.98716848544019287 },
-      "4_72": { "y1": 251, "y0": 230, "x0": 328, "x1": 359, "prob": 0.98716848544019287 },
-      "4_71": { "y1": 250, "y0": 235, "x0": 334, "x1": 352, "prob": 0.98716848544019287 },
-      "5_69": { "y1": 151, "y0": 104, "x0": 240, "x1": 269, "prob": 0.982299394580053 },
-      "5_68": { "y1": 154, "y0": 104, "x0": 237, "x1": 272, "prob": 0.982299394580053 },
-      "5_67": { "y1": 157, "y0": 106, "x0": 235, "x1": 283, "prob": 0.982299394580053 },
-      "5_66": { "y1": 156, "y0": 106, "x0": 238, "x1": 290, "prob": 0.982299394580053 },
-      "5_65": { "y1": 152, "y0": 107, "x0": 243, "x1": 296, "prob": 0.982299394580053 },
-      "5_64": { "y1": 148, "y0": 110, "x0": 253, "x1": 295, "prob": 0.982299394580053 }
-    };
-
-    if (!this.state.diagnosisResult) {
-      this.extract(temp);
-    }
-
-    let picList = {}
+    const algorithmInfo = JSON.parse(sessionStorage.getItem('algorithm'));
     cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-    _.mapObject(temp, (val, key) => {
-      val.num = key.split("_")[0];
-      if (picList[key.split("_")[1]] != undefined) {
-        picList[key.split("_")[1]].push(val)
-      } else {
-        picList[key.split("_")[1]] = [val]
-      }
-    })
+
     let caseId = this.props.location.state;
     let elements = [this.state.container];
     let currentState = cornerstoneTools.appState.save(elements);
-    _.mapObject(picList, (val, key) => {
-      if (!currentState.imageIdToolState[`${caseId}#${key}`]) {
-        currentState.imageIdToolState[`${caseId}#${key}`] = { ellipticalRoi: { data: [] } }
+    if (algorithmInfo) {
+      if (!this.state.diagnosisResult) {
+        this.extract(algorithmInfo.temp);
       }
-      let tempList = [];
-      _.each(val, (obj) => {
-        const standard = {
-          visible: true,
-          active: false,
-          invalidated: false,
-          handles: {
-            start: {
-              "x": 146.26041666666666,
-              "y": 91.83333333333331,
-              "highlight": true,
-              "active": false
-            },
-            end: {
-              "x": 387.92708333333337,
-              "y": 275.16666666666663,
-              "highlight": true,
-              "active": false
-            },
-            textBox: {
-              "active": false,
-              "hasMoved": false,
-              "movesIndependently": false,
-              "drawnIndependently": true,
-              "allowedOutsideImage": true,
-              "hasBoundingBox": true,
-              "index": 1,
-            }
-          },
-        };
-        standard.handles.start.x = obj.y0;
-        standard.handles.start.y = obj.x0;
-        standard.handles.end.x = obj.y1;
-        standard.handles.end.y = obj.x1;
-        standard.handles.textBox.index = obj.num;
-        tempList.push(standard)
+      _.mapObject(algorithmInfo.picList, (val, key) => {
+        if (!currentState.imageIdToolState[`${caseId}#${key}`]) {
+          currentState.imageIdToolState[`${caseId}#${key}`] = { ellipticalRoi: { data: [] } }
+        }
+        currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: algorithmInfo.picList[key] }
       })
-      currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: tempList }
-    })
+    } else {
+      let temp = {
+        "1_77": { "y1": 127, "y0": 80, "x0": 190, "x1": 227, "prob": 0.99508569469171382 },
+        "1_76": { "y1": 133, "y0": 77, "x0": 189, "x1": 231, "prob": 0.99508569469171382 },
+        "1_75": { "y1": 136, "y0": 77, "x0": 189, "x1": 237, "prob": 0.99508569469171382 },
+        "1_74": { "y1": 135, "y0": 78, "x0": 190, "x1": 240, "prob": 0.99508569469171382 },
+        "1_73": { "y1": 133, "y0": 82, "x0": 197, "x1": 245, "prob": 0.99508569469171382 },
+        "1_72": { "y1": 135, "y0": 85, "x0": 200, "x1": 245, "prob": 0.99508569469171382 },
+        "1_71": { "y1": 135, "y0": 93, "x0": 210, "x1": 245, "prob": 0.99508569469171382 },
+        "1_70": { "y1": 135, "y0": 98, "x0": 211, "x1": 245, "prob": 0.99508569469171382 },
+        "1_69": { "y1": 132, "y0": 107, "x0": 219, "x1": 243, "prob": 0.99508569469171382 },
+        "1_68": { "y1": 128, "y0": 110, "x0": 224, "x1": 243, "prob": 0.99508569469171382 },
+        "2_113": { "y1": 406, "y0": 385, "x0": 163, "x1": 183, "prob": 0.99221461777707087 },
+        "2_112": { "y1": 408, "y0": 382, "x0": 158, "x1": 186, "prob": 0.99221461777707087 },
+        "2_111": { "y1": 406, "y0": 379, "x0": 160, "x1": 186, "prob": 0.99221461777707087 },
+        "2_110": { "y1": 405, "y0": 379, "x0": 163, "x1": 186, "prob": 0.99221461777707087 },
+        "3_87": { "y1": 135, "y0": 109, "x0": 155, "x1": 172, "prob": 0.99058158466960267 },
+        "3_86": { "y1": 148, "y0": 101, "x0": 147, "x1": 186, "prob": 0.99058158466960267 },
+        "3_85": { "y1": 149, "y0": 91, "x0": 147, "x1": 192, "prob": 0.99058158466960267 },
+        "3_84": { "y1": 148, "y0": 90, "x0": 146, "x1": 196, "prob": 0.99058158466960267 },
+        "3_83": { "y1": 146, "y0": 88, "x0": 150, "x1": 200, "prob": 0.99058158466960267 },
+        "3_82": { "y1": 146, "y0": 88, "x0": 154, "x1": 204, "prob": 0.99058158466960267 },
+        "3_81": { "y1": 146, "y0": 88, "x0": 158, "x1": 205, "prob": 0.99058158466960267 },
+        "3_80": { "y1": 146, "y0": 90, "x0": 160, "x1": 205, "prob": 0.99058158466960267 },
+        "3_79": { "y1": 146, "y0": 91, "x0": 165, "x1": 207, "prob": 0.99058158466960267 },
+        "3_78": { "y1": 146, "y0": 93, "x0": 168, "x1": 207, "prob": 0.99058158466960267 },
+        "3_77": { "y1": 141, "y0": 98, "x0": 178, "x1": 202, "prob": 0.99058158466960267 },
+        "4_75": { "y1": 250, "y0": 232, "x0": 333, "x1": 355, "prob": 0.98716848544019287 },
+        "4_74": { "y1": 251, "y0": 230, "x0": 329, "x1": 357, "prob": 0.98716848544019287 },
+        "4_73": { "y1": 251, "y0": 230, "x0": 328, "x1": 360, "prob": 0.98716848544019287 },
+        "4_72": { "y1": 251, "y0": 230, "x0": 328, "x1": 359, "prob": 0.98716848544019287 },
+        "4_71": { "y1": 250, "y0": 235, "x0": 334, "x1": 352, "prob": 0.98716848544019287 },
+        "5_69": { "y1": 151, "y0": 104, "x0": 240, "x1": 269, "prob": 0.982299394580053 },
+        "5_68": { "y1": 154, "y0": 104, "x0": 237, "x1": 272, "prob": 0.982299394580053 },
+        "5_67": { "y1": 157, "y0": 106, "x0": 235, "x1": 283, "prob": 0.982299394580053 },
+        "5_66": { "y1": 156, "y0": 106, "x0": 238, "x1": 290, "prob": 0.982299394580053 },
+        "5_65": { "y1": 152, "y0": 107, "x0": 243, "x1": 296, "prob": 0.982299394580053 },
+        "5_64": { "y1": 148, "y0": 110, "x0": 253, "x1": 295, "prob": 0.982299394580053 }
+      };
+
+      if (!this.state.diagnosisResult) {
+        this.extract(temp);
+      }
+
+      let picList = {}
+      _.mapObject(temp, (val, key) => {
+        val.num = key.split("_")[0];
+        if (picList[key.split("_")[1]] != undefined) {
+          picList[key.split("_")[1]].push(val)
+        } else {
+          picList[key.split("_")[1]] = [val]
+        }
+      })
+      _.mapObject(picList, (val, key) => {
+        if (!currentState.imageIdToolState[`${caseId}#${key}`]) {
+          currentState.imageIdToolState[`${caseId}#${key}`] = { ellipticalRoi: { data: [] } }
+        }
+        let tempList = [];
+        _.each(val, (obj) => {
+          const standard = {
+            visible: true,
+            active: false,
+            invalidated: false,
+            handles: {
+              start: {
+                "x": 146.26041666666666,
+                "y": 91.83333333333331,
+                "highlight": true,
+                "active": false
+              },
+              end: {
+                "x": 387.92708333333337,
+                "y": 275.16666666666663,
+                "highlight": true,
+                "active": false
+              },
+              textBox: {
+                "active": false,
+                "hasMoved": false,
+                "movesIndependently": false,
+                "drawnIndependently": true,
+                "allowedOutsideImage": true,
+                "hasBoundingBox": true,
+                "index": 1,
+              }
+            },
+          };
+          standard.handles.start.x = obj.y0;
+          standard.handles.start.y = obj.x0;
+          standard.handles.end.x = obj.y1;
+          standard.handles.end.y = obj.x1;
+          standard.handles.textBox.index = obj.num;
+          tempList.push(standard)
+        })
+        picList[key] = tempList
+        sessionStorage.setItem('algorithm', JSON.stringify({ temp, picList }))
+        currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: tempList }
+      })
+    }
+
     this.setState({
       isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened
     }, function () {
@@ -756,7 +780,14 @@ export default class Viewer extends Component {
    * clear all tool data, e.g. rec, probe and angle
    */
   clearToolData() {
+<<<<<<< HEAD
     cornerstoneTools.globalImageIdSpecificToolStateManager.clear(this.state.container);
+=======
+    var toolStateManager = cornerstoneTools.getElementToolStateManager(this.state.container);
+    for (let i = 0; i < this.state.toolTypes.length; i++) {
+      delete toolStateManager.toolState[this.state.toolTypes[i]];
+    }
+>>>>>>> fd8cab03477e4aad4ad84f02e1c2436d82af163d
     cornerstone.updateImage(this.state.container);
   }
 
@@ -770,7 +801,6 @@ export default class Viewer extends Component {
     cornerstoneTools.mouseInput.enable(this.state.container);
     cornerstoneTools.mouseWheelInput.enable(this.state.container);
     cornerstoneTools.rectangleRoi.deactivate(this.state.container, 1);
-    this.state.circleVisible && cornerstoneTools.ellipticalRoi.deactivate(this.state.container, 1);
     cornerstoneTools.wwwc.deactivate(this.state.container, 1);
     cornerstoneTools.pan.deactivate(this.state.container, 1);
     cornerstoneTools.zoom.deactivate(this.state.container, 4);
@@ -868,27 +898,27 @@ export default class Viewer extends Component {
               </Navbar.Text>
               <Navbar.Text className="button" onClick={this.saveState.bind(this)}>
                 <FontAwesome name='save' size='2x' />
-                <br/>
+                <br />
                 <span>保存</span>
               </Navbar.Text>
               <Navbar.Text className="button" onClick={this.restoreState.bind(this)}>
                 <FontAwesome name='paste' size='2x' />
-                <br/>
+                <br />
                 <span>载入</span>
               </Navbar.Text>
               <Navbar.Text className="button" onClick={this.switchState.bind(this)}>
                 <FontAwesome name={this.state.circleVisible ? 'eye-slash' : 'eye'} size='2x' />
-                <br/>
+                <br />
                 <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
               </Navbar.Text>
               <Navbar.Text className="button" onClick={this.diagnose.bind(this)}>
                 <FontAwesome name='stethoscope' size='2x' />
-                <br/>
+                <br />
                 <span>诊断</span>
               </Navbar.Text>
               <Navbar.Text className="button" onClick={() => this.clearToolData()}>
                 <FontAwesome name='trash' size='2x' />
-                <br/>
+                <br />
                 <span>清除</span>
               </Navbar.Text>
             </Navbar.Collapse>
