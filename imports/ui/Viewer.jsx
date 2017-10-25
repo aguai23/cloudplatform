@@ -165,15 +165,8 @@ export default class Viewer extends Component {
       lastY: 0,
       startY: 0,
 
-<<<<<<< HEAD
       isDiagnosisPanelOpened: false
-      
-=======
-      isDiagnosisPanelOpened: false,
 
-      toolTypes: ['angle', 'rectangleRoi', 'length', 'probe', 'highlight']
-
->>>>>>> fd8cab03477e4aad4ad84f02e1c2436d82af163d
     };
     this.updateInfo = this.updateInfo.bind(this);
     this.setSlice = this.setSlice.bind(this);
@@ -780,14 +773,7 @@ export default class Viewer extends Component {
    * clear all tool data, e.g. rec, probe and angle
    */
   clearToolData() {
-<<<<<<< HEAD
     cornerstoneTools.globalImageIdSpecificToolStateManager.clear(this.state.container);
-=======
-    var toolStateManager = cornerstoneTools.getElementToolStateManager(this.state.container);
-    for (let i = 0; i < this.state.toolTypes.length; i++) {
-      delete toolStateManager.toolState[this.state.toolTypes[i]];
-    }
->>>>>>> fd8cab03477e4aad4ad84f02e1c2436d82af163d
     cornerstone.updateImage(this.state.container);
   }
 
