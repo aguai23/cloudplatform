@@ -762,7 +762,7 @@ export default class Viewer extends Component {
     cornerstoneTools.length.deactivate(this.state.container, 1);
     cornerstoneTools.probe.deactivate(this.state.container, 1);
     cornerstoneTools.angle.deactivate(this.state.container, 1);
-    cornerstoneTools.highlight.deactivate(this.state.container, 1);
+    cornerstoneTools.highlight.disable(this.state.container, 1);
   }
 
 

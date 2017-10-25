@@ -37,9 +37,9 @@ export class CaseList extends Component {
   deleteCase(caseId) {
     Meteor.call('deleteCase', caseId, (error) => {
       if (error) {
-        alert("somethings wrong" + error.reason);
+        toast.error("somethings wrong" + error.reason, { position: toast.POSITION.BOTTOM_RIGHT });
       } else {
-        alert("Case deleted");
+        toast.success("病例删除成功", { position: toast.POSITION.BOTTOM_RIGHT });
       }
     });
   }
@@ -50,7 +50,8 @@ export class CaseList extends Component {
     if(this.state.isSearchClicked) return;
 
     if(name === undefined || name.length === 0) {
-      return alert("查询条件不能为空");
+      toast.warning("查询条件不能为空", { position: toast.POSITION.BOTTOM_RIGHT });
+      return
     }
 
     this.setState({
@@ -125,7 +126,7 @@ export class CaseList extends Component {
                 <tr key={specificCase._id}>
                   <td>{specificCase.name}</td>
                   <td>{specificCase.profile.age}</td>
-                  <td>{specificCase.profile.gender}</td>
+                  <td>{specificCase.profile.gender === 'male' ? '男' : '女'}</td>
                   <td>{specificCase.profile.source}</td>
                   <td>{specificCase.createAt}</td>
                   {collectionCol}
