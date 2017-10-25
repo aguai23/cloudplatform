@@ -131,7 +131,10 @@ export class CaseList extends Component {
                   <td>{specificCase.createAt}</td>
                   {collectionCol}
                   <td>
-                    <Link to={`/viewer?caseId=${specificCase._id}`} className="glyphicon glyphicon-picture"></Link>
+                    <Link to={{
+                        pathname: '/viewer',
+                        state: specificCase._id
+                      }} className="glyphicon glyphicon-picture"></Link>
                     &nbsp;&nbsp;&nbsp;
                     <Link  to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil"></Link>
                     &nbsp;&nbsp;&nbsp;

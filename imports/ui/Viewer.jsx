@@ -165,7 +165,9 @@ export default class Viewer extends Component {
       lastY: 0,
       startY: 0,
 
-      isDiagnosisPanelOpened: false
+      isDiagnosisPanelOpened: false,
+
+      toolTypes: ['angle', 'rectangleRoi', 'length', 'probe']
 
     };
     this.updateInfo = this.updateInfo.bind(this);
@@ -227,7 +229,7 @@ export default class Viewer extends Component {
       }
 
       cornerstone.enable(document.getElementById("viewer"));
-      cornerstoneTools.addStackStateManager(this.state.container, ['stack']);
+      cornerstoneTools.addStackStateManager(this.state.container, this.state.toolTypes);
       cornerstoneTools.toolColors.setToolColor("#ffcc33");
     });
 
@@ -243,7 +245,7 @@ export default class Viewer extends Component {
     /**
      * send a request to require server load all cases first
      */
-    Meteor.call('prepareDicoms', this.props.location.query.caseId, (error, result) => {
+    Meteor.call('prepareDicoms', this.props.location.state, (error, result) => {
       if (error) {
         console.log(error)
       } else {
@@ -384,11 +386,11 @@ export default class Viewer extends Component {
       case 6:
         this.setProbeTool();
         break;
-      
+
       case 7:
         this.setAngleTool();
         break;
-      
+
       case 8:
         this.setHighlightTool();
         break;
@@ -490,7 +492,8 @@ export default class Viewer extends Component {
   saveState() {
     let elements = [this.state.container];
     let currentState = cornerstoneTools.appState.save(elements);
-    let appState = JSON.parse(JSON.stringify(currentState))
+    let appState = JSON.parse(JSON.stringify(currentState));
+
     _.mapObject(appState.imageIdToolState, (val, imageId) => {
       _.mapObject(val, (data, toolName) => {
         if (toolName === 'ellipticalRoi') {
@@ -505,11 +508,11 @@ export default class Viewer extends Component {
       elementViewport: appState.elementViewport,
       source: 'USER',
       createAt: new Date(),
-      caseId: this.props.location.query.caseId,
+      caseId: this.props.location.state,
       ownerId: Meteor.userId(),
     };
 
-    let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.query.caseId });
+    let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state });
     if (oldState) {
       mark._id = oldState._id;
       Meteor.call('modifyMark', mark, (error) => {
@@ -536,7 +539,7 @@ export default class Viewer extends Component {
   restoreState() {
     let elements = [this.state.container];
     let currentState = cornerstoneTools.appState.save(elements);
-    let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.query.caseId });
+    let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state });
 
     /**
      * save system mark to old mark
@@ -641,7 +644,7 @@ export default class Viewer extends Component {
         picList[key.split("_")[1]] = [val]
       }
     })
-    let caseId = this.props.location.query.caseId;
+    let caseId = this.props.location.state;
     let elements = [this.state.container];
     let currentState = cornerstoneTools.appState.save(elements);
     _.mapObject(picList, (val, key) => {
@@ -742,6 +745,17 @@ export default class Viewer extends Component {
     $('div').removeClass('active-diagnosis-row');
     $('#diagnosis-item-' + key).addClass('active-diagnosis-row');
     this.setSlice(Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice));
+  }
+
+  /**
+   * clear all tool data, e.g. rec, probe and angle
+   */
+  clearToolData() {
+    var toolStateManager = cornerstoneTools.getElementToolStateManager(this.state.container);
+    for(let i = 0; i < this.state.toolTypes.length; i++) {
+      delete toolStateManager.toolState[this.state.toolTypes[i]];
+    }
+    cornerstone.updateImage(this.state.container);
   }
 
   /**
@@ -848,7 +862,7 @@ export default class Viewer extends Component {
               </Nav>
               <Navbar.Text className="button" onClick={this.resetViewport.bind(this)}>
                 <FontAwesome name='refresh' size='2x' /><br />
-                <span>重设</span>
+                <span>重置</span>
               </Navbar.Text>
               <Navbar.Text className="button" onClick={this.saveState.bind(this)}>
                 <FontAwesome name='save' size='2x' />
@@ -869,6 +883,11 @@ export default class Viewer extends Component {
                 <FontAwesome name='stethoscope' size='2x' />
                 <br/>
                 <span>诊断</span>
+              </Navbar.Text>
+              <Navbar.Text className="button" onClick={() => this.clearToolData()}>
+                <FontAwesome name='trash' size='2x' />
+                <br/>
+                <span>清除</span>
               </Navbar.Text>
             </Navbar.Collapse>
           </Navbar>
