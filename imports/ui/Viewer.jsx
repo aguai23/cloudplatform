@@ -1,3 +1,4 @@
+import { HTTP } from 'meteor/http';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
@@ -12,8 +13,9 @@ import io from '../library/socket';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
+import ReactSVG from 'react-svg';
 
-import "./css/viewer.css"
+import "./css/viewer.css";
 
 
 const style = {
@@ -120,7 +122,10 @@ const style = {
     display: 'none',
     float: 'left',
     border: '1px solid #aaf7f4',
-    padding: '10px 20px 10px 20px'
+    padding: '10px 20px 10px 20px',
+    color: '#9ccef9',
+    fontSize: '12px',
+    fontWeight: '300'
   },
   diagnosisHeader: {
     textAlign: 'center',
@@ -168,6 +173,7 @@ export default class Viewer extends Component {
       startY: 0,
 
       isDiagnosisPanelOpened: false,
+      isDiagnosisFinished: false,
       isMagnifyToolEnabled: false,
       isMagnifyToolOpened: false
 
@@ -617,122 +623,6 @@ export default class Viewer extends Component {
    * get diagnosis information from backend
    */
   diagnose() {
-    const algorithmInfo = JSON.parse(sessionStorage.getItem('algorithm'));
-    cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-
-    let caseId = this.props.location.state;
-    let elements = [this.state.container];
-    let currentState = cornerstoneTools.appState.save(elements);
-    if (algorithmInfo) {
-      if (!this.state.diagnosisResult) {
-        this.extract(algorithmInfo.temp);
-      }
-      _.mapObject(algorithmInfo.picList, (val, key) => {
-        if (!currentState.imageIdToolState[`${caseId}#${key}`]) {
-          currentState.imageIdToolState[`${caseId}#${key}`] = { ellipticalRoi: { data: [] } }
-        }
-        currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: algorithmInfo.picList[key] }
-      })
-    } else {
-      let temp = {
-        "1_77": { "y1": 127, "y0": 80, "x0": 190, "x1": 227, "prob": 0.99508569469171382 },
-        "1_76": { "y1": 133, "y0": 77, "x0": 189, "x1": 231, "prob": 0.99508569469171382 },
-        "1_75": { "y1": 136, "y0": 77, "x0": 189, "x1": 237, "prob": 0.99508569469171382 },
-        "1_74": { "y1": 135, "y0": 78, "x0": 190, "x1": 240, "prob": 0.99508569469171382 },
-        "1_73": { "y1": 133, "y0": 82, "x0": 197, "x1": 245, "prob": 0.99508569469171382 },
-        "1_72": { "y1": 135, "y0": 85, "x0": 200, "x1": 245, "prob": 0.99508569469171382 },
-        "1_71": { "y1": 135, "y0": 93, "x0": 210, "x1": 245, "prob": 0.99508569469171382 },
-        "1_70": { "y1": 135, "y0": 98, "x0": 211, "x1": 245, "prob": 0.99508569469171382 },
-        "1_69": { "y1": 132, "y0": 107, "x0": 219, "x1": 243, "prob": 0.99508569469171382 },
-        "1_68": { "y1": 128, "y0": 110, "x0": 224, "x1": 243, "prob": 0.99508569469171382 },
-        "2_113": { "y1": 406, "y0": 385, "x0": 163, "x1": 183, "prob": 0.99221461777707087 },
-        "2_112": { "y1": 408, "y0": 382, "x0": 158, "x1": 186, "prob": 0.99221461777707087 },
-        "2_111": { "y1": 406, "y0": 379, "x0": 160, "x1": 186, "prob": 0.99221461777707087 },
-        "2_110": { "y1": 405, "y0": 379, "x0": 163, "x1": 186, "prob": 0.99221461777707087 },
-        "3_87": { "y1": 135, "y0": 109, "x0": 155, "x1": 172, "prob": 0.99058158466960267 },
-        "3_86": { "y1": 148, "y0": 101, "x0": 147, "x1": 186, "prob": 0.99058158466960267 },
-        "3_85": { "y1": 149, "y0": 91, "x0": 147, "x1": 192, "prob": 0.99058158466960267 },
-        "3_84": { "y1": 148, "y0": 90, "x0": 146, "x1": 196, "prob": 0.99058158466960267 },
-        "3_83": { "y1": 146, "y0": 88, "x0": 150, "x1": 200, "prob": 0.99058158466960267 },
-        "3_82": { "y1": 146, "y0": 88, "x0": 154, "x1": 204, "prob": 0.99058158466960267 },
-        "3_81": { "y1": 146, "y0": 88, "x0": 158, "x1": 205, "prob": 0.99058158466960267 },
-        "3_80": { "y1": 146, "y0": 90, "x0": 160, "x1": 205, "prob": 0.99058158466960267 },
-        "3_79": { "y1": 146, "y0": 91, "x0": 165, "x1": 207, "prob": 0.99058158466960267 },
-        "3_78": { "y1": 146, "y0": 93, "x0": 168, "x1": 207, "prob": 0.99058158466960267 },
-        "3_77": { "y1": 141, "y0": 98, "x0": 178, "x1": 202, "prob": 0.99058158466960267 },
-        "4_75": { "y1": 250, "y0": 232, "x0": 333, "x1": 355, "prob": 0.98716848544019287 },
-        "4_74": { "y1": 251, "y0": 230, "x0": 329, "x1": 357, "prob": 0.98716848544019287 },
-        "4_73": { "y1": 251, "y0": 230, "x0": 328, "x1": 360, "prob": 0.98716848544019287 },
-        "4_72": { "y1": 251, "y0": 230, "x0": 328, "x1": 359, "prob": 0.98716848544019287 },
-        "4_71": { "y1": 250, "y0": 235, "x0": 334, "x1": 352, "prob": 0.98716848544019287 },
-        "5_69": { "y1": 151, "y0": 104, "x0": 240, "x1": 269, "prob": 0.982299394580053 },
-        "5_68": { "y1": 154, "y0": 104, "x0": 237, "x1": 272, "prob": 0.982299394580053 },
-        "5_67": { "y1": 157, "y0": 106, "x0": 235, "x1": 283, "prob": 0.982299394580053 },
-        "5_66": { "y1": 156, "y0": 106, "x0": 238, "x1": 290, "prob": 0.982299394580053 },
-        "5_65": { "y1": 152, "y0": 107, "x0": 243, "x1": 296, "prob": 0.982299394580053 },
-        "5_64": { "y1": 148, "y0": 110, "x0": 253, "x1": 295, "prob": 0.982299394580053 }
-      };
-
-      if (!this.state.diagnosisResult) {
-        this.extract(temp);
-      }
-
-      let picList = {}
-      _.mapObject(temp, (val, key) => {
-        val.num = key.split("_")[0];
-        if (picList[key.split("_")[1]] != undefined) {
-          picList[key.split("_")[1]].push(val)
-        } else {
-          picList[key.split("_")[1]] = [val]
-        }
-      })
-      _.mapObject(picList, (val, key) => {
-        if (!currentState.imageIdToolState[`${caseId}#${key}`]) {
-          currentState.imageIdToolState[`${caseId}#${key}`] = { ellipticalRoi: { data: [] } }
-        }
-        let tempList = [];
-        _.each(val, (obj) => {
-          const standard = {
-            visible: true,
-            active: false,
-            invalidated: false,
-            handles: {
-              start: {
-                "x": 146.26041666666666,
-                "y": 91.83333333333331,
-                "highlight": true,
-                "active": false
-              },
-              end: {
-                "x": 387.92708333333337,
-                "y": 275.16666666666663,
-                "highlight": true,
-                "active": false
-              },
-              textBox: {
-                "active": false,
-                "hasMoved": false,
-                "movesIndependently": false,
-                "drawnIndependently": true,
-                "allowedOutsideImage": true,
-                "hasBoundingBox": true,
-                "index": 1,
-              }
-            },
-          };
-          standard.handles.start.x = obj.y0;
-          standard.handles.start.y = obj.x0;
-          standard.handles.end.x = obj.y1;
-          standard.handles.end.y = obj.x1;
-          standard.handles.textBox.index = obj.num;
-          tempList.push(standard)
-        })
-        picList[key] = tempList
-        sessionStorage.setItem('algorithm', JSON.stringify({ temp, picList }))
-        currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: tempList }
-      })
-    }
-
     this.setState({
       isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened
     }, function () {
@@ -759,6 +649,128 @@ export default class Viewer extends Component {
         });
       }
     });
+
+    HTTP.call('GET', '/test', (error, res) => {
+      this.setState({isDiagnosisFinished: true});
+
+      const algorithmInfo = JSON.parse(sessionStorage.getItem('algorithm'));
+      cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
+
+      let caseId = this.props.location.state;
+      let elements = [this.state.container];
+      let currentState = cornerstoneTools.appState.save(elements);
+      if (algorithmInfo) {
+        if (!this.state.diagnosisResult) {
+          this.extract(algorithmInfo.temp);
+        }
+        _.mapObject(algorithmInfo.picList, (val, key) => {
+          if (!currentState.imageIdToolState[`${caseId}#${key}`]) {
+            currentState.imageIdToolState[`${caseId}#${key}`] = { ellipticalRoi: { data: [] } }
+          }
+          currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: algorithmInfo.picList[key] }
+        })
+      } else {
+        let temp = {
+          "1_77": { "y1": 127, "y0": 80, "x0": 190, "x1": 227, "prob": 0.99508569469171382 },
+          "1_76": { "y1": 133, "y0": 77, "x0": 189, "x1": 231, "prob": 0.99508569469171382 },
+          "1_75": { "y1": 136, "y0": 77, "x0": 189, "x1": 237, "prob": 0.99508569469171382 },
+          "1_74": { "y1": 135, "y0": 78, "x0": 190, "x1": 240, "prob": 0.99508569469171382 },
+          "1_73": { "y1": 133, "y0": 82, "x0": 197, "x1": 245, "prob": 0.99508569469171382 },
+          "1_72": { "y1": 135, "y0": 85, "x0": 200, "x1": 245, "prob": 0.99508569469171382 },
+          "1_71": { "y1": 135, "y0": 93, "x0": 210, "x1": 245, "prob": 0.99508569469171382 },
+          "1_70": { "y1": 135, "y0": 98, "x0": 211, "x1": 245, "prob": 0.99508569469171382 },
+          "1_69": { "y1": 132, "y0": 107, "x0": 219, "x1": 243, "prob": 0.99508569469171382 },
+          "1_68": { "y1": 128, "y0": 110, "x0": 224, "x1": 243, "prob": 0.99508569469171382 },
+          "2_113": { "y1": 406, "y0": 385, "x0": 163, "x1": 183, "prob": 0.99221461777707087 },
+          "2_112": { "y1": 408, "y0": 382, "x0": 158, "x1": 186, "prob": 0.99221461777707087 },
+          "2_111": { "y1": 406, "y0": 379, "x0": 160, "x1": 186, "prob": 0.99221461777707087 },
+          "2_110": { "y1": 405, "y0": 379, "x0": 163, "x1": 186, "prob": 0.99221461777707087 },
+          "3_87": { "y1": 135, "y0": 109, "x0": 155, "x1": 172, "prob": 0.99058158466960267 },
+          "3_86": { "y1": 148, "y0": 101, "x0": 147, "x1": 186, "prob": 0.99058158466960267 },
+          "3_85": { "y1": 149, "y0": 91, "x0": 147, "x1": 192, "prob": 0.99058158466960267 },
+          "3_84": { "y1": 148, "y0": 90, "x0": 146, "x1": 196, "prob": 0.99058158466960267 },
+          "3_83": { "y1": 146, "y0": 88, "x0": 150, "x1": 200, "prob": 0.99058158466960267 },
+          "3_82": { "y1": 146, "y0": 88, "x0": 154, "x1": 204, "prob": 0.99058158466960267 },
+          "3_81": { "y1": 146, "y0": 88, "x0": 158, "x1": 205, "prob": 0.99058158466960267 },
+          "3_80": { "y1": 146, "y0": 90, "x0": 160, "x1": 205, "prob": 0.99058158466960267 },
+          "3_79": { "y1": 146, "y0": 91, "x0": 165, "x1": 207, "prob": 0.99058158466960267 },
+          "3_78": { "y1": 146, "y0": 93, "x0": 168, "x1": 207, "prob": 0.99058158466960267 },
+          "3_77": { "y1": 141, "y0": 98, "x0": 178, "x1": 202, "prob": 0.99058158466960267 },
+          "4_75": { "y1": 250, "y0": 232, "x0": 333, "x1": 355, "prob": 0.98716848544019287 },
+          "4_74": { "y1": 251, "y0": 230, "x0": 329, "x1": 357, "prob": 0.98716848544019287 },
+          "4_73": { "y1": 251, "y0": 230, "x0": 328, "x1": 360, "prob": 0.98716848544019287 },
+          "4_72": { "y1": 251, "y0": 230, "x0": 328, "x1": 359, "prob": 0.98716848544019287 },
+          "4_71": { "y1": 250, "y0": 235, "x0": 334, "x1": 352, "prob": 0.98716848544019287 },
+          "5_69": { "y1": 151, "y0": 104, "x0": 240, "x1": 269, "prob": 0.982299394580053 },
+          "5_68": { "y1": 154, "y0": 104, "x0": 237, "x1": 272, "prob": 0.982299394580053 },
+          "5_67": { "y1": 157, "y0": 106, "x0": 235, "x1": 283, "prob": 0.982299394580053 },
+          "5_66": { "y1": 156, "y0": 106, "x0": 238, "x1": 290, "prob": 0.982299394580053 },
+          "5_65": { "y1": 152, "y0": 107, "x0": 243, "x1": 296, "prob": 0.982299394580053 },
+          "5_64": { "y1": 148, "y0": 110, "x0": 253, "x1": 295, "prob": 0.982299394580053 }
+        };
+
+        if (!this.state.diagnosisResult) {
+          this.extract(temp);
+        }
+
+        let picList = {}
+        _.mapObject(temp, (val, key) => {
+          val.num = key.split("_")[0];
+          if (picList[key.split("_")[1]] != undefined) {
+            picList[key.split("_")[1]].push(val)
+          } else {
+            picList[key.split("_")[1]] = [val]
+          }
+        })
+        _.mapObject(picList, (val, key) => {
+          if (!currentState.imageIdToolState[`${caseId}#${key}`]) {
+            currentState.imageIdToolState[`${caseId}#${key}`] = { ellipticalRoi: { data: [] } }
+          }
+          let tempList = [];
+          _.each(val, (obj) => {
+            const standard = {
+              visible: true,
+              active: false,
+              invalidated: false,
+              handles: {
+                start: {
+                  "x": 146.26041666666666,
+                  "y": 91.83333333333331,
+                  "highlight": true,
+                  "active": false
+                },
+                end: {
+                  "x": 387.92708333333337,
+                  "y": 275.16666666666663,
+                  "highlight": true,
+                  "active": false
+                },
+                textBox: {
+                  "active": false,
+                  "hasMoved": false,
+                  "movesIndependently": false,
+                  "drawnIndependently": true,
+                  "allowedOutsideImage": true,
+                  "hasBoundingBox": true,
+                  "index": 1,
+                }
+              },
+            };
+            standard.handles.start.x = obj.y0;
+            standard.handles.start.y = obj.x0;
+            standard.handles.end.x = obj.y1;
+            standard.handles.end.y = obj.x1;
+            standard.handles.textBox.index = obj.num;
+            tempList.push(standard)
+          })
+          picList[key] = tempList
+          sessionStorage.setItem('algorithm', JSON.stringify({ temp, picList }))
+          currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: tempList }
+        })
+      }
+    });
+
+
   }
 
   /**
@@ -880,6 +892,28 @@ export default class Viewer extends Component {
                     <FontAwesome style={{paddingLeft: '5px', position: 'absolute', marginTop: '5px'}} name='caret-down' size='lg'/>
                 ) : undefined;
 
+    let diagnosisBox = this.state.isDiagnosisPanelOpened ? (
+                          this.state.isDiagnosisFinished ? (
+                            <div>
+                              <div style={style.diagnosisHeader}>
+                                <h3>病变列表</h3>
+                              </div>
+                              <hr style={{ borderColor: '#aaf7f4' }} />
+                              <div className="row" style={{ ...style.diagnosisRow, ...style.diagnosisTableHead }}>
+                                <div className="col-xs-4">编号</div>
+                                <div className="col-xs-4">层面</div>
+                                <div className="col-xs-4" style={style.diagnosisProb}>概率</div>
+                              </div>
+                              {results}
+                            </div>
+                          ) : (
+                            <ReactSVG
+                                path="/img/spinner.svg"
+                                style={{zIndex: 2000, width: '100%', margin: '0 auto'}}
+                              />
+                          )
+                        ) : undefined;
+
     return (
       <div id="body" style={style.body}>
         <div id="top" style={style.top}>
@@ -979,22 +1013,12 @@ export default class Viewer extends Component {
                 <br />
                 <span>诊断</span>
               </Navbar.Text>
-
             </Navbar.Collapse>
           </Navbar>
         </div>
 
         <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
-          <div style={style.diagnosisHeader}>
-            <h3>病变列表</h3>
-          </div>
-          <hr style={{ borderColor: '#aaf7f4' }} />
-          <div className="row" style={{ ...style.diagnosisRow, ...style.diagnosisTableHead }}>
-            <div className="col-xs-4">编号</div>
-            <div className="col-xs-4">层面</div>
-            <div className="col-xs-4" style={style.diagnosisProb}>概率</div>
-          </div>
-          {results}
+          {diagnosisBox}
         </div>
 
         <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: this.state.containerWidth } }} className="container">

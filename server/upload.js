@@ -13,6 +13,11 @@ var fs = require('fs'),
     // port = process.env.SERVER_PORT || 8000,
     maxFileSize = Meteor.settings.MAX_FILE_SIZE || 0;
 
+Picker.route('/test', function(params, req, res, next) {
+  Meteor.setTimeout(function() {
+    res.end('success');
+  }, 3000);
+});
 
 Picker.route('/uploads', function(params, req, res, next) {
   if(req.method === 'POST') {
