@@ -95,7 +95,6 @@ export class Main extends Component {
       dataCollections: this.props.publicDataCollections
     };
     this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
-    this.onAddCasesClick = this.onAddCasesClick.bind(this);
     this.onClickRemoveCollection = this.onClickRemoveCollection.bind(this);
     this.onTabSelectHandler = this.onTabSelectHandler.bind(this);
   }
@@ -120,28 +119,32 @@ export class Main extends Component {
     this.setState({ searchButtonIsHovered: val });
   }
 
-  onAddCasesClick(dataCollectionId) {
-    Session.set({
-      collectionId: dataCollectionId,
-    })
-    this.context.router.push('/newCase');
+  isAdmin() {
+    if (Meteor.user().profile && Meteor.user().profile.isAdmin) {
+      return true
+    }
+    toast.error("暂无操作权限！", { position: toast.POSITION.BOTTOM_RIGHT });
+    return false
   }
 
   onClickRemoveCollection(id) {
-    Meteor.call('removeDataCollection', id, (error) => {
-      if (error) {
-        console.log("Failed to remove DataCollection. " + error.reason);
-        toast.error("数据集删除失败！", { position: toast.POSITION.BOTTOM_RIGHT });
-      } else {
-        toast.success("数据集已成功删除！", { position: toast.POSITION.BOTTOM_RIGHT });
-      }
-    });
+    if (this.isAdmin()) {
+      Meteor.call('removeDataCollection', id, (error) => {
+        if (error) {
+          console.log("Failed to remove DataCollection. " + error.reason);
+          toast.error("数据集删除失败！", { position: toast.POSITION.BOTTOM_RIGHT });
+        } else {
+          toast.success("数据集已成功删除！", { position: toast.POSITION.BOTTOM_RIGHT });
+        }
+      });
+    }
   }
 
   onClickAddCollection() {
-    this.setState({ showAddCollectionModal: true });
-
-    ReactDOM.render((<ModalAddCollection showModal={true} userInfo={this.props.userData} />), document.getElementById('modal-base'));
+    if (this.isAdmin()) {
+      this.setState({ showAddCollectionModal: true });
+      ReactDOM.render((<ModalAddCollection showModal={true} userInfo={this.props.userData} />), document.getElementById('modal-base'));
+    }
   }
 
   onTabSelectHandler(eventKey) {
@@ -161,8 +164,10 @@ export class Main extends Component {
   }
 
   updateCurrentDataCollection(dataCollection) {
-    this.setState({ showAddCollectionModal: true });
-    ReactDOM.render((<ModalAddCollection showModal={true} dataCollection={dataCollection} userInfo={this.props.userData} />), document.getElementById('modal-base'));
+    if (this.isAdmin()) {
+      this.setState({ showAddCollectionModal: true });
+      ReactDOM.render((<ModalAddCollection showModal={true} dataCollection={dataCollection} userInfo={this.props.userData} />), document.getElementById('modal-base'));
+    }
   }
 
   searchDatabase() {
@@ -234,6 +239,7 @@ export class Main extends Component {
           autoClose={5000}
           hideProgressBar={false}
           newestOnTop={false}
+          style={{ zIndex: 1999 }}
           closeOnClick
           pauseOnHover
         />

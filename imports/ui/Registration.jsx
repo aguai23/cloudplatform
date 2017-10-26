@@ -62,7 +62,8 @@ export default class Registration extends Component {
 
     Accounts.createUser({
       email: this.emailInput.value,
-      password: this.passwordInput.value
+      password: this.passwordInput.value,
+      isAdmin: this.adminInput.value === 'on' ? true : false ,
     }, function(error) {
       if(error) {
         return console.log("Registration Failed. " + error);
@@ -97,6 +98,12 @@ export default class Registration extends Component {
               <Col sm={3}>确认密码</Col>
               <Col sm={9}>
                 <FormControl type="password" placeholder="Confirm password" inputRef={function(ref) { this.confirmPasswordInput = ref; }}/>
+              </Col>
+            </FormGroup>
+
+            <FormGroup>
+              <Col smOffset={3} sm={9}>
+                <Checkbox inputRef={function(ref) { this.adminInput = ref; }}  >管理员</Checkbox>
               </Col>
             </FormGroup>
 
