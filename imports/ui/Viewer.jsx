@@ -41,7 +41,8 @@ const style = {
     position: 'absolute',
     border: '1px solid #3bc7f9',
     display: 'inline-block',
-    float: 'left'
+    float: 'left',
+    overflow: 'hidden'
   },
   viewer: {
     top: '30px',
@@ -53,7 +54,8 @@ const style = {
   textInfo: {
     color: '#9ccef9',
     fontSize: '14px',
-    fontWeight: '300'
+    fontWeight: '300',
+    zIndex: '1'
   },
   patientInfo: {
     position: 'absolute',
@@ -879,7 +881,7 @@ export default class Viewer extends Component {
                 ) : undefined;
 
     return (
-      <div id="body" style={{ ...style.body, ...style.textInfo }}>
+      <div id="body" style={style.body}>
         <div id="top" style={style.top}>
           <Navbar inverse collapseOnSelect style={{ marginBottom: '0'}}>
             <Navbar.Collapse>
