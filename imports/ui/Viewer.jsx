@@ -826,12 +826,12 @@ export default class Viewer extends Component {
     return (
       <div id="body" style={{ ...style.body, ...style.textInfo }}>
         <div id="top" style={style.top}>
-          <Navbar inverse collapseOnSelect style={{ marginBottom: '0' }}>
+          <Navbar inverse collapseOnSelect style={{ marginBottom: '0'}}>
             <Navbar.Collapse>
               <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
                 <NavItem eventKey={1} href="#">
-                  <div style={style.icon}>
-                    <FontAwesome name='gear' size='2x' />
+                  <div style={style.icon} >
+                    <FontAwesome name='files-o' size='2x' />
                   </div>
                   <span>图层</span>
                 </NavItem>
@@ -847,7 +847,14 @@ export default class Viewer extends Component {
                   </div>
                   <span>缩放</span>
                 </NavItem>
-                <NavItem eventKey={4} href="#">
+              </Nav>
+              <Navbar.Text className="button" onClick={this.resetViewport.bind(this)}>
+                <FontAwesome name='refresh' size='2x' /><br />
+                <span>重置</span>
+              </Navbar.Text>
+              <Navbar.Text style={{borderLeft: '2px solid #9ccef9', height: '50px'}}></Navbar.Text>
+              <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
+                <NavItem eventKey={4} href="#" onClick={() => console.log('onSelect')}>
                   <div style={style.icon}>
                     <FontAwesome name='arrows-h' size='2x' />
                   </div>
@@ -878,10 +885,12 @@ export default class Viewer extends Component {
                   <span>高亮</span>
                 </NavItem>
               </Nav>
-              <Navbar.Text className="button" onClick={this.resetViewport.bind(this)}>
-                <FontAwesome name='refresh' size='2x' /><br />
-                <span>重置</span>
+              <Navbar.Text className="button" onClick={() => this.clearToolData()}>
+                <FontAwesome name='trash' size='2x' />
+                <br />
+                <span>清除</span>
               </Navbar.Text>
+              <Navbar.Text style={{borderLeft: '2px solid #9ccef9', height: '50px'}}></Navbar.Text>
               <Navbar.Text className="button" onClick={this.saveState.bind(this)}>
                 <FontAwesome name='save' size='2x' />
                 <br />
@@ -902,11 +911,7 @@ export default class Viewer extends Component {
                 <br />
                 <span>诊断</span>
               </Navbar.Text>
-              <Navbar.Text className="button" onClick={() => this.clearToolData()}>
-                <FontAwesome name='trash' size='2x' />
-                <br />
-                <span>清除</span>
-              </Navbar.Text>
+
             </Navbar.Collapse>
           </Navbar>
         </div>
