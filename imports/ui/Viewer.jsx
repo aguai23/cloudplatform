@@ -953,7 +953,7 @@ export default class Viewer extends Component {
               <br />
               <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
               <br />
-              <span className="pull-left">层厚: {this.state.thickness} spacing: {this.state.pixelSpacing}</span>
+              <span className="pull-left">层厚: {this.state.thickness} 像素间距: {this.state.pixelSpacing}</span>
 
             </div>
             <div style={{ ...style.timeInfo, ...style.textInfo, ...style.disableSelection }} id="timeInfo">
