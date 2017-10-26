@@ -42,7 +42,32 @@ input[type=range]::-webkit-slider-thumb:active {
    color: black;
  }
 
- .button:hover{
-   color: #fff;
-   cursor: pointer;
- }
+.button:hover{
+  color: #fff;
+  cursor: pointer;
+}
+
+.magnifyTool {
+  top: 0;
+  left: 0;
+  border: 4px white solid;
+  box-shadow: 2px 2px 10px #1e1e1e;
+  border-radius: 50%;
+  display: none;
+  cursor: none;
+}
+
+ /* prevents selection when left click dragging */
+.disable-selection {
+  -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;
+}
+
+#popover-positioned-bottom {
+  background-color: black;
+  border-color: #91b9cd;
+  color: #91b9cd;
+}
+
+#popover-positioned-bottom > .arrow {
+  display: none;
+}

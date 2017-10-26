@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
-import { Button, Col, Navbar, NavItem, Nav, Row, MenuItem } from 'react-bootstrap';
+import { Button, Col, Navbar, NavItem, Nav, OverlayTrigger, Popover, Row, MenuItem } from 'react-bootstrap';
 import { Meteor } from 'meteor/meteor';
 import dicomParse from 'dicom-parser';
 import FS from 'fs';
@@ -165,9 +165,12 @@ export default class Viewer extends Component {
       lastY: 0,
       startY: 0,
 
-      isDiagnosisPanelOpened: false
+      isDiagnosisPanelOpened: false,
+      isMagnifyToolEnabled: false,
+      isMagnifyToolOpened: false
 
     };
+
     this.updateInfo = this.updateInfo.bind(this);
     this.setSlice = this.setSlice.bind(this);
     this.onDragScrollBar = this.onDragScrollBar.bind(this);
@@ -230,6 +233,12 @@ export default class Viewer extends Component {
       cornerstoneTools.addStackStateManager(this.state.container, 'stack');
       cornerstoneTools.toolColors.setToolColor("#ffcc33");
     });
+
+    var config = {
+        magnifySize: 250,
+        magnificationLevel: 4
+    };
+    cornerstoneTools.magnify.setConfiguration(config);
 
     /**
      * get current date and time
@@ -400,6 +409,10 @@ export default class Viewer extends Component {
         this.setHighlightTool();
         break;
 
+      case 9:
+        this.setMagnifyTool();
+        break;
+
       default:
         console.log(error);
     }
@@ -489,6 +502,12 @@ export default class Viewer extends Component {
   setHighlightTool() {
     this.disableAllTools();
     cornerstoneTools.highlight.activate(this.state.container, 1);
+  }
+
+  setMagnifyTool() {
+    this.disableAllTools();
+    this.setState({isMagnifyToolEnabled: true});
+    cornerstoneTools.magnify.activate(this.state.container, 1);
   }
 
   /**
@@ -781,6 +800,10 @@ export default class Viewer extends Component {
    * disable tools
    */
   disableAllTools() {
+    if(this.state.isMagnifyToolEnabled) {
+      this.setState({isMagnifyToolEnabled: false});
+    }
+
     let element = $("#viewer");
     element.off("mousewheel");
     element.off("mousemove");
@@ -795,8 +818,12 @@ export default class Viewer extends Component {
     cornerstoneTools.probe.deactivate(this.state.container, 1);
     cornerstoneTools.angle.deactivate(this.state.container, 1);
     cornerstoneTools.highlight.disable(this.state.container, 1);
+    cornerstoneTools.magnify.deactivate(this.state.container, 1);
   }
 
+  toggleMagnifyPopover() {
+    this.setState({isMagnifyToolOpened: !this.state.isMagnifyToolOpened});
+  }
 
   /**
    * handler for draging the scroll bar, moves scrollbar position and changes image
@@ -823,6 +850,34 @@ export default class Viewer extends Component {
         );
       }
     }
+
+    let config = cornerstoneTools.magnify.getConfiguration();
+
+    let popoverBottom = (
+      <Popover id="popover-positioned-bottom">
+        <div style={{marginBottom: '5px', textAlign: 'center'}}>倍数</div>
+        <input id="magLevelRange" type="range" min="1" defaultValue={config.magnificationLevel} max="10" onChange={(evt) => {
+          let config = cornerstoneTools.magnify.getConfiguration();
+          config.magnificationLevel = parseInt(evt.target.value, 10);
+        }}/>
+        <br/>
+        <div style={{marginBottom: '5px', textAlign: 'center'}}>尺寸</div>
+        <input id="magSizeRange" type="range" min="100" defaultValue={config.magnifySize} max="300" step="25" onChange={(evt) => {
+          let config = cornerstoneTools.magnify.getConfiguration();
+          config.magnifySize = parseInt(evt.target.value, 10)
+          var magnify = document.getElementsByClassName("magnifyTool")[0];
+          magnify.width = config.magnifySize;
+          magnify.height = config.magnifySize;
+
+          }}/>
+      </Popover>
+    );
+
+    let caret = this.state.isMagnifyToolEnabled ? (
+                  this.state.isMagnifyToolOpened ? <FontAwesome style={{paddingLeft: '5px', position: 'absolute'}} name='caret-up' size='lg'/> :
+                    <FontAwesome style={{paddingLeft: '5px', position: 'absolute', marginTop: '5px'}} name='caret-down' size='lg'/>
+                ) : undefined;
+
     return (
       <div id="body" style={{ ...style.body, ...style.textInfo }}>
         <div id="top" style={style.top}>
@@ -854,7 +909,7 @@ export default class Viewer extends Component {
               </Navbar.Text>
               <Navbar.Text style={{borderLeft: '2px solid #9ccef9', height: '50px'}}></Navbar.Text>
               <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                <NavItem eventKey={4} href="#" onClick={() => console.log('onSelect')}>
+                <NavItem eventKey={4} href="#">
                   <div style={style.icon}>
                     <FontAwesome name='arrows-h' size='2x' />
                   </div>
@@ -883,6 +938,17 @@ export default class Viewer extends Component {
                     <FontAwesome name='sun-o' size='2x' />
                   </div>
                   <span>高亮</span>
+                </NavItem>
+                <NavItem eventKey={9} href="#">
+                  <div style={style.icon}>
+                    <FontAwesome name='search-plus' size='2x' />
+                  </div>
+                  <span>放大</span>
+                  <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={popoverBottom} onClick={() => this.toggleMagnifyPopover()} onExited={() => this.toggleMagnifyPopover()}>
+                    <span>
+                      {caret}
+                    </span>
+                  </OverlayTrigger>
                 </NavItem>
               </Nav>
               <Navbar.Text className="button" onClick={() => this.clearToolData()}>
