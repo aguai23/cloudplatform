@@ -4,7 +4,7 @@ import { browserHistory } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
 import { HTTP } from 'meteor/http';
-import { Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Modal } from 'react-bootstrap';
+import { Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Modal, Table } from 'react-bootstrap';
 import Gallery from 'react-fine-uploader';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
@@ -56,27 +56,33 @@ export class AddCase extends Component {
     this.state = {
       collectionId: this.props.location.query.collection,
       Case: {
-        name: undefined,
-        type: undefined,
-        class: undefined,
-        label: undefined,
-        files: undefined,
-        gender: undefined,
-        age: undefined,
-        source: undefined,
+        accessionNumber: undefined,
+        patientID: undefined,
+        otherPatientIDs: undefined,
+        patientName: undefined,
+        patientBirthDate: undefined,
+        patientSex: undefined,
+        institutionName: undefined,
+        referringPhysicianName: undefined,
+        requestedProcedureDescription: undefined,
+        studyDate: undefined,
+        studyID: undefined,
+        studyInstanceUID: undefined,
         description: undefined,
-        createAt: undefined,
+        diagnoseResult: undefined,
+        seriesList: [],
       },
-      oldFileList: oldCase ? oldCase.files : [],
+      // oldFileList: oldCase ? oldCase.files : [],
       oldCase: oldCase,
       isUploadFinished: true,
-      showFilesList: false
+      showFilesList: false,
+      showSeriesList: false,
     };
     this.onCaseChange = this.onCaseChange.bind(this);
     this.submitCases = this.submitCases.bind(this);
     this.modifyCase = this.modifyCase.bind(this);
-    this.changeModalState = this.changeModalState.bind(this);
-    // this.deleteFile = this.deleteFile.bind(this);
+    this.changeFilesModalState = this.changeFilesModalState.bind(this);
+    this.changeSeriesModalState = this.changeSeriesModalState.bind(this);
   }
   componentDidMount() {
   }
@@ -93,24 +99,29 @@ export class AddCase extends Component {
   onCaseChange(input) {
     if (this.state.oldCase) {
       const { oldCase } = this.state;
-      if (['age', 'gender', 'source', 'description'].indexOf(input.target.id) < 0) {
+      if (['seriesNumber', 'seriesInstanceUid', 'files', 'description'].indexOf(input.target.id) < 0) {
         oldCase[input.target.id] = input.target.value;
       } else {
-        if (input.target.id === 'age' && input.target.value < 0) {
-          toast.error("年龄错误", { position: toast.POSITION.BOTTOM_RIGHT });
-          return;
+        //seriesData
+        if(!oldCase.seriesList[index]){
+          oldCase.seriesList[index] = {}
         }
-        oldCase.profile[input.target.id] = input.target.value
+        oldCase.seriesList[index][input.target.value] = input.target.value
       }
       this.setState({
         oldCase
       })
     } else {
       const { Case } = this.state;
-      Case[input.target.id] = input.target.value;
-      if (input.target.id === 'age' && input.target.value < 0) {
-        toast.error("年龄错误", { position: toast.POSITION.BOTTOM_RIGHT });
-        return;
+      if (['seriesNumber', 'seriesInstanceUid', 'files', 'description'].indexOf(input.target.id) < 0) {
+        Case[input.target.id] = input.target.value;
+      } else {
+        //seriesData
+        let index = this.state.seriesIndex;
+        if(!Case.seriesList[index]){
+          Case.seriesList[index] = {}
+        }
+        Case.seriesList[index][input.target.value] = input.target.value
       }
       this.setState({
         Case
@@ -170,11 +181,19 @@ export class AddCase extends Component {
     })
   }
 
-  changeModalState() {
+  changeFilesModalState() {
     const showState = this.state.showFilesList
     this.setState({
       showFilesList: !showState
     })
+  }
+
+  changeSeriesModalState() {
+    const showSeriesState = this.state.showSeriesList
+    this.setState({
+      showSeriesList: !showSeriesState
+    })
+    console.log(this.state.showSeriesList)
   }
 
   deleteFile(file) {
@@ -204,7 +223,6 @@ export class AddCase extends Component {
 
   render() {
     const wellStyles = { marginTop: '20px' };
-    const toastStyle = { zIndex: 1999 };
     const filesList = this.state.oldFileList;
     const oldCase = this.state.oldCase;
     const Case = this.state.Case;
@@ -213,42 +231,144 @@ export class AddCase extends Component {
         <h3>{oldCase ? `修改病例` : '添加新病例'}</h3>
         <Form horizontal>
           <div className="well" style={wellStyles}>
-            <FormGroup controlId="name">
+
+
+            <FormGroup controlId="patientName">
               <Col componentClass={ControlLabel} sm={2}>
-                病例名称
+                患者姓名
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.name : Case.name} onChange={this.onCaseChange} type="text" />
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
-            <FormGroup controlId="type">
+            <FormGroup controlId="patientBirthDate">
               <Col componentClass={ControlLabel} sm={2}>
-                种类
+                出生日期
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.type : Case.type} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.class : Case.class} onChange={this.onCaseChange} type="date" />
               </Col>
             </FormGroup>
 
-            <FormGroup controlId="class">
+            <FormGroup controlId="patientSex">
               <Col componentClass={ControlLabel} sm={2}>
-                类别
-                      </Col>
+                患者性别
+                    </Col>
               <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.class : Case.class} onChange={this.onCaseChange} type="text" />
+                <Radio checked={Case.patientSex === 'male'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="male" inline>男</Radio>{' '}
+                <Radio checked={oldCase ? oldCase.patientSex === 'female' : Case.patientSex === 'female'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="female" inline>女</Radio>{' '}
               </Col>
             </FormGroup>
 
-            <FormGroup controlId="label">
+            <FormGroup controlId="patientID">
               <Col componentClass={ControlLabel} sm={2}>
-                标签
+                患者编号
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.label : Case.label} onChange={this.onCaseChange} type="text" />
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="description">
+              <Col componentClass={ControlLabel} sm={2}>
+                患者描述
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
           </div>
+
+          <div className="well" style={wellStyles}>
+            <FormGroup controlId="accessionNumber">
+              <Col componentClass={ControlLabel} sm={2}>
+                accessionNumber
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="institutionName">
+              <Col componentClass={ControlLabel} sm={2}>
+                institutionName
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="referringPhysicianName">
+              <Col componentClass={ControlLabel} sm={2}>
+                referringPhysicianName
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="requestedProcedureDescription">
+              <Col componentClass={ControlLabel} sm={2}>
+                requestedProcedureDescription
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="studyDate">
+              <Col componentClass={ControlLabel} sm={2}>
+                studyDate
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="date" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="studyID">
+              <Col componentClass={ControlLabel} sm={2}>
+                studyID
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="studyInstanceUID">
+              <Col componentClass={ControlLabel} sm={2}>
+                studyInstanceUID
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+          </div>
+
+          <div className="well" style={wellStyles}>
+            <Table striped bordered condensed hover>
+              <thead>
+                <tr>
+                  <th>seriesNumber</th>
+                  <th>seriesInstanceUID</th>
+                  <th>series description</th>
+                  <th>total slice number</th>
+                  <th>option</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>2</td>
+                  <td>Jacob</td>
+                  <td>Thornton</td>
+                  <td>@fat</td>
+                  <td><Button onClick={this.changeSeriesModalState}>查看删除</Button></td>
+                </tr>
+              </tbody>
+            </Table>
+
+          </div>
+
           <div className="well" style={wellStyles}>
             <FormGroup controlId="formHorizontalPassword">
               <Col componentClass={ControlLabel} sm={2}>
@@ -259,60 +379,10 @@ export class AddCase extends Component {
               </Col>
               <Col>
                 {oldCase &&
-                  <Button onClick={this.changeModalState}>查看已有图片</Button>
+                  <Button onClick={this.changeFilesModalState}>查看已有图片</Button>
                 }
               </Col>
             </FormGroup>
-          </div>
-
-          <div className="well" style={wellStyles}>
-
-            <FormGroup controlId="age">
-              <Col componentClass={ControlLabel} sm={2}>
-                年龄
-                      </Col>
-              <Col sm={2}>
-                <FormControl value={oldCase ? oldCase.profile.age : Case.age} onChange={this.onCaseChange} type="number" />
-              </Col>
-            </FormGroup>
-
-            <FormGroup>
-              <Col componentClass={ControlLabel} sm={2}>
-                性别
-                      </Col>
-              <Col sm={6}>
-                <Radio checked={oldCase ? oldCase.profile.gender === 'male' : Case.gender === 'male'} onChange={this.onCaseChange} id="gender" name="gender" value="male" inline>男</Radio>{' '}
-                <Radio checked={oldCase ? oldCase.profile.gender === 'female' : Case.gender === 'female'} onChange={this.onCaseChange} id="gender" name="gender" value="female" inline>女</Radio>{' '}
-              </Col>
-            </FormGroup>
-
-            <FormGroup controlId="source">
-              <Col componentClass={ControlLabel} sm={2}>
-                来源
-                      </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.profile.source : Case.source} onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
-
-            <FormGroup controlId="description">
-              <Col componentClass={ControlLabel} sm={2}>
-                描述
-                      </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.profile.description : Case.description} onChange={this.onCaseChange} componentClass="textarea" />
-              </Col>
-            </FormGroup>
-
-            <FormGroup controlId="createAt">
-              <Col componentClass={ControlLabel} sm={2}>
-                创建时间
-                      </Col>
-              <Col sm={6}>
-                <input value={oldCase ? oldCase.createAt : Case.createAt} id="createAt" type="date" onChange={this.onCaseChange} />
-              </Col>
-            </FormGroup>
-
           </div>
 
           <FormGroup>
@@ -334,10 +404,10 @@ export class AddCase extends Component {
           newestOnTop={false}
           closeOnClick
           pauseOnHover
-          style={toastStyle}
+          style={{ zIndex: 1999 }}
         />
 
-        <Modal show={this.state.showFilesList} onHide={this.changeModalState}>
+        <Modal show={this.state.showFilesList} onHide={this.changeFilesModalState}>
           <Modal.Header closeButton>
             <Modal.Title>文件列表</Modal.Title>
           </Modal.Header>
@@ -351,7 +421,48 @@ export class AddCase extends Component {
             }
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.changeModalState}>Close</Button>
+            <Button onClick={this.changeFilesModalState}>Close</Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal bsSize="small" show={this.state.showSeriesList} onHide={this.changeSeriesModalState}>
+          <Modal.Header closeButton>
+            <Modal.Title>seriesInstanceUID</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form inline>
+              <FormGroup controlId="seriesNumber">
+                <ControlLabel>seriesNumber</ControlLabel>
+                {' '}
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </FormGroup>
+            </Form>
+            <Form inline>
+              <FormGroup controlId="seriesInstanceUid">
+                <ControlLabel>seriesInstanceUid</ControlLabel>
+                {' '}
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </FormGroup>
+            </Form>
+            <Form inline>
+              <FormGroup controlId="serirsDescription">
+                <ControlLabel>serirsDescription</ControlLabel>
+                {' '}
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </FormGroup>
+            </Form>
+            <Form inline>
+              <FormGroup controlId="total">
+                <ControlLabel>total slice number</ControlLabel>
+                {' '}
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </FormGroup>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button bsStyle="success">修改</Button>
+            {' '}
+            <Button bsStyle="warning">删除</Button>
           </Modal.Footer>
         </Modal>
       </div>
