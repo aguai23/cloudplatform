@@ -108,7 +108,7 @@ export class AddCase extends Component {
   onCaseChange(input) {
     if (this.state.oldCase) {
       const { oldCase } = this.state;
-      if (['seriesNumber', 'seriesInstanceUID', 'files', 'description'].indexOf(input.target.id) < 0) {
+      if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'total'].indexOf(input.target.id) < 0) {
         oldCase[input.target.id] = input.target.value;
       } else {
         //seriesData
