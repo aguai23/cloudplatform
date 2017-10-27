@@ -38,7 +38,7 @@ const series = new SimpleSchema({
     label: 'seriesId',
     type: Number
   },
-  seriesInstanceUid: {
+  seriesInstanceUID: {
     label: 'uid',
     type: String
   },

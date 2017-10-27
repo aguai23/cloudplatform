@@ -38,12 +38,21 @@ export class AddCase extends Component {
           enableAuto: true
         },
         callbacks: {
-          onAllComplete: function () {
+          onAllComplete: function (ids) {
             // console.log("imageArray", imageArray);
             that.setState({ isUploadFinished: true });
           },
           onComplete: function (id, name, response) {
-            // console.log('response', response);
+            let caseInstance = Object.assign({}, that.state.Case);
+
+            for(let key in response.dicomInfo) {
+              caseInstance[key] = response.dicomInfo[key];
+            }
+
+            that.setState({
+              Case: caseInstance
+            });
+
             imageArray.push(response.filePath);
           },
           onUpload: function () {
@@ -67,7 +76,7 @@ export class AddCase extends Component {
         requestedProcedureDescription: undefined,
         studyDate: undefined,
         studyID: undefined,
-        studyInstanceUID: undefined,
+        studyInstanceUID: '',
         description: undefined,
         diagnoseResult: undefined,
         seriesList: [],
@@ -99,7 +108,7 @@ export class AddCase extends Component {
   onCaseChange(input) {
     if (this.state.oldCase) {
       const { oldCase } = this.state;
-      if (['seriesNumber', 'seriesInstanceUid', 'files', 'description'].indexOf(input.target.id) < 0) {
+      if (['seriesNumber', 'seriesInstanceUID', 'files', 'description'].indexOf(input.target.id) < 0) {
         oldCase[input.target.id] = input.target.value;
       } else {
         //seriesData
@@ -113,7 +122,7 @@ export class AddCase extends Component {
       })
     } else {
       const { Case } = this.state;
-      if (['seriesNumber', 'seriesInstanceUid', 'files', 'description'].indexOf(input.target.id) < 0) {
+      if (['seriesNumber', 'seriesInstanceUID', 'files', 'description'].indexOf(input.target.id) < 0) {
         Case[input.target.id] = input.target.value;
       } else {
         //seriesData
@@ -340,7 +349,7 @@ export class AddCase extends Component {
                 studyInstanceUID
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={this.state.Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly/>
               </Col>
             </FormGroup>
           </div>
@@ -438,8 +447,8 @@ export class AddCase extends Component {
               </FormGroup>
             </Form>
             <Form inline>
-              <FormGroup controlId="seriesInstanceUid">
-                <ControlLabel>seriesInstanceUid</ControlLabel>
+              <FormGroup controlId="seriesInstanceUID">
+                <ControlLabel>seriesInstanceUID</ControlLabel>
                 {' '}
                 <FormControl onChange={this.onCaseChange} type="text" />
               </FormGroup>

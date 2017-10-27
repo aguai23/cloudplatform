@@ -72,6 +72,7 @@ function onSimpleUpload(fields, file, res) {
       moveUploadedFile(file, uuid, parentDir, function(filePath) {
         responseData.success = true;
         responseData.filePath = filePath;
+        responseData.dicomInfo = result;
         res.end(JSON.stringify(responseData));
       }, function() {
         responseData.error = "Problem saving the file";
