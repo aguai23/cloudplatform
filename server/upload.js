@@ -14,6 +14,7 @@ var fs = require('fs'),
     maxFileSize = Meteor.settings.MAX_FILE_SIZE || 0;
 
 Picker.route('/test', function(params, req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
   Meteor.setTimeout(function() {
     res.end('success');
   }, 3000);
