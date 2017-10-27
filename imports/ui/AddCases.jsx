@@ -70,7 +70,7 @@ export class AddCase extends Component {
         studyInstanceUID: undefined,
         description: undefined,
         diagnoseResult: undefined,
-        seriesList: [],
+        seriesList: undefined,
       },
       // oldFileList: oldCase ? oldCase.files : [],
       oldCase: oldCase,
@@ -82,7 +82,7 @@ export class AddCase extends Component {
     this.submitCases = this.submitCases.bind(this);
     this.modifyCase = this.modifyCase.bind(this);
     this.changeFilesModalState = this.changeFilesModalState.bind(this);
-    this.changeSeriesModalState = this.changeSeriesModalState.bind(this);
+    // this.changeSeriesModalState = this.changeSeriesModalState.bind(this);
   }
   componentDidMount() {
   }
@@ -103,30 +103,31 @@ export class AddCase extends Component {
         oldCase[input.target.id] = input.target.value;
       } else {
         //seriesData
-        if(!oldCase.seriesList[index]){
+        if (!oldCase.seriesList[index]) {
           oldCase.seriesList[index] = {}
         }
-        oldCase.seriesList[index][input.target.value] = input.target.value
+        oldCase.seriesList[index][input.target.id] = input.target.value
       }
       this.setState({
         oldCase
       })
     } else {
       const { Case } = this.state;
-      if (['seriesNumber', 'seriesInstanceUid', 'files', 'description'].indexOf(input.target.id) < 0) {
+      if (['seriesNumber', 'seriesInstanceUid', 'files', 'serirsDescription', 'total'].indexOf(input.target.id) < 0) {
         Case[input.target.id] = input.target.value;
       } else {
         //seriesData
         let index = this.state.seriesIndex;
-        if(!Case.seriesList[index]){
+        if (!Case.seriesList[index]) {
           Case.seriesList[index] = {}
         }
-        Case.seriesList[index][input.target.value] = input.target.value
+        Case.seriesList[index][input.target.id] = input.target.value
       }
       this.setState({
         Case
       })
     }
+    console.log(this.state.Case)
   }
 
   submitCases(event) {
@@ -135,26 +136,31 @@ export class AddCase extends Component {
     if (!isUploadFinished) return;
 
     const { Case } = this.state;
-    const flag = Case.name && Case.type && Case.class && Case.label && Case.gender && Case.age && Case.source && Case.source && Case.description && Case.createAt
+    const flag = Case.accessionNumber && Case.patientID && Case.otherPatientIDs && Case.patientName && Case.patientBirthDate
+      && Case.patientSex && Case.institutionName && Case.referringPhysicianName && Case.requestedProcedureDescription
+      && Case.studyDate && Case.studyID && Case.studyInstanceUID && Case.studyDescription && Case.seriesList
+
     if (!flag) {
       toast.error("请检验并完善信息", { position: toast.POSITION.BOTTOM_RIGHT });
       return;
     } else {
       const standardCase = {
-        name: Case.name,
-        type: Case.type,
-        class: Case.class,
-        label: Case.label,
-        files: imageArray,
-        profile: {
-          gender: Case.gender,
-          age: Case.age,
-          source: Case.source,
-          description: Case.description
-        },
-        createAt: Case.createAt,
+        accessionNumber: Case.accessionNumber,
+        patientID: Case.patientID,
+        otherPatientIDs: Case.otherPatientIDs,
+        patientName: Case.patientName,
+        patientBirthDate: patientBirthDate,
+        patientSex: Case.patientSex,
+        institutionName: Case.institutionName,
+        referringPhysicianName: Case.referringPhysicianName,
+        requestedProcedureDescription: Case.requestedProcedureDescription,
+        studyDate: Case.studyDate,
+        studyID: Case.studyID,
+        studyInstanceUID: Case.studyInstanceUID,
+        studyDescription: Case.studyDescription,
+        seriesList: Case.seriesList,
         collectionId: this.state.collectionId,
-        ownerId: Meteor.userId(),
+        creator: Meteor.userId(),
       }
       Meteor.call('insertCase', standardCase, (error) => {
         if (error) {
@@ -188,12 +194,25 @@ export class AddCase extends Component {
     })
   }
 
-  changeSeriesModalState() {
+  changeSeriesModalState(index) {
     const showSeriesState = this.state.showSeriesList
-    this.setState({
-      showSeriesList: !showSeriesState
-    })
-    console.log(this.state.showSeriesList)
+    if (!showSeriesState) {
+      this.setState({
+        showSeriesList: !showSeriesState,
+        seriesIndex: index
+      })
+    } else {
+      this.setState({
+        showSeriesList: !showSeriesState
+      })
+
+    }
+  }
+
+  removeSeriesHandle() {
+    let index = this.state.seriesIndex;
+    //TODO: remove single series
+    this.changeSeriesModalState()
   }
 
   deleteFile(file) {
@@ -231,8 +250,6 @@ export class AddCase extends Component {
         <h3>{oldCase ? `修改病例` : '添加新病例'}</h3>
         <Form horizontal>
           <div className="well" style={wellStyles}>
-
-
             <FormGroup controlId="patientName">
               <Col componentClass={ControlLabel} sm={2}>
                 患者姓名
@@ -345,29 +362,35 @@ export class AddCase extends Component {
             </FormGroup>
           </div>
 
-          <div className="well" style={wellStyles}>
-            <Table striped bordered condensed hover>
-              <thead>
-                <tr>
-                  <th>seriesNumber</th>
-                  <th>seriesInstanceUID</th>
-                  <th>series description</th>
-                  <th>total slice number</th>
-                  <th>option</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>2</td>
-                  <td>Jacob</td>
-                  <td>Thornton</td>
-                  <td>@fat</td>
-                  <td><Button onClick={this.changeSeriesModalState}>查看删除</Button></td>
-                </tr>
-              </tbody>
-            </Table>
+          { this.state.Case.seriesList &&
+            <div className="well" style={wellStyles}>
+              <Table striped bordered condensed hover>
+                <thead>
+                  <tr>
+                    <th>seriesNumber</th>
+                    <th>seriesInstanceUID</th>
+                    <th>series description</th>
+                    <th>total slice number</th>
+                    <th>option</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.state.Case.seriesList.map((obj, index) => {
+                    return (
+                      <tr key={index}>
+                        <td>{obj.seriesNumber}</td>
+                        <td>{obj.seriesInstanceUid}</td>
+                        <td>{obj.seriesDescription}</td>
+                        <td>{obj.total}</td>
+                        <td><Button onClick={this.changeSeriesModalState.bind(this, index)}>查看删除</Button></td>
+                      </tr>)
+                  })
+                  }
 
-          </div>
+                </tbody>
+              </Table>
+
+            </div>}
 
           <div className="well" style={wellStyles}>
             <FormGroup controlId="formHorizontalPassword">
@@ -425,7 +448,7 @@ export class AddCase extends Component {
           </Modal.Footer>
         </Modal>
 
-        <Modal bsSize="small" show={this.state.showSeriesList} onHide={this.changeSeriesModalState}>
+        <Modal bsSize="small" show={this.state.showSeriesList} onHide={this.changeSeriesModalState.bind(this)}>
           <Modal.Header closeButton>
             <Modal.Title>seriesInstanceUID</Modal.Title>
           </Modal.Header>
@@ -445,8 +468,8 @@ export class AddCase extends Component {
               </FormGroup>
             </Form>
             <Form inline>
-              <FormGroup controlId="serirsDescription">
-                <ControlLabel>serirsDescription</ControlLabel>
+              <FormGroup controlId="seriesDescription">
+                <ControlLabel>seriesDescription</ControlLabel>
                 {' '}
                 <FormControl onChange={this.onCaseChange} type="text" />
               </FormGroup>
@@ -460,9 +483,7 @@ export class AddCase extends Component {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button bsStyle="success">修改</Button>
-            {' '}
-            <Button bsStyle="warning">删除</Button>
+            <Button onClick={this.removeSeriesHandle.bind(this)} bsStyle="warning">删除</Button>
           </Modal.Footer>
         </Modal>
       </div>
