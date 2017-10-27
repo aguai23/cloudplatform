@@ -1,5 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 
+import { parseSingleDicom } from './dicomParser';
+
 var fs = require('fs'),
     rimraf = require("rimraf"),
     mkdirp = require('mkdirp'),
@@ -62,14 +64,19 @@ function onSimpleUpload(fields, file, res) {
   file.name = fields.qqfilename;
 
   if(isValid(file.size)) {
-    moveUploadedFile(file, uuid, function(filePath) {
-      responseData.success = true;
-      responseData.filePath = filePath;
-      res.end(JSON.stringify(responseData));
-    }, function() {
-      responseData.error = "Problem saving the file";
-      res.end(JSON.stringify(responseData));
+    parseSingleDicom(file.path, function(result) {
+      // console.log(result);
 
+      let parentDir = result.seriesInstanceUID;
+
+      moveUploadedFile(file, uuid, parentDir, function(filePath) {
+        responseData.success = true;
+        responseData.filePath = filePath;
+        res.end(JSON.stringify(responseData));
+      }, function() {
+        responseData.error = "Problem saving the file";
+        res.end(JSON.stringify(responseData));
+      });
     });
   } else {
     failWithTooBigFile(responseData, res);
@@ -113,8 +120,8 @@ function moveFile(destinationDir, sourceFile, destinationFile, successCb, failur
   })
 }
 
-function moveUploadedFile(file, uuid, successCb, failureCb) {
-  var destinationDir = uploadedFilesPath + uuid + "/",
+function moveUploadedFile(file, uuid, parentDir, successCb, failureCb) {
+  var destinationDir = uploadedFilesPath + parentDir + "/",
       fileDestination = destinationDir + file.name;
 
   moveFile(destinationDir, file.path, fileDestination, successCb, failureCb);

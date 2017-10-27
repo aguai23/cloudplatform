@@ -27,7 +27,7 @@ export class AddCase extends Component {
           enabled: false
         },
         deleteFile: {
-          enabled: true,
+          enabled: false,
           endpoint: '/delete',
           method: 'DELETE'
         },

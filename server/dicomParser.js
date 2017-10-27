@@ -107,3 +107,21 @@ Meteor.methods({
   }
 
 });
+
+function parseSingleDicom(filePath, cb) {
+  fs.readFile(filePath, (err, data) => {
+    if(err) {
+      return console.log(err);
+    }
+
+    let dataset = dicomParser.parseDicom(data);
+
+    let result = {};
+
+    result.seriesInstanceUID = dataset.string('x0020000e');
+
+    cb(result);
+  });
+}
+
+export { parseSingleDicom };
