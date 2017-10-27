@@ -107,3 +107,33 @@ Meteor.methods({
   }
 
 });
+
+/**
+ * Parse one dicom file, which is used to get common information when uploading
+ * @param filePath the absolute path where the dicom placed
+ * @return {Object} the standard dicom information
+ */
+function parseSingleDicom(filePath, cb) {
+  fs.readFile(filePath, (err, data) => {
+    if(err) {
+      return console.log(err);
+    }
+
+    let dataset = dicomParser.parseDicom(data);
+
+    let result = {};
+
+    result.seriesInstanceUID = dataset.string('x0020000e');
+    result.accessionNumber = dataset.string('x00080050');
+    result.institutionName = dataset.string('x00080080');
+    result.referringPhysicianName = dataset.string('x00080090');
+    result.requestedProcedureDescription = dataset.string('x00321060');
+    result.studyDate = dataset.string('x00080020');
+    result.studyID = dataset.string('x00200010');
+    result.studyInstanceUID = dataset.string('x0020000d');
+
+    cb(result);
+  });
+}
+
+export { parseSingleDicom };
