@@ -643,10 +643,13 @@ export default class Viewer extends Component {
                     return;
                 }
 
-                HTTP.call('GET', 'http://127.0.0.1:3000/test', (error, res) => {
+                // HTTP.call('GET', 'http://192.168.12.128:5000/lung_nodule/' + 'home/cai/Documents/Data/test', (error, res) => {
+                HTTP.call('GET', 'http://localhost:3000/test', (error, res) => {
                     if(error) {
                         return console.log(error);
                     }
+
+                    console.log(res);
 
                     this.setState({isDiagnosisFinished: true});
 

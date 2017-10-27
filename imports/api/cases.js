@@ -54,7 +54,7 @@ const series = new SimpleSchema({
     label: 'totalSliceNumber',
     type: Number
   },
-  
+
   diagnoseResult: {
     label: 'result',
     type: diagnose,
@@ -118,7 +118,7 @@ const CaseSchema = new SimpleSchema({
   },
 
   studyID: {
-    label: 'studyId',
+    label: 'studyID',
     type: String
   },
 
