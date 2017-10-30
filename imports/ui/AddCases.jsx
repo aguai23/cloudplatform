@@ -50,7 +50,8 @@ export class AddCase extends Component {
             }
 
             that.setState({
-              Case: caseInstance
+              Case: caseInstance,
+              seriesInstanceUID: response.dicomInfo.seriesInstanceUID
             });
 
             imageArray.push(response.filePath);
@@ -388,7 +389,7 @@ export class AddCase extends Component {
                     return (
                       <tr key={index}>
                         <td>{obj.seriesNumber}</td>
-                        <td>{obj.seriesInstanceUid}</td>
+                        <td>{obj.seriesInstanceUID}</td>
                         <td>{obj.seriesDescription}</td>
                         <td>{obj.total}</td>
                         <td><Button onClick={this.changeSeriesModalState.bind(this, index)}>查看删除</Button></td>
@@ -408,6 +409,14 @@ export class AddCase extends Component {
                       </Col>
               <Col sm={6}>
                 <Gallery uploader={this.uploader} />
+              </Col>
+              <Col sm={2}>
+                <a onClick={() => Meteor.call('removeSeries', this.state.seriesInstanceUID, function(err, res) {
+                    if(err) {
+                      return console.log(err);
+                    }
+                    console.log(res);
+                  })}>Remove</a>
               </Col>
               <Col>
                 {oldCase &&

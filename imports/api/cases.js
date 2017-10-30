@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo';
 
 export const Cases = new Mongo.Collection('cases');
+export const Series = new Mongo.Collection('series');
 
 Cases.deny({
   insert() {
@@ -33,13 +34,18 @@ const diagnose = new SimpleSchema({
   }
 });
 
-const series = new SimpleSchema({
+const seriesSchema = new SimpleSchema({
   seriesNumber: {
     label: 'seriesId',
-    type: Number
+    type: Number,
+    optional: true
   },
   seriesInstanceUID: {
     label: 'uid',
+    type: String
+  },
+  path: {
+    label: 'directory for the series',
     type: String
   },
   files: {
@@ -48,7 +54,8 @@ const series = new SimpleSchema({
   },
   seriesDescription: {
     label: 'seriesDescription',
-    type: String
+    type: String,
+    optional: true
   },
   total: {
     label: 'totalSliceNumber',
@@ -141,7 +148,7 @@ const CaseSchema = new SimpleSchema({
 
   seriesList: {
     label: 'seriesList',
-    type: [series],
+    type: [seriesSchema],
     blackbox: true,
     optional: true
   },
@@ -170,3 +177,4 @@ const CaseSchema = new SimpleSchema({
 });
 
 Cases.attachSchema(CaseSchema);
+Series.attachSchema(seriesSchema);
