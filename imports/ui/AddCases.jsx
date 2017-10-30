@@ -54,12 +54,12 @@ export class AddCase extends Component {
               seriesInstance: caseInstance.seriesInstanceUID,
               seriesDescription: caseInstance.seriesDescription,
             }
-            // caseInstance.seriesList = Case.seriesList? Case.seriesList.push[caseInstance]:[caseInstance]
+            caseInstance.seriesList = Case.seriesList? Case.seriesList.push[caseInstance]:[caseInstance]
             // console.log(Case)
 
             that.setState({
               Case: caseInstance,
-              seriesInstanceUID: response.dicomInfo.seriesInstanceUID
+              // seriesInstanceUID: response.dicomInfo.seriesInstanceUID
             });
 
             imageArray.push(response.filePath);
@@ -227,33 +227,38 @@ export class AddCase extends Component {
 
   removeSeriesHandle() {
     let index = this.state.seriesIndex;
-    //TODO: remove single series
+    Meteor.call('removeSeries', this.state.Case.seriesList[index].seriesInstanceUID, function(err, res) {
+      if(err) {
+        return console.log(err);
+      }
+      console.log(res);
+    })
     this.changeSeriesModalState()
   }
 
   deleteFile(file) {
-    let fileInfo = file.split('/');
-    HTTP.call("DELETE", `/delete/${fileInfo[2]}`, (err, result) => {
-      if (err) {
-        toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
-      } else {
-        let list = this.state.oldFileList;
-        let position = list.indexOf(file);
-        list.splice(position, 1);
-        let newCase = this.state.oldCase;
-        newCase.files = list
-        Meteor.call('modifyCase', newCase, (error) => {
-          if (error) {
-            toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
-          } else {
-            this.setState({
-              oldFileList: list
-            });
-          }
-        });
-        toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
-      }
-    })
+    // let fileInfo = file.split('/');
+    // HTTP.call("DELETE", `/delete/${fileInfo[2]}`, (err, result) => {
+    //   if (err) {
+    //     toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+    //   } else {
+    //     let list = this.state.oldFileList;
+    //     let position = list.indexOf(file);
+    //     list.splice(position, 1);
+    //     let newCase = this.state.oldCase;
+    //     newCase.files = list
+    //     Meteor.call('modifyCase', newCase, (error) => {
+    //       if (error) {
+    //         toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+    //       } else {
+    //         this.setState({
+    //           oldFileList: list
+    //         });
+    //       }
+    //     });
+    //     toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
+    //   }
+    // })
   }
 
   render() {
@@ -430,14 +435,6 @@ export class AddCase extends Component {
               <Col sm={6}>
                 <Gallery uploader={this.uploader} />
               </Col>
-              <Col sm={2}>
-                <a onClick={() => Meteor.call('removeSeries', this.state.seriesInstanceUID, function(err, res) {
-                    if(err) {
-                      return console.log(err);
-                    }
-                    console.log(res);
-                  })}>Remove</a>
-              </Col>
               <Col>
                 {oldCase &&
                   <Button onClick={this.changeFilesModalState}>查看已有图片</Button>
@@ -521,7 +518,7 @@ export class AddCase extends Component {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.removeSeriesHandle.bind(this)} bsStyle="warning">删除</Button>
+            <Button onClick={this.removeSeriesHandle.bind(this,)} bsStyle="warning">删除</Button>
           </Modal.Footer>
         </Modal>
       </div>
