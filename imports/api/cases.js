@@ -40,23 +40,35 @@ const seriesSchema = new SimpleSchema({
     type: Number,
     optional: true
   },
+
   seriesInstanceUID: {
     label: 'uid',
     type: String
   },
+
   path: {
-    label: 'directory for the series',
+    label: 'file dir path',
     type: String
   },
-  files: {
-    label: 'fileList',
-    type: [String]
-  },
+
   seriesDescription: {
     label: 'seriesDescription',
     type: String,
     optional: true
   },
+
+  seriesDate: {
+    label: "series date",
+    type: String,
+    optional: true
+  },
+
+  seriesTime: {
+    label: "series time",
+    type: String,
+    optional: true
+  },
+
   total: {
     label: 'totalSliceNumber',
     type: Number
@@ -71,109 +83,88 @@ const seriesSchema = new SimpleSchema({
 });
 
 const CaseSchema = new SimpleSchema({
-  accessionNumber: {
-    label: 'unique id',
-    type: String
-  },
-
-  patientID: {
-    label: 'unique id of patient',
-    type: String
-  },
-
-  otherPatientIDs: {
-    label: 'other Id',
-    type: [String],
-    optional: true
-  },
-
-  patientName: {
-    label: 'patientName',
-    type: String
-  },
-
-  patientBirthDate: {
-    label: 'patientAge',
-    type: Number
-  },
-
-  patientSex: {
-    label: 'patientSex',
-    type: String
-  },
-
-  institutionName: {
-    label: '',
-    type: String
-  },
-
-  referringPhysicianName: {
-    label: 'referringPhysicianName',
-    type: String,
-    optional: true
-  },
-
-  requestedProcedureDescription: {
-    label: 'requestedProcedureDescription',
-    type: String,
-    optional: true
-  },
-
-  studyDate: {
-    label: 'studyTime',
-    type: Date,
-  },
-
-  studyID: {
-    label: 'studyID',
-    type: String
-  },
-
-  studyInstanceUID: {
-    label: 'studyInstanceUID',
-    type: String
-  },
-
-  studyDescription: {
-    label: 'studyDescription',
-    type: String,
-    optional: true
-  },
-
-  diagnoseResult:{
-    label: 'descriptionResult',
-    type: String,
-    optional: true
-  },
-
-  seriesList: {
-    label: 'seriesList',
-    type: [seriesSchema],
-    blackbox: true,
-    optional: true
-  },
-
-  collectionID: {
-    label: 'collectionId',
-    type: String
-  },
-
-  creator: {
-    label: 'creatorId',
-    type: String
-  },
-
-  createAt: {
-    label: 'createTime',
-    type: Date,
-    denyUpdate: true,
-    autoValue: function () {
-      if (this.isInsert) {
-        return new Date();
-      }
+    accessionNumber: {
+        label: 'unique id',
+        type: String
+    },
+    patientID: {
+        label: 'unique id of patient',
+        type: String
+    },
+    patientName: {
+        label: 'patientName',
+        type: String
+    },
+    patientBirthDate: {
+        label: 'patient birth time',
+        type: String
+    },
+    patientAge: {
+        label: 'patient age',
+        type: String
+    },
+    patientSex: {
+        label: 'patientSex',
+        type: String
+    },
+    studyID: {
+        label: 'studyID',
+        type: String
+    },
+    studyInstanceUID: {
+        label: 'studyInstanceUID',
+        type: String
+    },
+    studyDate: {
+        label: 'study Date',
+        type: String,
+    },
+    studyTime: {
+        label: "study time",
+        type: String
+    },
+    modality: {
+        label: "modality type",
+        type: String
+    },
+    bodyPart: {
+        label: "body part examined",
+        type: String
+    },
+    studyDescription: {
+        label: 'studyDescription',
+        type: String,
+        optional: true
+    },
+    diagnoseResult:{
+        label: 'descriptionResult',
+        type: String,
+        optional: true
+    },
+    seriesList: {
+        label: 'seriesList',
+        type: [seriesSchema],
+        blackbox: true,
+        optional: true
+    },
+    collectionID: {
+        label: 'collectionId',
+        type: String
+    },
+    creator: {
+        label: 'creatorId',
+        type: String
+    },
+    createAt: {
+        label: 'createTime',
+        type: Date,
+        denyUpdate: true,
+        autoValue: function () {
+            if (this.isInsert) {
+                return new Date();
+            }
+        }
     }
-  }
-
 });
 
 Cases.attachSchema(CaseSchema);

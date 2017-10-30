@@ -55,17 +55,14 @@ Picker.route('/uploads', function(params, req, res, next) {
               var foundSeries = Series.findOne({seriesInstanceUID: result.seriesInstanceUID});
 
               if(foundSeries) {
-                let files = foundSeries.files;
-                files.push(fileName);
                 Series.update(foundSeries._id, {$set: {
                   files: files,
-                  total: files.length
+                  total: foundSeries.total + 1
                 }});
               } else {
                 let newSeries = {
-                  path: uploadedFilesPath + path + "/",
+                  path: uploadedFilesPath + path,
                   seriesInstanceUID: result.seriesInstanceUID,
-                  files: [fileName],
                   total: 1
                 }
                 Series.insert(newSeries);
