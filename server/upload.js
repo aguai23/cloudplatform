@@ -2,8 +2,11 @@ import { Meteor } from 'meteor/meteor';
 
 import { parseSingleDicom } from './dicomParser';
 
+import { Series } from '../imports/api/cases';
+
+const Fiber = Npm.require('fibers');
+
 var fs = require('fs'),
-    rimraf = require("rimraf"),
     mkdirp = require('mkdirp'),
     multiparty = require('multiparty'),
 
@@ -30,60 +33,82 @@ Picker.route('/uploads', function(params, req, res, next) {
       var partIndex = fields.qqpartindex;
 
       if(partIndex == null) {
-        onSimpleUpload(fields, files[fileInputName][0], res);
+        let responseData = {
+          success: false
+        };
+
+        let file = files[fileInputName][0];
+
+        parseSingleDicom(file.path, function(result) {
+          // console.log(result);
+          let date = result.studyDate ? result.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
+
+          let path = date + '/' + result.studyInstanceUID + '/' + result.seriesInstanceUID;
+
+          onSimpleUpload(fields, file, path, function(fileName) {
+            responseData.success = true;
+            responseData.fileName = fileName;
+            responseData.dicomInfo = result;
+            res.end(JSON.stringify(responseData));
+
+            Fiber(function() {
+              var foundSeries = Series.findOne({seriesInstanceUID: result.seriesInstanceUID});
+
+              if(foundSeries) {
+                Series.update(foundSeries._id, {$set: {
+                  files: files,
+                  total: foundSeries.total + 1
+                }});
+              } else {
+                let newSeries = {
+                  path: uploadedFilesPath + path,
+                  seriesInstanceUID: result.seriesInstanceUID,
+                  total: 1
+                }
+                Series.insert(newSeries);
+              }
+            }).run();
+
+          }, function() {
+            responseData.error = "Problem saving the file";
+            res.end(JSON.stringify(responseData));
+          });
+        });
       } else {
+        // for chunking upload mode, which is disabled for now
 
       }
     });
   }
 });
 
-Picker.route('/delete/:uuid', function(params, req, res, next) {
-  // console.log("params", params);
-  // console.log("req", req);
-  var uuid = params.uuid,
-      dirToDelete = uploadedFilesPath + uuid;
-
-  rimraf(dirToDelete, function(error) {
-    if(error) {
-      console.error("Problem deleteing file. " + error);
-      res.status(500);
-    }
-
-    res.end("Delete successfully");
-  });
-});
 
 
-function onSimpleUpload(fields, file, res) {
-  var uuid = fields.qquuid,
-      responseData = {
-        success: false
-      };
+/**
+ * handles simple upload mode for fine-uploader
+ * @param fields the fields from parsing multiparty form
+ * @param file the file need to be uploaded
+ * @param path the directory tha holds the dicom files for that series
+ * @param successCb callback when function works successfully
+ * @param failureCb callback when failed to upload dicom file
+ */
+function onSimpleUpload(fields, file, path, successCb, failureCb) {
+  var uuid = fields.qquuid;
 
   file.name = fields.qqfilename;
 
   if(isValid(file.size)) {
-    parseSingleDicom(file.path, function(result) {
-      // console.log(result);
-
-      let parentDir = result.seriesInstanceUID;
-
-      moveUploadedFile(file, uuid, parentDir, function(filePath) {
-        responseData.success = true;
-        responseData.filePath = filePath;
-        responseData.dicomInfo = result;
-        res.end(JSON.stringify(responseData));
-      }, function() {
-        responseData.error = "Problem saving the file";
-        res.end(JSON.stringify(responseData));
-      });
-    });
+    moveUploadedFile(file, uuid, path, successCb, failureCb);
   } else {
     failWithTooBigFile(responseData, res);
   }
 }
 
+/**
+ * emmits an error when the given file is too big
+ * @param responseData an object which holds the error information
+ * @param res an http response object
+ */
 function failWithTooBigFile(responseData, res) {
   responseData.error = "File too big";
   responseData.preventRetry = true;
@@ -91,11 +116,24 @@ function failWithTooBigFile(responseData, res) {
 
 }
 
+/**
+ * checks whether the given dicom file has a legal size
+ * @param size the size of the dicom file
+ * @returns true if size is legal, false if not
+ */
 function isValid(size) {
   return maxFileSize === 0 || size < maxFileSize;
 }
 
-function moveFile(destinationDir, sourceFile, destinationFile, successCb, failureCb) {
+/**
+ * moves given file to destination directory
+ * @param destinationDir parent directory
+ * @param sourceFile the file need to be moved
+ * @param destinationFile the final file
+ * @param successCb callback for successfully moving the file
+ * @param failureCb callback for failing to move the file
+ */
+function moveFile(destinationDir, sourceFile, destinationFile, fileName, successCb, failureCb) {
   mkdirp(destinationDir, function(error) {
     var sourceStream, destStream;
 
@@ -114,7 +152,7 @@ function moveFile(destinationDir, sourceFile, destinationFile, successCb, failur
         })
         .on('end', function() {
           destStream.end();
-          successCb(destinationFile);
+          successCb(fileName);
         })
         .pipe(destStream);
     }
@@ -124,6 +162,5 @@ function moveFile(destinationDir, sourceFile, destinationFile, successCb, failur
 function moveUploadedFile(file, uuid, parentDir, successCb, failureCb) {
   var destinationDir = uploadedFilesPath + parentDir + "/",
       fileDestination = destinationDir + file.name;
-
-  moveFile(destinationDir, file.path, fileDestination, successCb, failureCb);
+  moveFile(destinationDir, file.path, fileDestination, file.name[0], successCb, failureCb);
 }

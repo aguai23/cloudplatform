@@ -58,7 +58,8 @@ export class AddCase extends Component {
             // console.log(Case)
 
             that.setState({
-              Case: caseInstance
+              Case: caseInstance,
+              seriesInstanceUID: response.dicomInfo.seriesInstanceUID
             });
 
             imageArray.push(response.filePath);
@@ -428,6 +429,14 @@ export class AddCase extends Component {
                       </Col>
               <Col sm={6}>
                 <Gallery uploader={this.uploader} />
+              </Col>
+              <Col sm={2}>
+                <a onClick={() => Meteor.call('removeSeries', this.state.seriesInstanceUID, function(err, res) {
+                    if(err) {
+                      return console.log(err);
+                    }
+                    console.log(res);
+                  })}>Remove</a>
               </Col>
               <Col>
                 {oldCase &&

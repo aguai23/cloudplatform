@@ -131,6 +131,9 @@ function parseSingleDicom(filePath, cb) {
     result.studyDate = dataset.string('x00080020');
     result.studyID = dataset.string('x00200010');
     result.studyInstanceUID = dataset.string('x0020000d');
+    result.seriesDate = dataset.string('x00080021');
+    result.seriesTime = dataset.string('x00080031');
+    result.seriesDescription = dataset.string('0008103e');
 
     cb(result);
   });
