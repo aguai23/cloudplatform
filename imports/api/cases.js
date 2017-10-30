@@ -36,7 +36,7 @@ const diagnose = new SimpleSchema({
 const series = new SimpleSchema({
     seriesNumber: {
         label: 'seriesId',
-        type: Number
+        type: String
     },
     seriesInstanceUID: {
         label: 'uid',
