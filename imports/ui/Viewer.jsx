@@ -172,7 +172,7 @@ export default class Viewer extends Component {
             lastY: 0,
             startY: 0,
 
-            isDiagnosisPanelOpened: false,
+            isLeftPanelOpened: false,
             isDiagnosisFinished: false,
             isMagnifyToolEnabled: false,
             isMagnifyToolOpened: false
@@ -242,6 +242,9 @@ export default class Viewer extends Component {
             cornerstoneTools.toolColors.setToolColor("#ffcc33");
         });
 
+        /**
+         * default configuration for magify tool
+         */
         var config = {
             magnifySize: 250,
             magnificationLevel: 4
@@ -278,6 +281,10 @@ export default class Viewer extends Component {
                     //set info here
                     let element = $("#viewer");
                     element.on("CornerstoneImageRendered", this.updateInfo);
+                    /**
+                     * set scroll tool for default mousewheel operation
+                     */
+                    this.setScrollTool();
                 }
 
             }
@@ -430,10 +437,8 @@ export default class Viewer extends Component {
      * activate scroll tool, enable both mousewheel and mouse select
      */
     setScrollTool() {
-        let element = $("#viewer");
         let self = this;
-        this.disableAllTools();
-        element.bind("mousewheel", function (e) {
+        $("#viewer").bind("mousewheel", function (e) {
             let event = window.event || e;
             let down = event.wheelDelta < 0;
             if (down) {
@@ -456,7 +461,7 @@ export default class Viewer extends Component {
      * activate zoom and pan function
      */
     setZoomTool() {
-        this.disableAllTools();
+        this.disableAllTools('ZOOM');
 
         var config = {
             // invert: true,
@@ -625,10 +630,10 @@ export default class Viewer extends Component {
      */
     diagnose() {
         this.setState({
-            isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened
+            isLeftPanelOpened: !this.state.isLeftPanelOpened
         }, function () {
             var self = this;
-            if (this.state.isDiagnosisPanelOpened) {
+            if (this.state.isLeftPanelOpened) {
                 $('#diagnosisInfo').fadeIn({
                     start: function () {
                         self.setState({
@@ -818,20 +823,41 @@ export default class Viewer extends Component {
      * clear all tool data, e.g. rec, probe and angle
      */
     clearToolData() {
-        cornerstoneTools.globalImageIdSpecificToolStateManager.clear(this.state.container);
+        console.log('cornerstoneTools.globalImageIdSpecificToolStateManager', cornerstoneTools.globalImageIdSpecificToolStateManager);
+
+        let toolState = cornerstoneTools.globalImageIdSpecificToolStateManager.toolState;
+        console.log(toolState);
+        let element = cornerstone.getEnabledElement(this.state.container);
+
+        if(!toolState.hasOwnProperty(element.image.imageId)) {
+          return;
+        }
+
+        for(let toolName in toolState[element.image.imageId]) {
+          if(toolName !== 'ellipticalRoi') {
+            delete toolState[element.image.imageId][toolName];
+          }
+        }
+
         cornerstone.updateImage(this.state.container);
     }
 
     /**
      * disable tools
      */
-    disableAllTools() {
+    disableAllTools(tag) {
         if(this.state.isMagnifyToolEnabled) {
             this.setState({isMagnifyToolEnabled: false});
         }
 
         let element = $("#viewer");
+
         element.off("mousewheel");
+
+        if(tag !== 'ZOOM') {
+          this.setScrollTool();
+        }
+
         element.off("mousemove");
         cornerstoneTools.mouseInput.enable(this.state.container);
         cornerstoneTools.mouseWheelInput.enable(this.state.container);
@@ -904,7 +930,7 @@ export default class Viewer extends Component {
                 <FontAwesome style={{paddingLeft: '5px', position: 'absolute', marginTop: '5px'}} name='caret-down' size='lg'/>
         ) : undefined;
 
-        let diagnosisBox = this.state.isDiagnosisPanelOpened ? (
+        let diagnosisBox = this.state.isLeftPanelOpened ? (
             this.state.isDiagnosisFinished ? (
                 <div>
                   <div style={style.diagnosisHeader}>

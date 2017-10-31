@@ -45,12 +45,21 @@ export class AddCase extends Component {
           onComplete: function (id, name, response) {
             let caseInstance = Object.assign({}, that.state.Case);
 
-            for(let key in response.dicomInfo) {
+            for (let key in response.dicomInfo) {
               caseInstance[key] = response.dicomInfo[key];
             }
+            const { Case } = that.state;
+            let seriesInfo = {
+              seriesNumber: caseInstance.seriesNumber,
+              seriesInstance: caseInstance.seriesInstanceUID,
+              seriesDescription: caseInstance.seriesDescription,
+            }
+            caseInstance.seriesList = Case.seriesList? Case.seriesList.push[caseInstance]:[caseInstance]
+            // console.log(Case)
 
             that.setState({
-              Case: caseInstance
+              Case: caseInstance,
+              // seriesInstanceUID: response.dicomInfo.seriesInstanceUID
             });
 
             imageArray.push(response.filePath);
@@ -67,18 +76,17 @@ export class AddCase extends Component {
       Case: {
         accessionNumber: undefined,
         patientID: undefined,
-        otherPatientIDs: undefined,
         patientName: undefined,
         patientBirthDate: undefined,
+        patientAge: undefined,
         patientSex: undefined,
-        institutionName: undefined,
-        referringPhysicianName: undefined,
-        requestedProcedureDescription: undefined,
-        studyDate: undefined,
         studyID: undefined,
         studyInstanceUID: '',
-        description: undefined,
-        diagnoseResult: undefined,
+        studyDate: undefined,
+        studyTime: undefined,
+        modality: undefined,
+        bodyPart: undefined,
+        studyDescription: undefined,
         seriesList: undefined,
       },
       // oldFileList: oldCase ? oldCase.files : [],
@@ -122,7 +130,7 @@ export class AddCase extends Component {
       })
     } else {
       const { Case } = this.state;
-      if (['seriesNumber', 'seriesInstanceUID', 'files', 'serirsDescription', 'total'].indexOf(input.target.id) < 0) {
+      if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'seriesDate', 'seriesTime', 'total'].indexOf(input.target.id) < 0) {
         Case[input.target.id] = input.target.value;
       } else {
         //seriesData
@@ -156,16 +164,15 @@ export class AddCase extends Component {
       const standardCase = {
         accessionNumber: Case.accessionNumber,
         patientID: Case.patientID,
-        otherPatientIDs: Case.otherPatientIDs,
         patientName: Case.patientName,
-        patientBirthDate: patientBirthDate,
+        patientBirthDate: Case.patientBirthDate,
+        patientAge: Case.patientAge,
         patientSex: Case.patientSex,
-        institutionName: Case.institutionName,
-        referringPhysicianName: Case.referringPhysicianName,
-        requestedProcedureDescription: Case.requestedProcedureDescription,
-        studyDate: Case.studyDate,
         studyID: Case.studyID,
         studyInstanceUID: Case.studyInstanceUID,
+        studyDate: Case.studyDate,
+        studyTime: Case.studyTime,
+        modality: Case.modality,
         studyDescription: Case.studyDescription,
         seriesList: Case.seriesList,
         collectionId: this.state.collectionId,
@@ -220,33 +227,38 @@ export class AddCase extends Component {
 
   removeSeriesHandle() {
     let index = this.state.seriesIndex;
-    //TODO: remove single series
+    Meteor.call('removeSeries', this.state.Case.seriesList[index].seriesInstanceUID, function(err, res) {
+      if(err) {
+        return console.log(err);
+      }
+      console.log(res);
+    })
     this.changeSeriesModalState()
   }
 
   deleteFile(file) {
-    let fileInfo = file.split('/');
-    HTTP.call("DELETE", `/delete/${fileInfo[2]}`, (err, result) => {
-      if (err) {
-        toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
-      } else {
-        let list = this.state.oldFileList;
-        let position = list.indexOf(file);
-        list.splice(position, 1);
-        let newCase = this.state.oldCase;
-        newCase.files = list
-        Meteor.call('modifyCase', newCase, (error) => {
-          if (error) {
-            toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
-          } else {
-            this.setState({
-              oldFileList: list
-            });
-          }
-        });
-        toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
-      }
-    })
+    // let fileInfo = file.split('/');
+    // HTTP.call("DELETE", `/delete/${fileInfo[2]}`, (err, result) => {
+    //   if (err) {
+    //     toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+    //   } else {
+    //     let list = this.state.oldFileList;
+    //     let position = list.indexOf(file);
+    //     list.splice(position, 1);
+    //     let newCase = this.state.oldCase;
+    //     newCase.files = list
+    //     Meteor.call('modifyCase', newCase, (error) => {
+    //       if (error) {
+    //         toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+    //       } else {
+    //         this.setState({
+    //           oldFileList: list
+    //         });
+    //       }
+    //     });
+    //     toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
+    //   }
+    // })
   }
 
   render() {
@@ -273,7 +285,16 @@ export class AddCase extends Component {
                 出生日期
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.class : Case.class} onChange={this.onCaseChange} type="date" />
+                <FormControl value={oldCase ? oldCase.class : Case.class} onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="patientAge">
+              <Col componentClass={ControlLabel} sm={2}>
+                患者年龄
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="number" />
               </Col>
             </FormGroup>
 
@@ -296,14 +317,6 @@ export class AddCase extends Component {
               </Col>
             </FormGroup>
 
-            <FormGroup controlId="description">
-              <Col componentClass={ControlLabel} sm={2}>
-                患者描述
-                      </Col>
-              <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
           </div>
 
           <div className="well" style={wellStyles}>
@@ -313,42 +326,6 @@ export class AddCase extends Component {
                       </Col>
               <Col sm={6}>
                 <FormControl onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
-
-            <FormGroup controlId="institutionName">
-              <Col componentClass={ControlLabel} sm={2}>
-                institutionName
-                      </Col>
-              <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
-
-            <FormGroup controlId="referringPhysicianName">
-              <Col componentClass={ControlLabel} sm={2}>
-                referringPhysicianName
-                      </Col>
-              <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
-
-            <FormGroup controlId="requestedProcedureDescription">
-              <Col componentClass={ControlLabel} sm={2}>
-                requestedProcedureDescription
-                      </Col>
-              <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
-
-            <FormGroup controlId="studyDate">
-              <Col componentClass={ControlLabel} sm={2}>
-                studyDate
-                      </Col>
-              <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="date" />
               </Col>
             </FormGroup>
 
@@ -366,12 +343,57 @@ export class AddCase extends Component {
                 studyInstanceUID
                       </Col>
               <Col sm={6}>
-                <FormControl value={this.state.Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly/>
+                <FormControl value={this.state.Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="studyDate">
+              <Col componentClass={ControlLabel} sm={2}>
+                studyDate
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="studyDate">
+              <Col componentClass={ControlLabel} sm={2}>
+                studyTime
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="modality">
+              <Col componentClass={ControlLabel} sm={2}>
+                modality
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="bodyPart">
+              <Col componentClass={ControlLabel} sm={2}>
+                身体部位
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
+              </Col>
+            </FormGroup>
+
+            <FormGroup controlId="studyDescription">
+              <Col componentClass={ControlLabel} sm={2}>
+                描述
+                      </Col>
+              <Col sm={6}>
+                <FormControl onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
           </div>
 
-          { this.state.Case.seriesList &&
+          {this.state.Case.seriesList &&
             <div className="well" style={wellStyles}>
               <Table striped bordered condensed hover>
                 <thead>
@@ -379,7 +401,9 @@ export class AddCase extends Component {
                     <th>seriesNumber</th>
                     <th>seriesInstanceUID</th>
                     <th>series description</th>
-                    <th>total slice number</th>
+                    <th>series date</th>
+                    <th>series time</th>
+                    <th>total</th>
                     <th>option</th>
                   </tr>
                 </thead>
@@ -388,8 +412,10 @@ export class AddCase extends Component {
                     return (
                       <tr key={index}>
                         <td>{obj.seriesNumber}</td>
-                        <td>{obj.seriesInstanceUid}</td>
+                        <td>{obj.seriesInstanceUID}</td>
                         <td>{obj.seriesDescription}</td>
+                        <td>{obj.seriesDate}</td>
+                        <td>{obj.seriesTime}</td>
                         <td>{obj.total}</td>
                         <td><Button onClick={this.changeSeriesModalState.bind(this, index)}>查看删除</Button></td>
                       </tr>)
@@ -492,7 +518,7 @@ export class AddCase extends Component {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.removeSeriesHandle.bind(this)} bsStyle="warning">删除</Button>
+            <Button onClick={this.removeSeriesHandle.bind(this,)} bsStyle="warning">删除</Button>
           </Modal.Footer>
         </Modal>
       </div>
@@ -501,7 +527,7 @@ export class AddCase extends Component {
 }
 
 AddCase.contextTypes = {
-  router: React.PropTypes.object
+  router: React.PropTypes.object  
 }
 
 export default withTracker(props => {
