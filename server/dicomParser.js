@@ -125,15 +125,22 @@ function parseSingleDicom(filePath, cb) {
 
     result.seriesInstanceUID = dataset.string('x0020000e');
     result.accessionNumber = dataset.string('x00080050');
-    result.institutionName = dataset.string('x00080080');
-    result.referringPhysicianName = dataset.string('x00080090');
-    result.requestedProcedureDescription = dataset.string('x00321060');
-    result.studyDate = dataset.string('x00080020');
+    result.patientID = dataset.string('x00100020');
+    result.patientName = dataset.string('x00100010');
+    result.patientBirthDate = dataset.string('x00100030');
+    result.patientAge = dataset.string('x00101010');
+    result.patientSex = dataset.string('x00100040');
     result.studyID = dataset.string('x00200010');
-    result.studyInstanceUID = dataset.string('x0020000d');
+    result.studyDate = dataset.string('x00080020');
+    result.studyTime = dataset.string('x00080030');
+    result.studyDescription = dataset.string('x00081030'); 
+    result.studyInstanceUID = dataset.string('x0020000d');   
     result.seriesDate = dataset.string('x00080021');
     result.seriesTime = dataset.string('x00080031');
-    result.seriesDescription = dataset.string('0008103e');
+    result.seriesDescription = dataset.string('x0008103e');
+    result.seriesNumber = dataset.string('x00200011');
+    result.modality = dataset.string('x00080060');
+    result.bodyPart = dataset.string('x00180015');
 
     cb(result);
   });

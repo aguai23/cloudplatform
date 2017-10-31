@@ -35,7 +35,7 @@ export class AddCase extends Component {
           endpoint: '/uploads'
         },
         retry: {
-          enableAuto: true
+          enableAuto: false
         },
         callbacks: {
           onAllComplete: function (ids) {
@@ -43,25 +43,30 @@ export class AddCase extends Component {
             that.setState({ isUploadFinished: true });
           },
           onComplete: function (id, name, response) {
-            let caseInstance = Object.assign({}, that.state.Case);
-
-            for (let key in response.dicomInfo) {
-              caseInstance[key] = response.dicomInfo[key];
+            let seriesInstanceUIDList = that.state.seriesInstanceUIDList && that.state.seriesInstanceUIDList.length > 0 ? that.state.seriesInstanceUIDList : [];
+            if (seriesInstanceUIDList.indexOf(response.dicomInfo.seriesInstanceUID) < 0) {
+              let caseInstance = Object.assign({}, that.state.Case);
+              for (let key in response.dicomInfo) {
+                caseInstance[key] = response.dicomInfo[key];
+              }
+              let seriesInfo = {
+                seriesNumber: caseInstance.seriesNumber,
+                seriesInstanceUID: caseInstance.seriesInstanceUID,
+                seriesDescription: caseInstance.seriesDescription,
+                seriesDate: caseInstance.seriesDate,
+                seriesTime: caseInstance.seriesTime
+              }
+              if (caseInstance.seriesList && caseInstance.seriesList.length) {
+                caseInstance.seriesList.push(seriesInfo)
+              } else {
+                caseInstance.seriesList = [seriesInfo]
+              }
+              seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID)
+              that.setState({
+                Case: caseInstance,
+                seriesInstanceUIDList: seriesInstanceUIDList
+              });
             }
-            const { Case } = that.state;
-            let seriesInfo = {
-              seriesNumber: caseInstance.seriesNumber,
-              seriesInstance: caseInstance.seriesInstanceUID,
-              seriesDescription: caseInstance.seriesDescription,
-            }
-            caseInstance.seriesList = Case.seriesList? Case.seriesList.push[caseInstance]:[caseInstance]
-            // console.log(Case)
-
-            that.setState({
-              Case: caseInstance,
-              // seriesInstanceUID: response.dicomInfo.seriesInstanceUID
-            });
-
             imageArray.push(response.filePath);
           },
           onUpload: function () {
@@ -115,30 +120,31 @@ export class AddCase extends Component {
 
   onCaseChange(input) {
     if (this.state.oldCase) {
-      const { oldCase } = this.state;
-      if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'total'].indexOf(input.target.id) < 0) {
-        oldCase[input.target.id] = input.target.value;
-      } else {
-        //seriesData
-        if (!oldCase.seriesList[index]) {
-          oldCase.seriesList[index] = {}
-        }
-        oldCase.seriesList[index][input.target.id] = input.target.value
-      }
-      this.setState({
-        oldCase
-      })
+      // const { oldCase } = this.state;
+      // if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'total'].indexOf(input.target.id) < 0) {
+      //   oldCase[input.target.id] = input.target.value;
+      // } else {
+      //   //seriesData
+      //   if (!oldCase.seriesList[index]) {
+      //     oldCase.seriesList[index] = {}
+      //   }
+      //   oldCase.seriesList[index][input.target.id] = input.target.value
+      // }
+      // this.setState({
+      //   oldCase
+      // })
     } else {
       const { Case } = this.state;
       if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'seriesDate', 'seriesTime', 'total'].indexOf(input.target.id) < 0) {
         Case[input.target.id] = input.target.value;
       } else {
         //seriesData
-        let index = this.state.seriesIndex;
-        if (!Case.seriesList[index]) {
-          Case.seriesList[index] = {}
-        }
-        Case.seriesList[index][input.target.id] = input.target.value
+        let { currentSeries,Case } = this.state
+        Case.seriesList.map((obj,index)=>{
+          if(obj.seriesInstanceUID === currentSeries.seriesInstanceUID){
+            Case.seriesList[index][input.target.id] = input.target.value
+          }
+        })
       }
       this.setState({
         Case
@@ -155,7 +161,7 @@ export class AddCase extends Component {
     const { Case } = this.state;
     const flag = Case.accessionNumber && Case.patientID && Case.otherPatientIDs && Case.patientName && Case.patientBirthDate
       && Case.patientSex && Case.institutionName && Case.referringPhysicianName && Case.requestedProcedureDescription
-      && Case.studyDate && Case.studyID && Case.studyInstanceUID && Case.studyDescription && Case.seriesList
+      && Case.studyDate && Case.studyID && Case.studyInstanceUID && Case.studyDescription && Case.seriesList && Case.bodyPart
 
     if (!flag) {
       toast.error("请检验并完善信息", { position: toast.POSITION.BOTTOM_RIGHT });
@@ -173,6 +179,7 @@ export class AddCase extends Component {
         studyDate: Case.studyDate,
         studyTime: Case.studyTime,
         modality: Case.modality,
+        bodyPart: Case.bodyPart,
         studyDescription: Case.studyDescription,
         seriesList: Case.seriesList,
         collectionId: this.state.collectionId,
@@ -215,7 +222,7 @@ export class AddCase extends Component {
     if (!showSeriesState) {
       this.setState({
         showSeriesList: !showSeriesState,
-        seriesIndex: index
+        currentSeries: this.state.Case.seriesList[index]
       })
     } else {
       this.setState({
@@ -226,9 +233,8 @@ export class AddCase extends Component {
   }
 
   removeSeriesHandle() {
-    let index = this.state.seriesIndex;
-    Meteor.call('removeSeries', this.state.Case.seriesList[index].seriesInstanceUID, function(err, res) {
-      if(err) {
+    Meteor.call('removeSeries', this.state.currentSeries.seriesInstanceUID, function (err, res) {
+      if (err) {
         return console.log(err);
       }
       console.log(res);
@@ -276,7 +282,7 @@ export class AddCase extends Component {
                 患者姓名
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.patientName} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -285,7 +291,7 @@ export class AddCase extends Component {
                 出生日期
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.class : Case.class} onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -294,7 +300,7 @@ export class AddCase extends Component {
                 患者年龄
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="number" />
+                <FormControl value={parseInt(Case.patientAge)} type="number" />
               </Col>
             </FormGroup>
 
@@ -303,8 +309,8 @@ export class AddCase extends Component {
                 患者性别
                     </Col>
               <Col sm={6}>
-                <Radio checked={Case.patientSex === 'male'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="male" inline>男</Radio>{' '}
-                <Radio checked={oldCase ? oldCase.patientSex === 'female' : Case.patientSex === 'female'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="female" inline>女</Radio>{' '}
+                <Radio checked={Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="male" inline>男</Radio>{' '}
+                <Radio checked={Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="female" inline>女</Radio>{' '}
               </Col>
             </FormGroup>
 
@@ -313,7 +319,7 @@ export class AddCase extends Component {
                 患者编号
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.patientID} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -325,7 +331,7 @@ export class AddCase extends Component {
                 accessionNumber
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.accessionNumber} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -334,7 +340,7 @@ export class AddCase extends Component {
                 studyID
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.studyID} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -343,7 +349,7 @@ export class AddCase extends Component {
                 studyInstanceUID
                       </Col>
               <Col sm={6}>
-                <FormControl value={this.state.Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
+                <FormControl value={Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
               </Col>
             </FormGroup>
 
@@ -352,16 +358,16 @@ export class AddCase extends Component {
                 studyDate
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.studyDate} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
-            <FormGroup controlId="studyDate">
+            <FormGroup controlId="studyTime">
               <Col componentClass={ControlLabel} sm={2}>
                 studyTime
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.studyTime} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -370,7 +376,7 @@ export class AddCase extends Component {
                 modality
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.modality} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -379,7 +385,7 @@ export class AddCase extends Component {
                 身体部位
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.bodyPart} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -388,7 +394,7 @@ export class AddCase extends Component {
                 描述
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={Case.studyDescription} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
           </div>
@@ -492,21 +498,21 @@ export class AddCase extends Component {
               <FormGroup controlId="seriesNumber">
                 <ControlLabel>seriesNumber</ControlLabel>
                 {' '}
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesNumber} onChange={this.onCaseChange} type="text" />
               </FormGroup>
             </Form>
             <Form inline>
               <FormGroup controlId="seriesInstanceUID">
                 <ControlLabel>seriesInstanceUID</ControlLabel>
                 {' '}
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesInstanceUID} onChange={this.onCaseChange} type="text" readOnly/>
               </FormGroup>
             </Form>
             <Form inline>
               <FormGroup controlId="seriesDescription">
                 <ControlLabel>seriesDescription</ControlLabel>
                 {' '}
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesDescription} onChange={this.onCaseChange} type="text" />
               </FormGroup>
             </Form>
             <Form inline>
@@ -518,7 +524,7 @@ export class AddCase extends Component {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.removeSeriesHandle.bind(this,)} bsStyle="warning">删除</Button>
+            <Button onClick={this.removeSeriesHandle.bind(this, )} bsStyle="warning">删除</Button>
           </Modal.Footer>
         </Modal>
       </div>
@@ -527,7 +533,7 @@ export class AddCase extends Component {
 }
 
 AddCase.contextTypes = {
-  router: React.PropTypes.object  
+  router: React.PropTypes.object
 }
 
 export default withTracker(props => {
