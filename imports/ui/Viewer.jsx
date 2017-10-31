@@ -173,9 +173,9 @@ export default class Viewer extends Component {
             startY: 0,
 
             isLeftPanelOpened: false,
-            isDiagnosisFinished: false,
-            isMagnifyToolEnabled: false,
-            isMagnifyToolOpened: false
+            isLoadingPanelFinished: false,
+            isMagnifyToolOpened: false,
+            isRotateMenuOpened: false
 
         };
 
@@ -243,7 +243,7 @@ export default class Viewer extends Component {
         });
 
         /**
-         * default configuration for magify tool
+         * default configuration for magnify tool
          */
         var config = {
             magnifySize: 250,
@@ -393,7 +393,9 @@ export default class Viewer extends Component {
     navSelectHandler(selectedKey) {
         switch (selectedKey) {
             case 1:
-                this.setScrollTool();
+                this.openLeftPanel('SERIES', function() {
+                  console.log("xxx");
+                });
                 break;
 
             case 2:
@@ -431,6 +433,49 @@ export default class Viewer extends Component {
             default:
                 console.log(error);
         }
+    }
+
+    /**
+     * open/close left panel with fadein/fadeout effect
+     * @param cb callback after the fading animation
+     */
+    openLeftPanel(source, cb) {
+      let self = this;
+      this.setState({
+          isLeftPanelOpened: !this.state.isLeftPanelOpened
+      }, function() {
+        if (this.state.isLeftPanelOpened) {
+          $('#diagnosisInfo').fadeIn({
+            start: function () {
+              self.setState({
+                containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3) + 'px'
+              }, function () {
+                cornerstone.resize(this.state.container, false);
+              });
+            },
+            done: function() {
+              self.setState({
+                isLoadingPanelFinished: true
+              }, function() {
+                cb();
+              });
+            }
+          });
+        } else {
+          $('#diagnosisInfo').fadeOut({
+              done: function () {
+                  self.setState({
+                      containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth) + 'px',
+                      isLoadingPanelFinished: source === 'SERIES' ? false : true
+                  }, function () {
+                      cornerstone.resize(this.state.container, false);
+                  });
+              }
+          });
+        }
+      });
+
+
     }
 
     /**
@@ -520,8 +565,16 @@ export default class Viewer extends Component {
 
     setMagnifyTool() {
         this.disableAllTools();
-        this.setState({isMagnifyToolEnabled: true});
         cornerstoneTools.magnify.activate(this.state.container, 1);
+    }
+
+    /**
+     * invert viewport
+     */
+    invertViewport() {
+      let viewport = cornerstone.getViewport(this.state.container);
+      viewport.invert = !viewport.invert;
+      cornerstone.setViewport(this.state.container, viewport);
     }
 
     /**
@@ -644,7 +697,7 @@ export default class Viewer extends Component {
                     }
                 });
 
-                if(this.state.isDiagnosisFinished) {
+                if(this.state.isLoadingPanelFinished) {
                     return;
                 }
 
@@ -654,9 +707,9 @@ export default class Viewer extends Component {
                         return console.log(error);
                     }
 
-                    console.log(res);
+                    // console.log(res);
 
-                    this.setState({isDiagnosisFinished: true});
+                    this.setState({isLoadingPanelFinished: true});
 
                     const algorithmInfo = JSON.parse(sessionStorage.getItem('algorithm'));
                     cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
@@ -846,10 +899,6 @@ export default class Viewer extends Component {
      * disable tools
      */
     disableAllTools(tag) {
-        if(this.state.isMagnifyToolEnabled) {
-            this.setState({isMagnifyToolEnabled: false});
-        }
-
         let element = $("#viewer");
 
         element.off("mousewheel");
@@ -877,6 +926,40 @@ export default class Viewer extends Component {
         this.setState({isMagnifyToolOpened: !this.state.isMagnifyToolOpened});
     }
 
+    toggleRotatePopover() {
+      this.setState({isRotateMenuOpened: !this.state.isRotateMenuOpened});
+    }
+
+    /**
+     * flip viewport
+     */
+    flipViewport(orientation) {
+      let viewport = cornerstone.getViewport(this.state.container);
+
+      if(orientation === 'HORIZONTAL') {
+        viewport.hflip = !viewport.hflip;
+      } else if(orientation === 'VERTICAL') {
+        viewport.vflip = !viewport.vflip;
+      }
+
+      cornerstone.setViewport(this.state.container, viewport);
+    }
+
+    /**
+     * rotate viewport
+     */
+    rotateViewport(orientation) {
+      let viewport = cornerstone.getViewport(this.state.container);
+
+      if(orientation === 'CLOCKWISE') {
+        viewport.rotation += 90;
+      } else if(orientation === 'COUNTERCLOCKWISE') {
+        viewport.rotation -= 90;
+      }
+
+      cornerstone.setViewport(this.state.container, viewport);
+    }
+
     /**
      * handler for draging the scroll bar, moves scrollbar position and changes image
      * @param evt mousemove event
@@ -884,6 +967,11 @@ export default class Viewer extends Component {
     onDragScrollBar() {
         let scrollbar = document.getElementById("scrollbar");
         this.setSlice(parseInt(scrollbar.value));
+    }
+
+    getCaret(isOpened) {
+      return isOpened ? <FontAwesome style={{paddingLeft: '5px', position: 'absolute'}} name='caret-up' size='lg'/> :
+              <FontAwesome style={{paddingLeft: '5px', position: 'absolute', marginTop: '5px'}} name='caret-down' size='lg'/>
     }
 
     render() {
@@ -903,10 +991,40 @@ export default class Viewer extends Component {
             }
         }
 
+
         let config = cornerstoneTools.magnify.getConfiguration();
 
-        let popoverBottom = (
-            <Popover id="popover-positioned-bottom">
+        let rotatePopover = (
+          <Popover id="rotate-popover" className="popover-positioned-bottom">
+            <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.flipViewport('HORIZONTAL')}>
+              <div style={{paddingBottom: '5px'}}>
+                <FontAwesome name='arrows-h' size='2x' />
+              </div>
+              <span>水平翻转</span>
+            </div>
+            <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.flipViewport('VERTICAL')}>
+              <div style={{paddingBottom: '5px'}}>
+                <FontAwesome name='arrows-v' size='2x' />
+              </div>
+              <span>垂直翻转</span>
+            </div>
+            <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.rotateViewport('COUNTERCLOCKWISE')}>
+              <div style={{paddingBottom: '5px'}}>
+                <FontAwesome name='rotate-left' size='2x' />
+              </div>
+              <span>向左旋转</span>
+            </div>
+            <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.rotateViewport('CLOCKWISE')}>
+              <div style={{paddingBottom: '5px'}}>
+                <FontAwesome name='rotate-right' size='2x' />
+              </div>
+              <span>向右旋转</span>
+            </div>
+          </Popover>
+        );
+
+        let magnifyPopover = (
+            <Popover id="magnify-popover" className="popover-positioned-bottom">
               <div style={{marginBottom: '5px', textAlign: 'center'}}>倍数</div>
               <input id="magLevelRange" type="range" min="1" defaultValue={config.magnificationLevel} max="10" onChange={(evt) => {
                   let config = cornerstoneTools.magnify.getConfiguration();
@@ -925,13 +1043,11 @@ export default class Viewer extends Component {
             </Popover>
         );
 
-        let caret = this.state.isMagnifyToolEnabled ? (
-            this.state.isMagnifyToolOpened ? <FontAwesome style={{paddingLeft: '5px', position: 'absolute'}} name='caret-up' size='lg'/> :
-                <FontAwesome style={{paddingLeft: '5px', position: 'absolute', marginTop: '5px'}} name='caret-down' size='lg'/>
-        ) : undefined;
+        let rotateCaret = this.getCaret(this.state.isRotateMenuOpened),
+            magnifyCaret = this.getCaret(this.state.isMagnifyToolOpened);
 
         let diagnosisBox = this.state.isLeftPanelOpened ? (
-            this.state.isDiagnosisFinished ? (
+            this.state.isLoadingPanelFinished ? (
                 <div>
                   <div style={style.diagnosisHeader}>
                     <h3>病变列表</h3>
@@ -977,6 +1093,20 @@ export default class Viewer extends Component {
                         <span>缩放</span>
                       </NavItem>
                     </Nav>
+                    <Navbar.Text className="button" onClick={() => this.invertViewport()}>
+                      <FontAwesome name='square' size='2x' />
+                      <br />
+                      <span>反色</span>
+                    </Navbar.Text>
+                    <Navbar.Text className="button">
+                      <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={rotatePopover} onClick={() => this.toggleRotatePopover()} onExited={() => this.toggleRotatePopover()}>
+                        <span>
+                          <FontAwesome name='cog' size='2x' />
+                          <br />
+                          <span>旋转{rotateCaret}</span>
+                        </span>
+                      </OverlayTrigger>
+                    </Navbar.Text>
                     <Navbar.Text className="button" onClick={this.resetViewport.bind(this)}>
                       <FontAwesome name='refresh' size='2x' /><br />
                       <span>重置</span>
@@ -1014,14 +1144,13 @@ export default class Viewer extends Component {
                         <span>高亮</span>
                       </NavItem>
                       <NavItem eventKey={9} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='search-plus' size='2x' />
-                        </div>
-                        <span>放大</span>
-                        <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={popoverBottom} onClick={() => this.toggleMagnifyPopover()} onExited={() => this.toggleMagnifyPopover()}>
-                    <span>
-                      {caret}
-                    </span>
+                        <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={magnifyPopover} onClick={() => this.toggleMagnifyPopover()} onExited={() => this.toggleMagnifyPopover()}>
+                          <div>
+                            <div style={style.icon}>
+                              <FontAwesome name='search-plus' size='2x' />
+                            </div>
+                            <span>放大{magnifyCaret}</span>
+                          </div>
                         </OverlayTrigger>
                       </NavItem>
                     </Nav>

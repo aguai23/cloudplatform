@@ -62,12 +62,21 @@ input[type=range]::-webkit-slider-thumb:active {
   -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;
 }
 
-#popover-positioned-bottom {
+.popover-positioned-bottom {
   background-color: black;
   border-color: #91b9cd;
   color: #91b9cd;
+  padding-bottom: 10px;
 }
 
-#popover-positioned-bottom > .arrow {
+.popover-positioned-bottom > .arrow {
   display: none;
+}
+
+#rotate-popover {
+  font-size: 10px;
+}
+
+.rotate-menu-item:hover {
+  cursor: pointer;
 }
