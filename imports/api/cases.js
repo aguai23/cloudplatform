@@ -162,11 +162,11 @@ const CaseSchema = new SimpleSchema({
 
     createAt: {
         label: 'createTime',
-        type: Date,
+        type: String,
         denyUpdate: true,
         autoValue: function () {
             if (this.isInsert) {
-                return new Date();
+                return String(new Date());
             }
         }
     }
