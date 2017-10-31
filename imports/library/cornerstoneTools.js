@@ -1,4 +1,4 @@
-/*! cornerstone-tools - 0.9.0 - 2017-10-20 | (c) 2017 Chris Hafey | https://github.com/chafey/cornerstoneTools */
+/*! cornerstone-tools - 0.9.1 - 2017-10-31 | (c) 2017 Chris Hafey | https://github.com/chafey/cornerstoneTools */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory(require("cornerstone-core"), require("cornerstone-math"), require("hammerjs"), require("jquery"));
@@ -4614,7 +4614,7 @@ function onImageRendered(e, eventData) {
     context.stroke();
 
     // Draw the handles
-    (0, _drawHandles2.default)(context, eventData, data.handles);
+    //drawHandles(context, eventData, data.handles);
 
     // Draw the text
     context.fillStyle = color;
@@ -7015,11 +7015,25 @@ function onImageRendered(e, eventData) {
 
   // We have tool data for this element - iterate over each one and draw it
   var context = eventData.canvasContext.canvas.getContext('2d');
+  var image = eventData.image,
+      element = eventData.element;
+
 
   context.setTransform(1, 0, 0, 1, 0, 0);
 
   var lineWidth = _toolStyle2.default.getToolWidth();
   var config = length.getConfiguration();
+  var imagePlane = _externalModules.cornerstone.metaData.get('imagePlane', image.imageId);
+  var rowPixelSpacing = void 0;
+  var colPixelSpacing = void 0;
+
+  if (imagePlane) {
+    rowPixelSpacing = imagePlane.rowPixelSpacing || imagePlane.rowImagePixelSpacing;
+    colPixelSpacing = imagePlane.columnPixelSpacing || imagePlane.colImagePixelSpacing;
+  } else {
+    rowPixelSpacing = image.rowPixelSpacing;
+    colPixelSpacing = image.columnPixelSpacing;
+  }
 
   for (var i = 0; i < toolData.data.length; i++) {
     context.save();
@@ -7035,8 +7049,8 @@ function onImageRendered(e, eventData) {
     var color = _toolColors2.default.getColorIfActive(data.active);
 
     // Get the handle positions in canvas coordinates
-    var handleStartCanvas = _externalModules.cornerstone.pixelToCanvas(eventData.element, data.handles.start);
-    var handleEndCanvas = _externalModules.cornerstone.pixelToCanvas(eventData.element, data.handles.end);
+    var handleStartCanvas = _externalModules.cornerstone.pixelToCanvas(element, data.handles.start);
+    var handleEndCanvas = _externalModules.cornerstone.pixelToCanvas(element, data.handles.end);
 
     // Draw the measurement line
     context.beginPath();
@@ -7051,14 +7065,14 @@ function onImageRendered(e, eventData) {
       drawHandlesIfActive: config && config.drawHandlesOnHover
     };
 
-    (0, _drawHandles2.default)(context, eventData, data.handles, color, handleOptions);
+    //drawHandles(context, eventData, data.handles, color, handleOptions);
 
     // Draw the text
     context.fillStyle = color;
 
     // Set rowPixelSpacing and columnPixelSpacing to 1 if they are undefined (or zero)
-    var dx = (data.handles.end.x - data.handles.start.x) * (eventData.image.columnPixelSpacing || 1);
-    var dy = (data.handles.end.y - data.handles.start.y) * (eventData.image.rowPixelSpacing || 1);
+    var dx = (data.handles.end.x - data.handles.start.x) * (rowPixelSpacing || 1);
+    var dy = (data.handles.end.y - data.handles.start.y) * (colPixelSpacing || 1);
 
     // Calculate the length, and create the text variable with the millimeters or pixels suffix
     var _length = Math.sqrt(dx * dx + dy * dy);
@@ -7069,7 +7083,7 @@ function onImageRendered(e, eventData) {
     // Set the length text suffix depending on whether or not pixelSpacing is available
     var suffix = ' mm';
 
-    if (!eventData.image.rowPixelSpacing || !eventData.image.columnPixelSpacing) {
+    if (!rowPixelSpacing || !colPixelSpacing) {
       suffix = ' pixels';
     }
 
@@ -8074,10 +8088,10 @@ function onImageRendered(e, eventData) {
 
         (0, _drawHandles2.default)(context, eventData, data.handles, color, handleOptions);
       }
-    } else {
-      // If the tool has no configuration settings, always draw the handles
-      (0, _drawHandles2.default)(context, eventData, data.handles, color);
-    }
+    } else {}
+    // If the tool has no configuration settings, always draw the handles
+    // drawHandles(context, eventData, data.handles, color);
+
 
     // Define variables for the area and mean/standard deviation
     var area = void 0,
@@ -8470,7 +8484,9 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-exports.default = function (element, filename) {
+exports.default = function (element, filename, mimetype) {
+  // Setting the default value for mimetype to image/png
+  mimetype = mimetype || 'image/png';
   var canvas = (0, _externalModules.$)(element).find('canvas').get(0);
 
   // Thanks to Ken Fyrstenber
@@ -8483,7 +8499,7 @@ exports.default = function (element, filename) {
   // / convert canvas content to data-uri for link. When download
   // / attribute is set the content pointed to by link will be
   // / pushed as 'download' in HTML5 capable browsers
-  lnk.href = canvas.toDataURL();
+  lnk.href = canvas.toDataURL(mimetype);
 
   // / create a 'fake' click-event to trigger the download
   if (document.createEvent) {
@@ -11033,7 +11049,7 @@ function mouseWheel(e) {
 
   var startingCoords = _externalModules.cornerstone.pageToPixel(element, x, y);
 
-  e = window.event || e; // Old IE support
+  e = window.event && window.event.wheelDelta ? window.event : e; // Old IE support
 
   var wheelDelta = void 0;
 
@@ -14216,7 +14232,7 @@ exports.timeSeriesScrollTouchDrag = timeSeriesScrollTouchDrag;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = '0.9.0';
+exports.default = '0.9.1';
 
 /***/ }),
 /* 108 */
