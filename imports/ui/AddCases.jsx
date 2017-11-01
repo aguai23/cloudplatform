@@ -10,6 +10,8 @@ import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
 import { withTracker } from 'meteor/react-meteor-data';
 
+import dicomParser from 'dicom-parser';
+
 import 'react-toastify/dist/ReactToastify.min.css';
 
 import 'react-fine-uploader/gallery/gallery.css';
@@ -112,8 +114,8 @@ export class AddCase extends Component {
   }
   componentDidMount() {
     let fileInput = ReactDOM.findDOMNode(this.refs.customAttributes);
-    // fileInput.setAttribute('webkitdirectory', '');
-    // fileInput.setAttribute('directory', '');
+    fileInput.setAttribute('webkitdirectory', '');
+    fileInput.setAttribute('directory', '');
   }
 
   componentWillReceiveProps(nextProps) {
@@ -274,6 +276,46 @@ export class AddCase extends Component {
     // })
   }
 
+  /**
+   * Parse one dicom file, which is used to get common information when uploading
+   * @param filePath the absolute path where the dicom placed
+   * @return {Object} the standard dicom information
+   */
+  parseSingleDicom(file, cb) {
+    let reader = new FileReader();
+
+    reader.onloadend = function(event) {
+      // let buffer = new Buffer(event.target.result);
+      // console.log(buffer);
+      let result = {};
+
+      let dataset = dicomParser.parseDicom(new Uint8Array(event.target.result));
+
+      result.seriesInstanceUID = dataset.string('x0020000e');
+      result.accessionNumber = dataset.string('x00080050');
+      result.patientID = dataset.string('x00100020');
+      result.patientName = dataset.string('x00100010');
+      result.patientBirthDate = dataset.string('x00100030');
+      result.patientAge = dataset.string('x00101010');
+      result.patientSex = dataset.string('x00100040');
+      result.studyID = dataset.string('x00200010');
+      result.studyDate = dataset.string('x00080020');
+      result.studyTime = dataset.string('x00080030');
+      result.studyDescription = dataset.string('x00081030');
+      result.studyInstanceUID = dataset.string('x0020000d');
+      result.seriesDate = dataset.string('x00080021');
+      result.seriesTime = dataset.string('x00080031');
+      result.seriesDescription = dataset.string('x0008103e');
+      result.seriesNumber = dataset.string('x00200011');
+      result.modality = dataset.string('x00080060');
+      result.bodyPart = dataset.string('x00180015');
+
+      cb(result);
+
+    }
+    reader.readAsArrayBuffer(file);
+  }
+
   selectFile() {
     let files = document.getElementById('customUploader').files;
 
@@ -281,6 +323,13 @@ export class AddCase extends Component {
 
     if(files && files.length > 0) {
       let selectedFiles = [];
+
+      this.parseSingleDicom(files[0], (res) => {
+        console.log(res);
+        this.setState({
+          Case: res
+        });
+      });
 
       for(let i=0; i < files.length; i++) {
         let fileSize = 0;
@@ -308,21 +357,25 @@ export class AddCase extends Component {
 
   uploadFile() {
     console.log('upload started at: ' + new Date());
+    let date = this.state.Case.studyDate ? this.state.Case.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
+
+    let path = date + '/' + this.state.Case.studyInstanceUID + '/' + this.state.Case.seriesInstanceUID;
+
     let xhr = new XMLHttpRequest();
 
     let files = document.getElementById('customUploader').files;
 
     let formData = new FormData();
 
+    formData.append('path', path);
     for(let i = 0; i < files.length; i++) {
-      formData.append('uploads[]', files[i], files[i].name);
+      formData.append(path, files[i], files[i].name);
     }
 
     xhr.addEventListener("load", this.onUploadComplete, false);
 
     xhr.open("POST", "http://192.168.12.142:3000/uploads");
     xhr.send(formData);
-
   }
 
   onUploadComplete(res) {

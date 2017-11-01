@@ -1,7 +1,5 @@
 import { Meteor } from 'meteor/meteor';
 
-import { parseSingleDicom } from './dicomParser';
-
 import { Series } from '../imports/api/cases';
 
 const Fiber = Npm.require('fibers');
@@ -36,6 +34,15 @@ Picker.route('/uploads', function(params, req, res, next) {
     form.multiples = true;
     form.uploadDir = '/uploads';
 
+    // form.on('field', (name, value) => {
+    //   form.uploadDir += '/' + value;
+    //   mkdirp(form.uploadDir, function(error) {
+    //     if(error) {
+    //       console.error('Failed to create directory. Error: ' + error);
+    //     }
+    //   });
+    // });
+
     form.on('file', (field, file) => {
       fs.rename(file.path, path.join(form.uploadDir, file.name));
     });
@@ -44,11 +51,23 @@ Picker.route('/uploads', function(params, req, res, next) {
       res.end('success at ' + new Date());
     });
 
-    form.on('error', (err) => {
-      console.log('An error has occured: \n' + err);
-    });
+    // form.on('error', (err) => {
+    //   console.log('An error has occured: \n' + err);
+    // });
 
-    form.parse(req);
+    form.parse(req, function(err, fields, files) {
+      if(err) {
+        return  console.log('An error has occured: \n' + err);
+      }
+      console.log(fields);
+
+      // for(let i = 0; i < files.length; i++) {
+      //   let file = files[i];
+      //   fs.rename(file.path, path.join(form.uploadDir, file.name));
+      // }
+
+      res.end('success at ' + new Date());
+    });
 
     return;
 
