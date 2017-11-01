@@ -7,6 +7,8 @@ import { Series } from '../imports/api/cases';
 const Fiber = Npm.require('fibers');
 
 var fs = require('fs'),
+    path = require('path'),
+    formidable = require('formidable'),
     mkdirp = require('mkdirp'),
     multiparty = require('multiparty'),
 
@@ -27,8 +29,30 @@ Picker.route('/test', function(params, req, res, next) {
 
 Picker.route('/uploads', function(params, req, res, next) {
   if(req.method === 'POST') {
-    var form = new multiparty.Form();
+    res.setHeader('Access-Control-Allow-Origin', '*');
 
+    let form = new formidable.IncomingForm();
+
+    form.multiples = true;
+    form.uploadDir = '/uploads';
+
+    form.on('file', (field, file) => {
+      fs.rename(file.path, path.join(form.uploadDir, file.name));
+    });
+
+    form.on('end', () => {
+      res.end('success at ' + new Date());
+    });
+
+    form.on('error', (err) => {
+      console.log('An error has occured: \n' + err);
+    });
+
+    form.parse(req);
+
+    return;
+
+    /*
     form.parse(req, function(err, fields, files) {
       var partIndex = fields.qqpartindex;
 
@@ -79,6 +103,7 @@ Picker.route('/uploads', function(params, req, res, next) {
 
       }
     });
+    */
   }
 });
 

@@ -9,6 +9,7 @@ import Gallery from 'react-fine-uploader';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
 import { withTracker } from 'meteor/react-meteor-data';
+
 import 'react-toastify/dist/ReactToastify.min.css';
 
 import 'react-fine-uploader/gallery/gallery.css';
@@ -99,7 +100,10 @@ export class AddCase extends Component {
       isUploadFinished: true,
       showFilesList: false,
       showSeriesList: false,
+
+      selectedFiles: []
     };
+
     this.onCaseChange = this.onCaseChange.bind(this);
     this.submitCases = this.submitCases.bind(this);
     this.modifyCase = this.modifyCase.bind(this);
@@ -107,6 +111,9 @@ export class AddCase extends Component {
     // this.changeSeriesModalState = this.changeSeriesModalState.bind(this);
   }
   componentDidMount() {
+    let fileInput = ReactDOM.findDOMNode(this.refs.customAttributes);
+    // fileInput.setAttribute('webkitdirectory', '');
+    // fileInput.setAttribute('directory', '');
   }
 
   componentWillReceiveProps(nextProps) {
@@ -267,11 +274,67 @@ export class AddCase extends Component {
     // })
   }
 
+  selectFile() {
+    let files = document.getElementById('customUploader').files;
+
+    console.log(files);
+
+    if(files && files.length > 0) {
+      let selectedFiles = [];
+
+      for(let i=0; i < files.length; i++) {
+        let fileSize = 0;
+
+        if(files[i].size > 1024 * 1024) {
+          fileSize = (Math.round(files[i].size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+        } else {
+          fileSize = (Math.round(files[i].size * 100 / 1024) / 100).toString() + 'KB';
+        }
+
+        let temp = files[i].name.split('.');
+
+        selectedFiles.push({
+          name: files[i].name,
+          size: fileSize,
+          ext: temp.length > 0 ? temp[temp.length - 1] : ''
+        });
+      }
+
+      this.setState({
+        selectedFiles: selectedFiles
+      });
+    }
+  }
+
+  uploadFile() {
+    console.log('upload started at: ' + new Date());
+    let xhr = new XMLHttpRequest();
+
+    let files = document.getElementById('customUploader').files;
+
+    let formData = new FormData();
+
+    for(let i = 0; i < files.length; i++) {
+      formData.append('uploads[]', files[i], files[i].name);
+    }
+
+    xhr.addEventListener("load", this.onUploadComplete, false);
+
+    xhr.open("POST", "http://192.168.12.142:3000/uploads");
+    xhr.send(formData);
+
+  }
+
+  onUploadComplete(res) {
+    console.log('res', res.target.response);
+  }
+
   render() {
     const wellStyles = { marginTop: '20px' };
     const filesList = this.state.oldFileList;
     const oldCase = this.state.oldCase;
     const Case = this.state.Case;
+
     return (
       <div className="container">
         <h3>{oldCase ? `修改病例` : '添加新病例'}</h3>
@@ -460,6 +523,34 @@ export class AddCase extends Component {
             </Col>
           </FormGroup>
         </Form>
+
+        <form id="form1" encType="multipart/form-data" method="post">
+          <div>
+            <label htmlFor="customUploader">Select a file to upload</label>
+            <input type="file" id="customUploader" ref='customAttributes' multiple onChange={() => this.selectFile()}></input>
+            <input type="button" onClick={() => this.uploadFile()} value="Upload" />
+          </div>
+        </form>
+        <div>
+          <div>
+            <div className="col-sm-4">Name</div>
+            <div className="col-sm-4">Size</div>
+            <div className="col-sm-4">Ext</div>
+          </div>
+          <div>
+            {
+              this.state.selectedFiles.map((file, i) => {
+                return (
+                  <div key={'file' + i}>
+                    <div className="col-sm-4">{file.name}</div>
+                    <div className="col-sm-4">{file.size}</div>
+                    <div className="col-sm-4">{file.ext}</div>
+                  </div>
+                );
+              })
+            }
+          </div>
+        </div>
         <ToastContainer
           position="bottom-right"
           type="info"
