@@ -49,12 +49,12 @@ Meteor.methods({
     Marks.remove(MarkId)
   },
 
-  removeSeries(seriesInstanceUID) {
-    let foundSeries = Series.findOne({seriesInstanceUID: seriesInstanceUID});
+  removeSeries(path) {
+    // let foundSeries = Series.findOne({seriesInstanceUID: seriesInstanceUID});
 
     const wrappedRimraf = Meteor.wrapAsync(rimraf);
 
-    wrappedRimraf(foundSeries.path, function(error, result) {
+    wrappedRimraf(path, function(error, result) {
       if(error) {
         console.error("Problem deleting file. " + error);
         return {
@@ -63,7 +63,7 @@ Meteor.methods({
         }
       }
 
-      Series.remove({_id: foundSeries._id});
+      // Series.remove({_id: foundSeries._id});
 
       return {
         status: 'success'
