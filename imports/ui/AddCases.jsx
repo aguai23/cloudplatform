@@ -150,9 +150,9 @@ export class AddCase extends Component {
         Case[input.target.id] = input.target.value;
       } else {
         //seriesData
-        let { currentSeries,Case } = this.state
-        Case.seriesList.map((obj,index)=>{
-          if(obj.seriesInstanceUID === currentSeries.seriesInstanceUID){
+        let { currentSeries, Case } = this.state
+        Case.seriesList.map((obj, index) => {
+          if (obj.seriesInstanceUID === currentSeries.seriesInstanceUID) {
             Case.seriesList[index][input.target.id] = input.target.value
           }
         })
@@ -171,12 +171,12 @@ export class AddCase extends Component {
 
     const { Case } = this.state;
     const flag = Case.accessionNumber &&
-     Case.patientID && Case.patientAge 
-     && Case.patientName && Case.patientBirthDate
+      Case.patientID && Case.patientAge
+      && Case.patientName && Case.patientBirthDate
       && Case.patientSex && Case.studyID
-       && Case.studyInstanceUID && Case.studyDate
+      && Case.studyInstanceUID && Case.studyDate
       && Case.studyTime && Case.modality && Case.bodyPart
-       && Case.studyDescription && Case.seriesList
+      && Case.studyDescription && Case.seriesList
 
     if (!flag) {
       toast.error("请检验并完善信息", { position: toast.POSITION.BOTTOM_RIGHT });
@@ -197,11 +197,12 @@ export class AddCase extends Component {
         bodyPart: Case.bodyPart,
         studyDescription: Case.studyDescription,
         seriesList: Case.seriesList,
-        collectionId: this.state.collectionId,
+        collectionID: this.state.collectionId,
         creator: Meteor.userId(),
       }
-      console.log(standardCase)
-      return
+      // console.log(standardCase)
+      // console.log(this.state.collectionId);
+      // return
       Meteor.call('insertCase', standardCase, (error) => {
         if (error) {
           toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
@@ -292,7 +293,7 @@ export class AddCase extends Component {
   parseSingleDicom(file, cb) {
     let reader = new FileReader();
 
-    reader.onloadend = function(event) {
+    reader.onloadend = function (event) {
       // let buffer = new Buffer(event.target.result);
       // console.log(buffer);
       let result = {};
@@ -326,7 +327,7 @@ export class AddCase extends Component {
 
   selectFile() {
     let files = document.getElementById('customUploader').files;
-    if(files && files.length > 0) {
+    if (files && files.length > 0) {
       let selectedFiles = [];
       this.parseSingleDicom(files[0], (res) => {
         let seriesInstanceUIDList = this.state.seriesInstanceUIDList && this.state.seriesInstanceUIDList.length > 0 ? this.state.seriesInstanceUIDList : [];
@@ -339,7 +340,7 @@ export class AddCase extends Component {
           let xhr = new XMLHttpRequest();
           let formData = new FormData();
           formData.append('path', path);
-          for(let i = 0; i < files.length; i++) {
+          for (let i = 0; i < files.length; i++) {
             formData.append(path, files[i], files[i].name);
           }
           xhr.addEventListener("load", this.onUploadComplete.bind(this), false);
@@ -370,9 +371,9 @@ export class AddCase extends Component {
         }
       });
 
-      for(let i=0; i < files.length; i++) {
+      for (let i = 0; i < files.length; i++) {
         let fileSize = 0;
-        if(files[i].size > 1024 * 1024) {
+        if (files[i].size > 1024 * 1024) {
           fileSize = (Math.round(files[i].size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
         } else {
           fileSize = (Math.round(files[i].size * 100 / 1024) / 100).toString() + 'KB';
@@ -391,10 +392,9 @@ export class AddCase extends Component {
   }
 
   onUploadComplete(res) {
-    console.log('res', res.target.response);
     const { Case, currentSeries } = this.state;
-    _.each(Case.seriesList,(obj,index)=>{
-      if(obj.seriesInstanceUID === currentSeries.seriesInstanceUID){
+    _.each(Case.seriesList, (obj, index) => {
+      if (obj.seriesInstanceUID === currentSeries.seriesInstanceUID) {
         obj.path = res.target.response
       }
     })
@@ -668,7 +668,7 @@ export class AddCase extends Component {
               <FormGroup controlId="seriesInstanceUID">
                 <ControlLabel>seriesInstanceUID</ControlLabel>
                 {' '}
-                <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesInstanceUID} onChange={this.onCaseChange} type="text" readOnly/>
+                <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
               </FormGroup>
             </Form>
             <Form inline>
