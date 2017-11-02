@@ -2,14 +2,13 @@ import { HTTP } from 'meteor/http';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
-import { Button, Col, Navbar, NavItem, Nav, OverlayTrigger, Popover, Row, MenuItem } from 'react-bootstrap';
+import { Button, Navbar, NavItem, Nav, Overlay, OverlayTrigger, Popover, Row, MenuItem } from 'react-bootstrap';
+import { Motion, spring } from 'react-motion';
 import { Meteor } from 'meteor/meteor';
 import dicomParse from 'dicom-parser';
-import FS from 'fs';
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../library/cornerstoneTools';
 import FontAwesome from 'react-fontawesome';
-import io from '../library/socket';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
@@ -172,7 +171,8 @@ export default class Viewer extends Component {
             lastY: 0,
             startY: 0,
 
-            isLeftPanelOpened: false,
+            isSeriesPanelOpened: false,
+            isDiagnosisPanelOpened: false,
             isLoadingPanelFinished: false,
             isMagnifyToolOpened: false,
             isRotateMenuOpened: false
@@ -221,8 +221,8 @@ export default class Viewer extends Component {
          * set the dynamic height for container
          */
         this.setState({
-            containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) + 'px',
-            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth) + 'px',
+            containerHeight: (window.innerHeight - document.getElementById('top').clientHeight),
+            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth),
             topValue: (window.innerHeight - document.getElementById('top').clientHeight) / 2 - 8 + "px",
             rightValue: -((window.innerHeight - document.getElementById('top').clientHeight) / 2 - 10) + 'px'
         });
@@ -321,7 +321,7 @@ export default class Viewer extends Component {
         this.setState({
             windowWidth: window.innerWidth,
             windowHeight: window.innerHeight,
-            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3) + 'px'
+            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3)
         }, function () {
             cornerstone.resize(this.state.container, false);
         });
@@ -393,7 +393,7 @@ export default class Viewer extends Component {
     navSelectHandler(selectedKey) {
         switch (selectedKey) {
             case 1:
-                this.openLeftPanel('SERIES', function() {
+                this.openSeriesPanel('SERIES', function() {
                   console.log("xxx");
                 });
                 break;
@@ -443,42 +443,7 @@ export default class Viewer extends Component {
      * open/close left panel with fadein/fadeout effect
      * @param cb callback after the fading animation
      */
-    openLeftPanel(source, cb) {
-      let self = this;
-      this.setState({
-          isLeftPanelOpened: !this.state.isLeftPanelOpened
-      }, function() {
-        if (this.state.isLeftPanelOpened) {
-          $('#diagnosisInfo').fadeIn({
-            start: function () {
-              self.setState({
-                containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3) + 'px'
-              }, function () {
-                cornerstone.resize(this.state.container, false);
-              });
-            },
-            done: function() {
-              self.setState({
-                isLoadingPanelFinished: true
-              }, function() {
-                cb();
-              });
-            }
-          });
-        } else {
-          $('#diagnosisInfo').fadeOut({
-              done: function () {
-                  self.setState({
-                      containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth) + 'px',
-                      isLoadingPanelFinished: source === 'SERIES' ? false : true
-                  }, function () {
-                      cornerstone.resize(this.state.container, false);
-                  });
-              }
-          });
-        }
-      });
-
+    openSeriesPanel(source, cb) {
 
     }
 
@@ -694,14 +659,15 @@ export default class Viewer extends Component {
      */
     diagnose() {
         this.setState({
-            isLeftPanelOpened: !this.state.isLeftPanelOpened
+            isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened,
+            isSeriesPanelOpened: false
         }, function () {
             var self = this;
-            if (this.state.isLeftPanelOpened) {
+            if (this.state.isDiagnosisPanelOpened) {
                 $('#diagnosisInfo').fadeIn({
                     start: function () {
                         self.setState({
-                            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3) + 'px'
+                            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 6)
                         }, function () {
                             cornerstone.resize(this.state.container, false);
                         });
@@ -842,7 +808,7 @@ export default class Viewer extends Component {
                 $('#diagnosisInfo').fadeOut({
                     done: function () {
                         self.setState({
-                            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth) + 'px'
+                            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth)
                         }, function () {
                             cornerstone.resize(this.state.container, false);
                         });
@@ -931,6 +897,10 @@ export default class Viewer extends Component {
         cornerstoneTools.angle.deactivate(this.state.container, 1);
         cornerstoneTools.highlight.disable(this.state.container, 1);
         cornerstoneTools.magnify.deactivate(this.state.container, 1);
+    }
+
+    toggleSeriesPanel() {
+      this.setState({isSeriesPanelOpened: !this.state.isSeriesPanelOpened});
     }
 
     toggleMagnifyPopover() {
@@ -1057,7 +1027,7 @@ export default class Viewer extends Component {
         let rotateCaret = this.getCaret(this.state.isRotateMenuOpened),
             magnifyCaret = this.getCaret(this.state.isMagnifyToolOpened);
 
-        let diagnosisBox = this.state.isLeftPanelOpened ? (
+        let diagnosisBox = this.state.isDiagnosisPanelOpened ? (
             this.state.isLoadingPanelFinished ? (
                 <div>
                   <div style={style.diagnosisHeader}>
@@ -1085,11 +1055,11 @@ export default class Viewer extends Component {
                 <Navbar inverse collapseOnSelect style={{ marginBottom: '0'}}>
                   <Navbar.Collapse style={{minWidth: '1200px'}}>
                     <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                      <NavItem eventKey={1} href="#">
+                      <NavItem eventKey={1} href="#" onClick={() => this.toggleSeriesPanel()}>
                         <div style={style.icon} >
                           <FontAwesome name='files-o' size='2x' />
                         </div>
-                        <span>图层</span>
+                        <span>序列</span>
                       </NavItem>
                       <NavItem eventKey={2} href="#">
                         <div style={style.icon}>
@@ -1204,6 +1174,23 @@ export default class Viewer extends Component {
               <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
                   {diagnosisBox}
               </div>
+
+              <Motion style={{x: spring(this.state.isSeriesPanelOpened ? 300 : 0)}}>
+                {({x}) =>
+                  <div className="seriesPanel"
+                    style={{
+                      height: this.state.containerHeight ? this.state.containerHeight - 10 : 0,
+                      top: document.getElementById('top') ? document.getElementById('top').clientHeight + 5 : 0,
+                      WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
+                    }}
+                  >
+
+
+
+                  </div>
+                }
+              </Motion>
+
 
               <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: this.state.containerWidth } }} className="container">
                 <input type={"range"}

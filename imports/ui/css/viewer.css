@@ -80,3 +80,12 @@ input[type=range]::-webkit-slider-thumb:active {
 .rotate-menu-item:hover {
   cursor: pointer;
 }
+
+.seriesPanel {
+  left: -300px;
+  position: absolute;
+  background-color: #141619;
+  width: 300px;
+  z-index: 2;
+  border: 1px #91b9cd solid;
+}
