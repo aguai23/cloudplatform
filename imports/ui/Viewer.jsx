@@ -407,31 +407,35 @@ export default class Viewer extends Component {
                 break;
 
             case 4:
-                this.setLengthTool();
+                this.setPanTool();
                 break;
 
             case 5:
-                this.setDrawTool();
+                this.setLengthTool();
                 break;
 
             case 6:
-                this.setProbeTool();
+                this.setDrawTool();
                 break;
 
             case 7:
-                this.setAngleTool();
+                this.setProbeTool();
                 break;
 
             case 8:
-                this.setHighlightTool();
+                this.setAngleTool();
                 break;
 
             case 9:
+                this.setHighlightTool();
+                break;
+
+            case 10:
                 this.setMagnifyTool();
                 break;
 
             default:
-                console.log(error);
+                console.error(error);
         }
     }
 
@@ -522,6 +526,13 @@ export default class Viewer extends Component {
         cornerstoneTools.zoomWheel.activate(element);
     }
 
+    /**
+     * activate pan function
+     */
+    setPanTool() {
+        this.disableAllTools();
+        cornerstoneTools.pan.activate(this.state.container, 1);
+    }
 
     /**
      * activate rectangle draw function
@@ -1072,7 +1083,7 @@ export default class Viewer extends Component {
             <div id="body" style={style.body}>
               <div id="top" style={style.top}>
                 <Navbar inverse collapseOnSelect style={{ marginBottom: '0'}}>
-                  <Navbar.Collapse>
+                  <Navbar.Collapse style={{minWidth: '1200px'}}>
                     <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
                       <NavItem eventKey={1} href="#">
                         <div style={style.icon} >
@@ -1084,13 +1095,19 @@ export default class Viewer extends Component {
                         <div style={style.icon}>
                           <FontAwesome name='adjust' size='2x' />
                         </div>
-                        <span>对比度</span>
+                        <span>窗宽窗位</span>
                       </NavItem>
                       <NavItem eventKey={3} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='search' size='2x' />
                         </div>
                         <span>缩放</span>
+                      </NavItem>
+                      <NavItem eventKey={4} href="#">
+                        <div style={style.icon}>
+                          <FontAwesome name='hand-paper-o' size='2x' />
+                        </div>
+                        <span>拖动</span>
                       </NavItem>
                     </Nav>
                     <Navbar.Text className="button" onClick={() => this.invertViewport()}>
@@ -1113,37 +1130,37 @@ export default class Viewer extends Component {
                     </Navbar.Text>
                     <Navbar.Text style={{borderLeft: '2px solid #9ccef9', height: '50px'}}></Navbar.Text>
                     <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                      <NavItem eventKey={4} href="#">
+                      <NavItem eventKey={5} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='arrows-h' size='2x' />
                         </div>
                         <span>测量</span>
                       </NavItem>
-                      <NavItem eventKey={5} href="#">
+                      <NavItem eventKey={6} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='square-o' size='2x' />
                         </div>
                         <span>标注</span>
                       </NavItem>
-                      <NavItem eventKey={6} href="#">
+                      <NavItem eventKey={7} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='circle-o' size='2x' />
                         </div>
                         <span>圆点</span>
                       </NavItem>
-                      <NavItem eventKey={7} href="#">
+                      <NavItem eventKey={8} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='chevron-down' size='2x' />
                         </div>
                         <span>角度</span>
                       </NavItem>
-                      <NavItem eventKey={8} href="#">
+                      <NavItem eventKey={9} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='sun-o' size='2x' />
                         </div>
                         <span>高亮</span>
                       </NavItem>
-                      <NavItem eventKey={9} href="#">
+                      <NavItem eventKey={10} href="#">
                         <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={magnifyPopover} onClick={() => this.toggleMagnifyPopover()} onExited={() => this.toggleMagnifyPopover()}>
                           <div>
                             <div style={style.icon}>
