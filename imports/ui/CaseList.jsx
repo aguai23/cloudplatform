@@ -72,18 +72,16 @@ export class CaseList extends Component {
     const that = this;
     let tHead = this.state.cases.length > 0 ? ( !this.state.isSearchClicked ?
                   (<tr>
-                      <th>病例名</th>
+                      <th>姓名</th>
                       <th>年龄</th>
                       <th>性别</th>
-                      <th>来源</th>
                       <th>创建时间</th>
                       <th>操作</th>
                     </tr>) :
                     (<tr>
-                      <th>病例名</th>
+                      <th>姓名</th>
                       <th>年龄</th>
                       <th>性别</th>
-                      <th>来源</th>
                       <th>创建时间</th>
                       <th>所属数据集</th>
                       <th>操作</th>
@@ -124,10 +122,9 @@ export class CaseList extends Component {
               let collectionCol = this.state.isSearchClicked ? <td>{specificCase.collectionId}</td> : undefined;
               return (
                 <tr key={specificCase._id}>
-                  <td>{specificCase.name}</td>
-                  <td>{specificCase.profile.age}</td>
-                  <td>{specificCase.profile.gender === 'male' ? '男' : '女'}</td>
-                  <td>{specificCase.profile.source}</td>
+                  <td>{specificCase.patientName}</td>
+                  <td>{specificCase.patientAge}</td>
+                  <td>{specificCase.patientSex === 'male' ? '男' : '女'}</td>
                   <td>{specificCase.createAt}</td>
                   {collectionCol}
                   <td>
@@ -169,7 +166,8 @@ export default withTracker(props => {
   const handle = Meteor.subscribe('cases');
 
   return {
-    cases: Cases.find({collectionId: props.params.collectionId}).fetch(),
+    // cases: Cases.find({collectionId: props.params.collectionId}).fetch(),
+    cases: Cases.find({collectionID: props.params.collectionId}).fetch(),
     listLoading: !handle.ready()
   }
 })(CaseList);

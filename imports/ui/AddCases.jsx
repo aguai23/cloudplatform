@@ -164,6 +164,20 @@ export class AddCase extends Component {
     }
   }
 
+  /**
+   * sort seriesList according to series number
+   * @returns the sorted seriesList
+   */
+  sortListByIndex() {
+    if(this.state.Case && this.state.Case.length > 1) {
+      let caseCopy = Object.assign({}, this.state.Case)
+
+      return caseCopy.seriesList.sort(function(a, b) {
+        return a.seriesNumber.localeCompare(b.seriesNumber);
+      });
+    }
+  }
+
   submitCases(event) {
     event.preventDefault();
 
@@ -182,6 +196,8 @@ export class AddCase extends Component {
       toast.error("请检验并完善信息", { position: toast.POSITION.BOTTOM_RIGHT });
       return;
     } else {
+      const sortedSeriesList = this.sortListByIndex();
+
       const standardCase = {
         accessionNumber: Case.accessionNumber,
         patientID: Case.patientID,
@@ -196,13 +212,11 @@ export class AddCase extends Component {
         modality: Case.modality,
         bodyPart: Case.bodyPart,
         studyDescription: Case.studyDescription,
-        seriesList: Case.seriesList,
+        seriesList: sortedSeriesList,
         collectionID: this.state.collectionId,
         creator: Meteor.userId(),
       }
-      // console.log(standardCase)
-      // console.log(this.state.collectionId);
-      // return
+
       Meteor.call('insertCase', standardCase, (error) => {
         if (error) {
           toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
