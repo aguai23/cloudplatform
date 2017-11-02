@@ -66,6 +66,7 @@ export class AddCase extends Component {
                 caseInstance.seriesList = [seriesInfo]
               }
               seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID)
+
               that.setState({
                 Case: caseInstance,
                 seriesInstanceUIDList: seriesInstanceUIDList
@@ -83,19 +84,19 @@ export class AddCase extends Component {
     this.state = {
       collectionId: this.props.location.query.collection,
       Case: {
-        accessionNumber: undefined,
-        patientID: undefined,
-        patientName: undefined,
-        patientBirthDate: undefined,
-        patientAge: undefined,
-        patientSex: undefined,
-        studyID: undefined,
+        accessionNumber: '',
+        patientID: '',
+        patientName: '',
+        patientBirthDate: '',
+        patientAge: '',
+        patientSex: '',
+        studyID: '',
         studyInstanceUID: '',
-        studyDate: undefined,
-        studyTime: undefined,
-        modality: undefined,
-        bodyPart: undefined,
-        studyDescription: undefined,
+        studyDate: '',
+        studyTime: '',
+        modality: '',
+        bodyPart: '',
+        studyDescription: '',
         seriesList: undefined,
       },
       // oldFileList: oldCase ? oldCase.files : [],
@@ -161,7 +162,6 @@ export class AddCase extends Component {
         Case
       })
     }
-    console.log(this.state.Case)
   }
 
   submitCases(event) {
@@ -361,8 +361,13 @@ export class AddCase extends Component {
           } else {
             oldList = [seriesInfo]
           }
-          caseInstance.seriesList = oldList
-          seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID)
+          caseInstance.seriesList = oldList;
+          seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID);
+          for(key in Case){
+            if(caseInstance[key] === undefined){
+              caseInstance[key] = Case[key]
+            }
+          }
           this.setState({
             Case: caseInstance,
             seriesInstanceUIDList: seriesInstanceUIDList,
@@ -435,7 +440,7 @@ export class AddCase extends Component {
                 患者年龄
                       </Col>
               <Col sm={6}>
-                <FormControl value={parseInt(Case.patientAge)} type="number" />
+                <FormControl onChange={this.onCaseChange} value={Case.patientAge} type="number" />
               </Col>
             </FormGroup>
 
@@ -444,8 +449,8 @@ export class AddCase extends Component {
                 患者性别
                     </Col>
               <Col sm={6}>
-                <Radio checked={Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="male" inline>男</Radio>{' '}
-                <Radio checked={Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="female" inline>女</Radio>{' '}
+                <Radio checked={Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M" inline>男</Radio>{' '}
+                <Radio checked={Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F" inline>女</Radio>{' '}
               </Col>
             </FormGroup>
 
