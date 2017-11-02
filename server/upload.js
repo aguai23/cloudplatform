@@ -9,7 +9,7 @@ var fs = require('fs'),
     formidable = require('formidable'),
     mkdirp = require('mkdirp'),
     multiparty = require('multiparty'),
-
+    localPath = '',
     fileInputName = Meteor.settings.FILE_INPUT_NAME || "qqfile",
     // publicDir = process.env.PUBLIC_DIR,
     // nodeModulesDir = process.env.NODE_MODULES_DIR,
@@ -45,7 +45,7 @@ Picker.route('/uploads', function(params, req, res, next) {
 
     form.on('file', (field, file) => {
       let dirPath = path.join(form.uploadDir, field);
-
+      localPath = dirPath;
       if(fs.existsSync(dirPath)) {
         fs.rename(file.path, path.join(dirPath, file.name));
       } else {
@@ -59,7 +59,7 @@ Picker.route('/uploads', function(params, req, res, next) {
     });
 
     form.on('end', () => {
-      res.end('success at ' + new Date());
+      res.end(localPath);
     });
 
     form.on('error', (err) => {

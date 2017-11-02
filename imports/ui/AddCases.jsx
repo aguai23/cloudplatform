@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 import { Cases } from '../api/cases';
@@ -111,6 +112,7 @@ export class AddCase extends Component {
     this.modifyCase = this.modifyCase.bind(this);
     this.changeFilesModalState = this.changeFilesModalState.bind(this);
     // this.changeSeriesModalState = this.changeSeriesModalState.bind(this);
+    // this.onUploadComplete = this.onUploadComplete.bind(this)
   }
   componentDidMount() {
     let fileInput = ReactDOM.findDOMNode(this.refs.customAttributes);
@@ -168,9 +170,13 @@ export class AddCase extends Component {
     if (!isUploadFinished) return;
 
     const { Case } = this.state;
-    const flag = Case.accessionNumber && Case.patientID && Case.otherPatientIDs && Case.patientName && Case.patientBirthDate
-      && Case.patientSex && Case.institutionName && Case.referringPhysicianName && Case.requestedProcedureDescription
-      && Case.studyDate && Case.studyID && Case.studyInstanceUID && Case.studyDescription && Case.seriesList && Case.bodyPart
+    const flag = Case.accessionNumber &&
+     Case.patientID && Case.patientAge 
+     && Case.patientName && Case.patientBirthDate
+      && Case.patientSex && Case.studyID
+       && Case.studyInstanceUID && Case.studyDate
+      && Case.studyTime && Case.modality && Case.bodyPart
+       && Case.studyDescription && Case.seriesList
 
     if (!flag) {
       toast.error("请检验并完善信息", { position: toast.POSITION.BOTTOM_RIGHT });
@@ -194,6 +200,8 @@ export class AddCase extends Component {
         collectionId: this.state.collectionId,
         creator: Meteor.userId(),
       }
+      console.log(standardCase)
+      return
       Meteor.call('insertCase', standardCase, (error) => {
         if (error) {
           toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
@@ -318,68 +326,79 @@ export class AddCase extends Component {
 
   selectFile() {
     let files = document.getElementById('customUploader').files;
-
-    console.log(files);
-
     if(files && files.length > 0) {
       let selectedFiles = [];
-
       this.parseSingleDicom(files[0], (res) => {
-        console.log(res);
-        this.setState({
-          Case: res
-        });
+        let seriesInstanceUIDList = this.state.seriesInstanceUIDList && this.state.seriesInstanceUIDList.length > 0 ? this.state.seriesInstanceUIDList : [];
+        if (seriesInstanceUIDList.indexOf(res.seriesInstanceUID) < 0) {
+          let caseInstance = res;
+
+          //upload Series files
+          let date = caseInstance.studyDate ? caseInstance.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
+          let path = date + '/' + caseInstance.studyInstanceUID + '/' + caseInstance.seriesInstanceUID;
+          let xhr = new XMLHttpRequest();
+          let formData = new FormData();
+          formData.append('path', path);
+          for(let i = 0; i < files.length; i++) {
+            formData.append(path, files[i], files[i].name);
+          }
+          xhr.addEventListener("load", this.onUploadComplete.bind(this), false);
+          xhr.open("POST", "http://localhost:3000/uploads");
+          xhr.send(formData);
+          let { Case } = this.state;
+          let oldList = this.state.Case.seriesList
+          let seriesInfo = {
+            seriesNumber: caseInstance.seriesNumber,
+            seriesInstanceUID: caseInstance.seriesInstanceUID,
+            seriesDescription: caseInstance.seriesDescription,
+            seriesTime: caseInstance.seriesTime,
+            seriesDate: caseInstance.seriesDate,
+            total: files.length,
+          }
+          if (oldList && oldList.length) {
+            oldList.push(seriesInfo)
+          } else {
+            oldList = [seriesInfo]
+          }
+          caseInstance.seriesList = oldList
+          seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID)
+          this.setState({
+            Case: caseInstance,
+            seriesInstanceUIDList: seriesInstanceUIDList,
+            currentSeries: seriesInfo
+          });
+        }
       });
 
       for(let i=0; i < files.length; i++) {
         let fileSize = 0;
-
         if(files[i].size > 1024 * 1024) {
           fileSize = (Math.round(files[i].size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
         } else {
           fileSize = (Math.round(files[i].size * 100 / 1024) / 100).toString() + 'KB';
         }
-
         let temp = files[i].name.split('.');
-
         selectedFiles.push({
           name: files[i].name,
           size: fileSize,
           ext: temp.length > 0 ? temp[temp.length - 1] : ''
         });
       }
-
       this.setState({
         selectedFiles: selectedFiles
       });
     }
   }
 
-  uploadFile() {
-    console.log('upload started at: ' + new Date());
-    let date = this.state.Case.studyDate ? this.state.Case.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
-
-    let path = date + '/' + this.state.Case.studyInstanceUID + '/' + this.state.Case.seriesInstanceUID;
-
-    let xhr = new XMLHttpRequest();
-
-    let files = document.getElementById('customUploader').files;
-
-    let formData = new FormData();
-
-    formData.append('path', path);
-    for(let i = 0; i < files.length; i++) {
-      formData.append(path, files[i], files[i].name);
-    }
-
-    xhr.addEventListener("load", this.onUploadComplete, false);
-
-    xhr.open("POST", "http://192.168.12.142:3000/uploads");
-    xhr.send(formData);
-  }
-
   onUploadComplete(res) {
     console.log('res', res.target.response);
+    const { Case, currentSeries } = this.state;
+    _.each(Case.seriesList,(obj,index)=>{
+      if(obj.seriesInstanceUID === currentSeries.seriesInstanceUID){
+        obj.path = res.target.response
+      }
+    })
+    this.setState(Case)
   }
 
   render() {
