@@ -394,7 +394,7 @@ export default class Viewer extends Component {
         switch (selectedKey) {
             case 1:
                 this.openLeftPanel('SERIES', function() {
-                  console.log("xxx");
+                    console.log("xxx");
                 });
                 break;
 
@@ -434,6 +434,9 @@ export default class Viewer extends Component {
                 this.setMagnifyTool();
                 break;
 
+            case 11:
+                this.setAnnotationTool();
+                break;
             default:
                 console.error(error);
         }
@@ -444,40 +447,40 @@ export default class Viewer extends Component {
      * @param cb callback after the fading animation
      */
     openLeftPanel(source, cb) {
-      let self = this;
-      this.setState({
-          isLeftPanelOpened: !this.state.isLeftPanelOpened
-      }, function() {
-        if (this.state.isLeftPanelOpened) {
-          $('#diagnosisInfo').fadeIn({
-            start: function () {
-              self.setState({
-                containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3) + 'px'
-              }, function () {
-                cornerstone.resize(this.state.container, false);
-              });
-            },
-            done: function() {
-              self.setState({
-                isLoadingPanelFinished: true
-              }, function() {
-                cb();
-              });
+        let self = this;
+        this.setState({
+            isLeftPanelOpened: !this.state.isLeftPanelOpened
+        }, function() {
+            if (this.state.isLeftPanelOpened) {
+                $('#diagnosisInfo').fadeIn({
+                    start: function () {
+                        self.setState({
+                            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3) + 'px'
+                        }, function () {
+                            cornerstone.resize(this.state.container, false);
+                        });
+                    },
+                    done: function() {
+                        self.setState({
+                            isLoadingPanelFinished: true
+                        }, function() {
+                            cb();
+                        });
+                    }
+                });
+            } else {
+                $('#diagnosisInfo').fadeOut({
+                    done: function () {
+                        self.setState({
+                            containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth) + 'px',
+                            isLoadingPanelFinished: source === 'SERIES' ? false : true
+                        }, function () {
+                            cornerstone.resize(this.state.container, false);
+                        });
+                    }
+                });
             }
-          });
-        } else {
-          $('#diagnosisInfo').fadeOut({
-              done: function () {
-                  self.setState({
-                      containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth) + 'px',
-                      isLoadingPanelFinished: source === 'SERIES' ? false : true
-                  }, function () {
-                      cornerstone.resize(this.state.container, false);
-                  });
-              }
-          });
-        }
-      });
+        });
 
 
     }
@@ -521,8 +524,7 @@ export default class Viewer extends Component {
         cornerstoneTools.zoom.setConfiguration(config);
 
         let element = this.state.container;
-        cornerstoneTools.pan.activate(element, 1);
-        cornerstoneTools.zoom.activate(element, 4);
+        cornerstoneTools.zoom.activate(element, 1);
         cornerstoneTools.zoomWheel.activate(element);
     }
 
@@ -540,6 +542,14 @@ export default class Viewer extends Component {
     setDrawTool() {
         this.disableAllTools();
         cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
+    }
+
+    /**
+     * active annotation tool
+     */
+    setAnnotationTool() {
+        this.disableAllTools();
+        cornerstoneTools.arrowAnnotate.activate(this.state.container, 1);
     }
 
     /**
@@ -583,9 +593,9 @@ export default class Viewer extends Component {
      * invert viewport
      */
     invertViewport() {
-      let viewport = cornerstone.getViewport(this.state.container);
-      viewport.invert = !viewport.invert;
-      cornerstone.setViewport(this.state.container, viewport);
+        let viewport = cornerstone.getViewport(this.state.container);
+        viewport.invert = !viewport.invert;
+        cornerstone.setViewport(this.state.container, viewport);
     }
 
     /**
@@ -713,7 +723,7 @@ export default class Viewer extends Component {
                 }
 
                 // HTTP.call('GET', 'http://192.168.12.128:5000/lung_nodule/' + 'home/cai/Documents/Data/test', (error, res) => {
-                HTTP.call('GET', 'http://localhost:3000/test', (error, res) => {
+                HTTP.call('GET', 'http://192.168.12.158:3000/test', (error, res) => {
                     if(error) {
                         return console.log(error);
                     }
@@ -894,13 +904,13 @@ export default class Viewer extends Component {
         let element = cornerstone.getEnabledElement(this.state.container);
 
         if(!toolState.hasOwnProperty(element.image.imageId)) {
-          return;
+            return;
         }
 
         for(let toolName in toolState[element.image.imageId]) {
-          if(toolName !== 'ellipticalRoi') {
-            delete toolState[element.image.imageId][toolName];
-          }
+            if(toolName !== 'ellipticalRoi') {
+                delete toolState[element.image.imageId][toolName];
+            }
         }
 
         cornerstone.updateImage(this.state.container);
@@ -915,7 +925,7 @@ export default class Viewer extends Component {
         element.off("mousewheel");
 
         if(tag !== 'ZOOM') {
-          this.setScrollTool();
+            this.setScrollTool();
         }
 
         element.off("mousemove");
@@ -924,13 +934,14 @@ export default class Viewer extends Component {
         cornerstoneTools.rectangleRoi.deactivate(this.state.container, 1);
         cornerstoneTools.wwwc.deactivate(this.state.container, 1);
         cornerstoneTools.pan.deactivate(this.state.container, 1);
-        cornerstoneTools.zoom.deactivate(this.state.container, 4);
+        cornerstoneTools.zoom.deactivate(this.state.container, 1);
         cornerstoneTools.zoomWheel.deactivate(this.state.container);
         cornerstoneTools.length.deactivate(this.state.container, 1);
         cornerstoneTools.probe.deactivate(this.state.container, 1);
         cornerstoneTools.angle.deactivate(this.state.container, 1);
         cornerstoneTools.highlight.disable(this.state.container, 1);
         cornerstoneTools.magnify.deactivate(this.state.container, 1);
+        cornerstoneTools.arrowAnnotate.deactivate(this.state.container,1);
     }
 
     toggleMagnifyPopover() {
@@ -938,37 +949,37 @@ export default class Viewer extends Component {
     }
 
     toggleRotatePopover() {
-      this.setState({isRotateMenuOpened: !this.state.isRotateMenuOpened});
+        this.setState({isRotateMenuOpened: !this.state.isRotateMenuOpened});
     }
 
     /**
      * flip viewport
      */
     flipViewport(orientation) {
-      let viewport = cornerstone.getViewport(this.state.container);
+        let viewport = cornerstone.getViewport(this.state.container);
 
-      if(orientation === 'HORIZONTAL') {
-        viewport.hflip = !viewport.hflip;
-      } else if(orientation === 'VERTICAL') {
-        viewport.vflip = !viewport.vflip;
-      }
+        if(orientation === 'HORIZONTAL') {
+            viewport.hflip = !viewport.hflip;
+        } else if(orientation === 'VERTICAL') {
+            viewport.vflip = !viewport.vflip;
+        }
 
-      cornerstone.setViewport(this.state.container, viewport);
+        cornerstone.setViewport(this.state.container, viewport);
     }
 
     /**
      * rotate viewport
      */
     rotateViewport(orientation) {
-      let viewport = cornerstone.getViewport(this.state.container);
+        let viewport = cornerstone.getViewport(this.state.container);
 
-      if(orientation === 'CLOCKWISE') {
-        viewport.rotation += 90;
-      } else if(orientation === 'COUNTERCLOCKWISE') {
-        viewport.rotation -= 90;
-      }
+        if(orientation === 'CLOCKWISE') {
+            viewport.rotation += 90;
+        } else if(orientation === 'COUNTERCLOCKWISE') {
+            viewport.rotation -= 90;
+        }
 
-      cornerstone.setViewport(this.state.container, viewport);
+        cornerstone.setViewport(this.state.container, viewport);
     }
 
     /**
@@ -981,8 +992,8 @@ export default class Viewer extends Component {
     }
 
     getCaret(isOpened) {
-      return isOpened ? <FontAwesome style={{paddingLeft: '5px', position: 'absolute'}} name='caret-up' size='lg'/> :
-              <FontAwesome style={{paddingLeft: '5px', position: 'absolute', marginTop: '5px'}} name='caret-down' size='lg'/>
+        return isOpened ? <FontAwesome style={{paddingLeft: '5px', position: 'absolute'}} name='caret-up' size='lg'/> :
+            <FontAwesome style={{paddingLeft: '5px', position: 'absolute', marginTop: '5px'}} name='caret-down' size='lg'/>
     }
 
     render() {
@@ -993,10 +1004,10 @@ export default class Viewer extends Component {
                 results.push(
                     <div className="row diagnosisRow" style={style.diagnosisRow} key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
                          onClick={() => this.onClickDiagnosisRow(key)}>
-                      <div className="col-xs-4">{key}</div>
-                      <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
-                      + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
-                      <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
+                        <div className="col-xs-4">{key}</div>
+                        <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
+                        + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
+                        <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
                     </div>
                 );
             }
@@ -1006,51 +1017,51 @@ export default class Viewer extends Component {
         let config = cornerstoneTools.magnify.getConfiguration();
 
         let rotatePopover = (
-          <Popover id="rotate-popover" className="popover-positioned-bottom">
-            <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.flipViewport('HORIZONTAL')}>
-              <div style={{paddingBottom: '5px'}}>
-                <FontAwesome name='arrows-h' size='2x' />
-              </div>
-              <span>水平翻转</span>
-            </div>
-            <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.flipViewport('VERTICAL')}>
-              <div style={{paddingBottom: '5px'}}>
-                <FontAwesome name='arrows-v' size='2x' />
-              </div>
-              <span>垂直翻转</span>
-            </div>
-            <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.rotateViewport('COUNTERCLOCKWISE')}>
-              <div style={{paddingBottom: '5px'}}>
-                <FontAwesome name='rotate-left' size='2x' />
-              </div>
-              <span>向左旋转</span>
-            </div>
-            <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.rotateViewport('CLOCKWISE')}>
-              <div style={{paddingBottom: '5px'}}>
-                <FontAwesome name='rotate-right' size='2x' />
-              </div>
-              <span>向右旋转</span>
-            </div>
-          </Popover>
+            <Popover id="rotate-popover" className="popover-positioned-bottom">
+                <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.flipViewport('HORIZONTAL')}>
+                    <div style={{paddingBottom: '5px'}}>
+                        <FontAwesome name='arrows-h' size='2x' />
+                    </div>
+                    <span>水平翻转</span>
+                </div>
+                <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.flipViewport('VERTICAL')}>
+                    <div style={{paddingBottom: '5px'}}>
+                        <FontAwesome name='arrows-v' size='2x' />
+                    </div>
+                    <span>垂直翻转</span>
+                </div>
+                <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.rotateViewport('COUNTERCLOCKWISE')}>
+                    <div style={{paddingBottom: '5px'}}>
+                        <FontAwesome name='rotate-left' size='2x' />
+                    </div>
+                    <span>向左旋转</span>
+                </div>
+                <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.rotateViewport('CLOCKWISE')}>
+                    <div style={{paddingBottom: '5px'}}>
+                        <FontAwesome name='rotate-right' size='2x' />
+                    </div>
+                    <span>向右旋转</span>
+                </div>
+            </Popover>
         );
 
         let magnifyPopover = (
             <Popover id="magnify-popover" className="popover-positioned-bottom">
-              <div style={{marginBottom: '5px', textAlign: 'center'}}>倍数</div>
-              <input id="magLevelRange" type="range" min="1" defaultValue={config.magnificationLevel} max="10" onChange={(evt) => {
-                  let config = cornerstoneTools.magnify.getConfiguration();
-                  config.magnificationLevel = parseInt(evt.target.value, 10);
-              }}/>
-              <br/>
-              <div style={{marginBottom: '5px', textAlign: 'center'}}>尺寸</div>
-              <input id="magSizeRange" type="range" min="100" defaultValue={config.magnifySize} max="300" step="25" onChange={(evt) => {
-                  let config = cornerstoneTools.magnify.getConfiguration();
-                  config.magnifySize = parseInt(evt.target.value, 10)
-                  var magnify = document.getElementsByClassName("magnifyTool")[0];
-                  magnify.width = config.magnifySize;
-                  magnify.height = config.magnifySize;
+                <div style={{marginBottom: '5px', textAlign: 'center'}}>倍数</div>
+                <input id="magLevelRange" type="range" min="1" defaultValue={config.magnificationLevel} max="10" onChange={(evt) => {
+                    let config = cornerstoneTools.magnify.getConfiguration();
+                    config.magnificationLevel = parseInt(evt.target.value, 10);
+                }}/>
+                <br/>
+                <div style={{marginBottom: '5px', textAlign: 'center'}}>尺寸</div>
+                <input id="magSizeRange" type="range" min="100" defaultValue={config.magnifySize} max="300" step="25" onChange={(evt) => {
+                    let config = cornerstoneTools.magnify.getConfiguration();
+                    config.magnifySize = parseInt(evt.target.value, 10)
+                    var magnify = document.getElementsByClassName("magnifyTool")[0];
+                    magnify.width = config.magnifySize;
+                    magnify.height = config.magnifySize;
 
-              }}/>
+                }}/>
             </Popover>
         );
 
@@ -1060,15 +1071,15 @@ export default class Viewer extends Component {
         let diagnosisBox = this.state.isLeftPanelOpened ? (
             this.state.isLoadingPanelFinished ? (
                 <div>
-                  <div style={style.diagnosisHeader}>
-                    <h3>病变列表</h3>
-                  </div>
-                  <hr style={{ borderColor: '#aaf7f4' }} />
-                  <div className="row" style={{ ...style.diagnosisRow, ...style.diagnosisTableHead }}>
-                    <div className="col-xs-4">编号</div>
-                    <div className="col-xs-4">层面</div>
-                    <div className="col-xs-4" style={style.diagnosisProb}>概率</div>
-                  </div>
+                    <div style={style.diagnosisHeader}>
+                        <h3>病变列表</h3>
+                    </div>
+                    <hr style={{ borderColor: '#aaf7f4' }} />
+                    <div className="row" style={{ ...style.diagnosisRow, ...style.diagnosisTableHead }}>
+                        <div className="col-xs-4">编号</div>
+                        <div className="col-xs-4">层面</div>
+                        <div className="col-xs-4" style={style.diagnosisProb}>概率</div>
+                    </div>
                     {results}
                 </div>
             ) : (
@@ -1081,178 +1092,184 @@ export default class Viewer extends Component {
 
         return (
             <div id="body" style={style.body}>
-              <div id="top" style={style.top}>
-                <Navbar inverse collapseOnSelect style={{ marginBottom: '0'}}>
-                  <Navbar.Collapse style={{minWidth: '1200px'}}>
-                    <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                      <NavItem eventKey={1} href="#">
-                        <div style={style.icon} >
-                          <FontAwesome name='files-o' size='2x' />
-                        </div>
-                        <span>图层</span>
-                      </NavItem>
-                      <NavItem eventKey={2} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='adjust' size='2x' />
-                        </div>
-                        <span>窗宽窗位</span>
-                      </NavItem>
-                      <NavItem eventKey={3} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='search' size='2x' />
-                        </div>
-                        <span>缩放</span>
-                      </NavItem>
-                      <NavItem eventKey={4} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='hand-paper-o' size='2x' />
-                        </div>
-                        <span>拖动</span>
-                      </NavItem>
-                    </Nav>
-                    <Navbar.Text className="button" onClick={() => this.invertViewport()}>
-                      <FontAwesome name='square' size='2x' />
-                      <br />
-                      <span>反色</span>
-                    </Navbar.Text>
-                    <Navbar.Text className="button">
-                      <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={rotatePopover} onClick={() => this.toggleRotatePopover()} onExited={() => this.toggleRotatePopover()}>
+                <div id="top" style={style.top}>
+                    <Navbar inverse collapseOnSelect style={{ marginBottom: '0'}}>
+                        <Navbar.Collapse style={{minWidth: '1300px'}}>
+                            <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
+                                <NavItem eventKey={1} href="#">
+                                    <div style={style.icon} >
+                                        <FontAwesome name='files-o' size='2x' />
+                                    </div>
+                                    <span>图层</span>
+                                </NavItem>
+                                <NavItem eventKey={2} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='sun-o' size='2x' />
+                                    </div>
+                                    <span>窗宽窗位</span>
+                                </NavItem>
+                                <NavItem eventKey={3} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='search' size='2x' />
+                                    </div>
+                                    <span>缩放</span>
+                                </NavItem>
+                                <NavItem eventKey={4} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='hand-paper-o' size='2x' />
+                                    </div>
+                                    <span>拖动</span>
+                                </NavItem>
+                            </Nav>
+                            <Navbar.Text className="button" onClick={() => this.invertViewport()}>
+                                <FontAwesome name='adjust' size='2x' />
+                                <br />
+                                <span>反色</span>
+                            </Navbar.Text>
+                            <Navbar.Text className="button">
+                                <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={rotatePopover} onClick={() => this.toggleRotatePopover()} onExited={() => this.toggleRotatePopover()}>
                         <span>
                           <FontAwesome name='cog' size='2x' />
                           <br />
                           <span>旋转{rotateCaret}</span>
                         </span>
-                      </OverlayTrigger>
-                    </Navbar.Text>
-                    <Navbar.Text className="button" onClick={this.resetViewport.bind(this)}>
-                      <FontAwesome name='refresh' size='2x' /><br />
-                      <span>重置</span>
-                    </Navbar.Text>
-                    <Navbar.Text style={{borderLeft: '2px solid #9ccef9', height: '50px'}}></Navbar.Text>
-                    <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                      <NavItem eventKey={5} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='arrows-h' size='2x' />
-                        </div>
-                        <span>测量</span>
-                      </NavItem>
-                      <NavItem eventKey={6} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='square-o' size='2x' />
-                        </div>
-                        <span>标注</span>
-                      </NavItem>
-                      <NavItem eventKey={7} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='circle-o' size='2x' />
-                        </div>
-                        <span>圆点</span>
-                      </NavItem>
-                      <NavItem eventKey={8} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='chevron-down' size='2x' />
-                        </div>
-                        <span>角度</span>
-                      </NavItem>
-                      <NavItem eventKey={9} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='sun-o' size='2x' />
-                        </div>
-                        <span>高亮</span>
-                      </NavItem>
-                      <NavItem eventKey={10} href="#">
-                        <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={magnifyPopover} onClick={() => this.toggleMagnifyPopover()} onExited={() => this.toggleMagnifyPopover()}>
-                          <div>
-                            <div style={style.icon}>
-                              <FontAwesome name='search-plus' size='2x' />
-                            </div>
-                            <span>放大{magnifyCaret}</span>
-                          </div>
-                        </OverlayTrigger>
-                      </NavItem>
-                    </Nav>
-                    <Navbar.Text className="button" onClick={() => this.clearToolData()}>
-                      <FontAwesome name='trash' size='2x' />
-                      <br />
-                      <span>清除</span>
-                    </Navbar.Text>
-                    <Navbar.Text style={{borderLeft: '2px solid #9ccef9', height: '50px'}}></Navbar.Text>
-                    <Navbar.Text className="button" onClick={this.saveState.bind(this)}>
-                      <FontAwesome name='save' size='2x' />
-                      <br />
-                      <span>保存</span>
-                    </Navbar.Text>
-                    <Navbar.Text className="button" onClick={this.restoreState.bind(this)}>
-                      <FontAwesome name='paste' size='2x' />
-                      <br />
-                      <span>载入</span>
-                    </Navbar.Text>
-                    <Navbar.Text className="button" onClick={this.switchState.bind(this)}>
-                      <FontAwesome name={this.state.circleVisible ? 'eye-slash' : 'eye'} size='2x' />
-                      <br />
-                      <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
-                    </Navbar.Text>
-                    <Navbar.Text className="button" onClick={this.diagnose.bind(this)}>
-                      <FontAwesome name='stethoscope' size='2x' />
-                      <br />
-                      <span>诊断</span>
-                    </Navbar.Text>
-                  </Navbar.Collapse>
-                </Navbar>
-              </div>
-
-              <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
-                  {diagnosisBox}
-              </div>
-
-              <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: this.state.containerWidth } }} className="container">
-                <input type={"range"}
-                       id={"scrollbar"}
-                       min={1}
-                       max={this.state.imageNumber}
-                       step={1}
-                       onInput={this.onDragScrollBar}
-                       style={{
-                           ...style.scrollBar, ...{ width: this.state.containerHeight },
-                           ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
-                       }} />
-                <div style={style.viewer} ref="viewerContainer" id="viewer" >
-                  <div style={{ ...style.patientInfo, ...style.textInfo, ...style.disableSelection }} id="patientInfo">
-                    <div>
-                      <span>病人姓名: {this.state.patientName}</span>
-                      <br />
-                      <span>病人id: {this.state.patientId}</span>
-                    </div>
-                  </div>
-                  <div style={{ ...style.dicomInfo, ...style.textInfo, ...style.disableSelection }} id="dicomInfo">
-                    <span className="pull-right">窗宽/窗位: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
-                    <br />
-                    <span className="pull-right">缩放: {this.state.zoomScale}</span>
-                  </div>
-                  <div style={{ ...style.sliceInfo, ...style.textInfo, ...style.disableSelection }} id="sliceInfo">
-                    <span className="pull-left">图像大小: {this.state.rows}*{this.state.cols}</span>
-                    <br />
-                    <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
-                    <br />
-                    <span className="pull-left">层厚: {this.state.thickness} 像素间距: {this.state.pixelSpacing}</span>
-
-                  </div>
-                  <div style={{ ...style.timeInfo, ...style.textInfo, ...style.disableSelection }} id="timeInfo">
-                    <span className="pull-right">{this.state.dateTime}</span>
-                  </div>
+                                </OverlayTrigger>
+                            </Navbar.Text>
+                            <Navbar.Text className="button" onClick={this.resetViewport.bind(this)}>
+                                <FontAwesome name='refresh' size='2x' /><br />
+                                <span>重置</span>
+                            </Navbar.Text>
+                            <Navbar.Text style={{borderLeft: '2px solid #9ccef9', height: '50px'}}></Navbar.Text>
+                            <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
+                                <NavItem eventKey={11} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='arrow-left' size='2x' />
+                                    </div>
+                                    <span>标注</span>
+                                </NavItem>
+                                <NavItem eventKey={5} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='arrows-h' size='2x' />
+                                    </div>
+                                    <span>测量</span>
+                                </NavItem>
+                                <NavItem eventKey={6} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='square-o' size='2x' />
+                                    </div>
+                                    <span>矩形</span>
+                                </NavItem>
+                                <NavItem eventKey={7} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='circle-o' size='2x' />
+                                    </div>
+                                    <span>圆点</span>
+                                </NavItem>
+                                <NavItem eventKey={8} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='chevron-down' size='2x' />
+                                    </div>
+                                    <span>角度</span>
+                                </NavItem>
+                                <NavItem eventKey={9} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='sun-o' size='2x' />
+                                    </div>
+                                    <span>高亮</span>
+                                </NavItem>
+                                <NavItem eventKey={10} href="#">
+                                    <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={magnifyPopover} onClick={() => this.toggleMagnifyPopover()} onExited={() => this.toggleMagnifyPopover()}>
+                                        <div>
+                                            <div style={style.icon}>
+                                                <FontAwesome name='search-plus' size='2x' />
+                                            </div>
+                                            <span>放大{magnifyCaret}</span>
+                                        </div>
+                                    </OverlayTrigger>
+                                </NavItem>
+                            </Nav>
+                            <Navbar.Text className="button" onClick={() => this.clearToolData()}>
+                                <FontAwesome name='trash' size='2x' />
+                                <br />
+                                <span>清除</span>
+                            </Navbar.Text>
+                            <Navbar.Text style={{borderLeft: '2px solid #9ccef9', height: '50px'}}></Navbar.Text>
+                            <Navbar.Text className="button" onClick={this.saveState.bind(this)}>
+                                <FontAwesome name='save' size='2x' />
+                                <br />
+                                <span>保存</span>
+                            </Navbar.Text>
+                            <Navbar.Text className="button" onClick={this.restoreState.bind(this)}>
+                                <FontAwesome name='paste' size='2x' />
+                                <br />
+                                <span>载入</span>
+                            </Navbar.Text>
+                            <Navbar.Text className="button" onClick={this.switchState.bind(this)}>
+                                <FontAwesome name={this.state.circleVisible ? 'eye-slash' : 'eye'} size='2x' />
+                                <br />
+                                <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
+                            </Navbar.Text>
+                            <Navbar.Text className="button" onClick={this.diagnose.bind(this)}>
+                                <FontAwesome name='stethoscope' size='2x' />
+                                <br />
+                                <span>诊断</span>
+                            </Navbar.Text>
+                        </Navbar.Collapse>
+                    </Navbar>
                 </div>
-              </div>
 
-              <div style={style.bottom}></div>
-              <ToastContainer
-                  position="bottom-right"
-                  type="info"
-                  autoClose={5000}
-                  hideProgressBar={false}
-                  newestOnTop={false}
-                  closeOnClick
-                  pauseOnHover
-              />
+                <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
+                    {diagnosisBox}
+                </div>
+
+                <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: this.state.containerWidth } }} className="container">
+                    <input type={"range"}
+                           id={"scrollbar"}
+                           min={1}
+                           max={this.state.imageNumber}
+                           step={1}
+                           onInput={this.onDragScrollBar}
+                           style={{
+                               ...style.scrollBar, ...{ width: this.state.containerHeight },
+                               ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
+                           }} />
+                    <div style={style.viewer} ref="viewerContainer" id="viewer" >
+                        <div style={{ ...style.patientInfo, ...style.textInfo, ...style.disableSelection }} id="patientInfo">
+                            <div>
+                                <span>病人姓名: {this.state.patientName}</span>
+                                <br />
+                                <span>病人id: {this.state.patientId}</span>
+                            </div>
+                        </div>
+                        <div style={{ ...style.dicomInfo, ...style.textInfo, ...style.disableSelection }} id="dicomInfo">
+                            <span className="pull-right">窗宽/窗位: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
+                            <br />
+                            <span className="pull-right">缩放: {this.state.zoomScale}</span>
+                        </div>
+                        <div style={{ ...style.sliceInfo, ...style.textInfo, ...style.disableSelection }} id="sliceInfo">
+                            <span className="pull-left">图像大小: {this.state.rows}*{this.state.cols}</span>
+                            <br />
+                            <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
+                            <br />
+                            <span className="pull-left">层厚: {this.state.thickness} 像素间距: {this.state.pixelSpacing}</span>
+
+                        </div>
+                        <div style={{ ...style.timeInfo, ...style.textInfo, ...style.disableSelection }} id="timeInfo">
+                            <span className="pull-right">{this.state.dateTime}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style={style.bottom}></div>
+                <ToastContainer
+                    position="bottom-right"
+                    type="info"
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    pauseOnHover
+                />
             </div>
         )
     }
