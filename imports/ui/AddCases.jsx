@@ -264,39 +264,60 @@ export class AddCase extends Component {
     }
   }
 
-  removeSeriesHandle() {
-    Meteor.call('removeSeries', this.state.currentSeries.seriesInstanceUID, function (err, res) {
+  removeSeries() {
+    // console.log(this.state.currentSeries.path)
+    // return;    
+    const that = this;
+    const {Case,currentSeries,seriesInstanceUIDList} = this.state;
+    Meteor.call('removeSeries', this.state.currentSeries.path, function (err, res) {
       if (err) {
         return console.log(err);
       }
-      console.log(res);
+      _.each(Case.seriesList,(obj,index)=>{
+        if(obj.seriesInstanceUID === currentSeries.seriesInstanceUID){
+          Case.seriesList.splice(index,1)
+        }
+      })
+      _.each(seriesInstanceUIDList,(obj,index)=>{
+        if(obj === currentSeries.seriesInstanceUID){
+          seriesInstanceUIDList.splice(index,1)
+        }
+      })
+      if(Case.seriesList.length < 1){
+        Case.seriesList = undefined
+      }
+      that.setState({
+        currentSeries: {},
+        Case,
+        seriesInstanceUIDList
+      })
+      that.changeSeriesModalState()
     })
-    this.changeSeriesModalState()
   }
 
   deleteFile(file) {
-    // let fileInfo = file.split('/');
-    // HTTP.call("DELETE", `/delete/${fileInfo[2]}`, (err, result) => {
-    //   if (err) {
-    //     toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
-    //   } else {
-    //     let list = this.state.oldFileList;
-    //     let position = list.indexOf(file);
-    //     list.splice(position, 1);
-    //     let newCase = this.state.oldCase;
-    //     newCase.files = list
-    //     Meteor.call('modifyCase', newCase, (error) => {
-    //       if (error) {
-    //         toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
-    //       } else {
-    //         this.setState({
-    //           oldFileList: list
-    //         });
-    //       }
-    //     });
-    //     toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
-    //   }
-    // })
+  /* let fileInfo = file.split('/');
+    HTTP.call("DELETE", `/delete/${fileInfo[2]}`, (err, result) => {
+      if (err) {
+        toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+      } else {
+        let list = this.state.oldFileList;
+        let position = list.indexOf(file);
+        list.splice(position, 1);
+        let newCase = this.state.oldCase;
+        newCase.files = list
+        Meteor.call('modifyCase', newCase, (error) => {
+          if (error) {
+            toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+          } else {
+            this.setState({
+              oldFileList: list
+            });
+          }
+        });
+        toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
+      }
+    }) */
   }
 
   /**
@@ -347,7 +368,8 @@ export class AddCase extends Component {
         let seriesInstanceUIDList = this.state.seriesInstanceUIDList && this.state.seriesInstanceUIDList.length > 0 ? this.state.seriesInstanceUIDList : [];
         if (seriesInstanceUIDList.indexOf(res.seriesInstanceUID) < 0) {
           let caseInstance = res;
-
+          toast.info("开始上传，请稍后", { position: toast.POSITION.BOTTOM_RIGHT });
+          
           //upload Series files
           let date = caseInstance.studyDate ? caseInstance.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
           let path = date + '/' + caseInstance.studyInstanceUID + '/' + caseInstance.seriesInstanceUID;
@@ -418,6 +440,12 @@ export class AddCase extends Component {
       }
     })
     this.setState(Case)
+    toast.success("上传成功", { position: toast.POSITION.BOTTOM_RIGHT });
+    // let inputDOM = ReactDOM.findDOMNode(this.refs.customAttributes)    
+    // inputDOM.innerHTML=`<input type="file" id="customUploader" ref='customAttributes' multiple onChange={() => this.selectFile()}></input>`;   
+    // console.log(ReactDOM.findDOMNode(this.refs.customAttributes).value)
+    // console.log(ReactDOM.findDOMNode(this.refs.customAttributes).files)
+    //TODO: clear fileList after upload
   }
 
   render() {
@@ -619,7 +647,6 @@ export class AddCase extends Component {
           <div>
             <label htmlFor="customUploader">Select a file to upload</label>
             <input type="file" id="customUploader" ref='customAttributes' multiple onChange={() => this.selectFile()}></input>
-            <input type="button" onClick={() => this.uploadFile()} value="Upload" />
           </div>
         </form>
         <div>
@@ -653,7 +680,7 @@ export class AddCase extends Component {
           style={{ zIndex: 1999 }}
         />
 
-        <Modal show={this.state.showFilesList} onHide={this.changeFilesModalState}>
+        {/* <Modal show={this.state.showFilesList} onHide={this.changeFilesModalState}>
           <Modal.Header closeButton>
             <Modal.Title>文件列表</Modal.Title>
           </Modal.Header>
@@ -669,7 +696,7 @@ export class AddCase extends Component {
           <Modal.Footer>
             <Button onClick={this.changeFilesModalState}>Close</Button>
           </Modal.Footer>
-        </Modal>
+        </Modal> */}
 
         <Modal bsSize="small" show={this.state.showSeriesList} onHide={this.changeSeriesModalState.bind(this)}>
           <Modal.Header closeButton>
@@ -698,15 +725,29 @@ export class AddCase extends Component {
               </FormGroup>
             </Form>
             <Form inline>
+              <FormGroup controlId="seriesDate">
+                <ControlLabel>seriesDate&nbsp;&nbsp;&nbsp;&nbsp;</ControlLabel>
+                {' '}
+                <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesDate} onChange={this.onCaseChange} type="text" />
+              </FormGroup>
+            </Form>
+            <Form inline>
+              <FormGroup controlId="seriesTime">
+                <ControlLabel>seriesTime&nbsp;&nbsp;&nbsp;&nbsp;</ControlLabel>
+                {' '}
+                <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesTime} onChange={this.onCaseChange} type="text" />
+              </FormGroup>
+            </Form>
+            <Form inline>
               <FormGroup controlId="total">
                 <ControlLabel>total slice number</ControlLabel>
                 {' '}
-                <FormControl onChange={this.onCaseChange} type="text" />
+                <FormControl value={this.state.currentSeries && this.state.currentSeries.total} onChange={this.onCaseChange} type="text" readOnly/>
               </FormGroup>
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.removeSeriesHandle.bind(this, )} bsStyle="warning">删除</Button>
+            <Button onClick={this.removeSeries.bind(this)} bsStyle="warning">删除</Button>
           </Modal.Footer>
         </Modal>
       </div>
