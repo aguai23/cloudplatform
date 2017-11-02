@@ -44,32 +44,29 @@ Picker.route('/uploads', function(params, req, res, next) {
     // });
 
     form.on('file', (field, file) => {
-      fs.rename(file.path, path.join(form.uploadDir, file.name));
+      let dirPath = path.join(form.uploadDir, field);
+
+      if(fs.existsSync(dirPath)) {
+        fs.rename(file.path, path.join(dirPath, file.name));
+      } else {
+        mkdirp(dirPath, (error) => {
+          if(error) {
+            return console.error('An error occurred when creating directory. Error: ' + error);
+          }
+          fs.rename(file.path, path.join(dirPath, file.name));
+        });
+      }
     });
 
     form.on('end', () => {
       res.end('success at ' + new Date());
     });
 
-    // form.on('error', (err) => {
-    //   console.log('An error has occured: \n' + err);
-    // });
-
-    form.parse(req, function(err, fields, files) {
-      if(err) {
-        return  console.log('An error has occured: \n' + err);
-      }
-      console.log(fields);
-
-      // for(let i = 0; i < files.length; i++) {
-      //   let file = files[i];
-      //   fs.rename(file.path, path.join(form.uploadDir, file.name));
-      // }
-
-      res.end('success at ' + new Date());
+    form.on('error', (err) => {
+      console.log('An error has occurred: \n' + err);
     });
 
-    return;
+    form.parse(req);
 
     /*
     form.parse(req, function(err, fields, files) {
