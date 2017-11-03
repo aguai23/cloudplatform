@@ -168,14 +168,10 @@ export class AddCase extends Component {
    * sort seriesList according to series number
    * @returns the sorted seriesList
    */
-  sortListByIndex() {
-    if(this.state.Case && this.state.Case.length > 1) {
-      let caseCopy = Object.assign({}, this.state.Case)
-
-      return caseCopy.seriesList.sort(function(a, b) {
-        return a.seriesNumber.localeCompare(b.seriesNumber);
-      });
-    }
+  sortListByIndex(seriesList) {
+    seriesList.sort(function(a, b) {
+      return a.seriesNumber.localeCompare(b.seriesNumber);
+    });
   }
 
   submitCases(event) {
@@ -196,7 +192,8 @@ export class AddCase extends Component {
       toast.error("请检验并完善信息", { position: toast.POSITION.BOTTOM_RIGHT });
       return;
     } else {
-      const sortedSeriesList = this.sortListByIndex();
+      const sortedSeriesList = this.state.Case.seriesList.slice();
+      this.sortListByIndex(sortedSeriesList);
 
       const standardCase = {
         accessionNumber: Case.accessionNumber,
@@ -266,7 +263,7 @@ export class AddCase extends Component {
 
   removeSeries() {
     // console.log(this.state.currentSeries.path)
-    // return;    
+    // return;
     const that = this;
     const {Case,currentSeries,seriesInstanceUIDList} = this.state;
     Meteor.call('removeSeries', this.state.currentSeries.path, function (err, res) {
@@ -369,7 +366,7 @@ export class AddCase extends Component {
         if (seriesInstanceUIDList.indexOf(res.seriesInstanceUID) < 0) {
           let caseInstance = res;
           toast.info("开始上传，请稍后", { position: toast.POSITION.BOTTOM_RIGHT });
-          
+
           //upload Series files
           let date = caseInstance.studyDate ? caseInstance.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
           let path = date + '/' + caseInstance.studyInstanceUID + '/' + caseInstance.seriesInstanceUID;
@@ -441,8 +438,8 @@ export class AddCase extends Component {
     })
     this.setState(Case)
     toast.success("上传成功", { position: toast.POSITION.BOTTOM_RIGHT });
-    // let inputDOM = ReactDOM.findDOMNode(this.refs.customAttributes)    
-    // inputDOM.innerHTML=`<input type="file" id="customUploader" ref='customAttributes' multiple onChange={() => this.selectFile()}></input>`;   
+    // let inputDOM = ReactDOM.findDOMNode(this.refs.customAttributes)
+    // inputDOM.innerHTML=`<input type="file" id="customUploader" ref='customAttributes' multiple onChange={() => this.selectFile()}></input>`;
     // console.log(ReactDOM.findDOMNode(this.refs.customAttributes).value)
     // console.log(ReactDOM.findDOMNode(this.refs.customAttributes).files)
     //TODO: clear fileList after upload
