@@ -464,7 +464,7 @@ export class AddCase extends Component {
                 患者姓名
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.patientName} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.patientName:Case.patientName} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -473,7 +473,7 @@ export class AddCase extends Component {
                 出生日期
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.patientName:Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -482,7 +482,7 @@ export class AddCase extends Component {
                 患者年龄
                       </Col>
               <Col sm={6}>
-                <FormControl onChange={this.onCaseChange} value={Case.patientAge} type="number" />
+                <FormControl value={oldCase?oldCase.patientAge:Case.patientAge} onChange={this.onCaseChange} type="number" />
               </Col>
             </FormGroup>
 
@@ -491,8 +491,8 @@ export class AddCase extends Component {
                 患者性别
                     </Col>
               <Col sm={6}>
-                <Radio checked={Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M" inline>男</Radio>{' '}
-                <Radio checked={Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F" inline>女</Radio>{' '}
+                <Radio checked={oldCase?oldCase.patientSex === 'M':Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M" inline>男</Radio>{' '}
+                <Radio checked={oldCase?oldCase.patientSex === 'F':Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F" inline>女</Radio>{' '}
               </Col>
             </FormGroup>
 
@@ -501,7 +501,7 @@ export class AddCase extends Component {
                 患者编号
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.patientID} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.patientID:Case.patientID} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -513,7 +513,7 @@ export class AddCase extends Component {
                 accessionNumber
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.accessionNumber} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.accessionNumber:Case.accessionNumber} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -522,7 +522,7 @@ export class AddCase extends Component {
                 studyID
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.studyID} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.studyID:Case.studyID} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -531,7 +531,7 @@ export class AddCase extends Component {
                 studyInstanceUID
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
+                <FormControl value={oldCase?oldCase.studyInstanceUID:Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
               </Col>
             </FormGroup>
 
@@ -540,7 +540,7 @@ export class AddCase extends Component {
                 studyDate
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.studyDate} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.studyDate:Case.studyDate} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -549,7 +549,7 @@ export class AddCase extends Component {
                 studyTime
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.studyTime} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.studyTime:Case.studyTime} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -558,7 +558,7 @@ export class AddCase extends Component {
                 modality
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.modality} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.modality:Case.modality} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -567,7 +567,7 @@ export class AddCase extends Component {
                 身体部位
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.bodyPart} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.bodyPart:Case.bodyPart} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -576,12 +576,12 @@ export class AddCase extends Component {
                 描述
                       </Col>
               <Col sm={6}>
-                <FormControl value={Case.studyDescription} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase?oldCase.studyDescription:Case.studyDescription} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
           </div>
 
-          {this.state.Case.seriesList &&
+          {oldCase?oldCase.seriesList:Case.seriesList &&
             <div className="well" style={wellStyles}>
               <Table striped bordered condensed hover>
                 <thead>
@@ -596,7 +596,7 @@ export class AddCase extends Component {
                   </tr>
                 </thead>
                 <tbody>
-                  {this.state.Case.seriesList.map((obj, index) => {
+                  {(oldCase? oldCase.seriesList:Case.seriesList).map((obj, index) => {
                     return (
                       <tr key={index}>
                         <td>{obj.seriesNumber}</td>
@@ -615,7 +615,7 @@ export class AddCase extends Component {
 
             </div>}
 
-          <div className="well" style={wellStyles}>
+          {/* <div className="well" style={wellStyles}>
             <FormGroup controlId="formHorizontalPassword">
               <Col componentClass={ControlLabel} sm={2}>
                 图片
@@ -629,7 +629,7 @@ export class AddCase extends Component {
                 }
               </Col>
             </FormGroup>
-          </div>
+          </div> */}
 
           <FormGroup>
             <Col smOffset={3} sm={8}>
