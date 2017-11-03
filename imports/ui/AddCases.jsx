@@ -123,35 +123,41 @@ export class AddCase extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.case !== this.state.oldCase) {
+      let seriesInstanceUIDList = new Array();
+      _.each(nextProps.case.seriesList, (obj) => {
+        seriesInstanceUIDList.push(obj.seriesInstanceUID)
+      })
       this.setState({
         oldCase: nextProps.case,
-        oldFileList: nextProps.case.files
+        oldFileList: nextProps.case.files,
+        seriesInstanceUIDList
       });
     }
   }
 
   onCaseChange(input) {
     if (this.state.oldCase) {
-      // const { oldCase } = this.state;
-      // if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'total'].indexOf(input.target.id) < 0) {
-      //   oldCase[input.target.id] = input.target.value;
-      // } else {
-      //   //seriesData
-      //   if (!oldCase.seriesList[index]) {
-      //     oldCase.seriesList[index] = {}
-      //   }
-      //   oldCase.seriesList[index][input.target.id] = input.target.value
-      // }
-      // this.setState({
-      //   oldCase
-      // })
+      let { currentSeries, oldCase } = this.state
+      if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'seriesDate', 'seriesTime', 'total'].indexOf(input.target.id) < 0) {
+        oldCase[input.target.id] = input.target.value;
+      } else {
+        //seriesData
+        oldCase.seriesList.map((obj, index) => {
+          if (obj.seriesInstanceUID === currentSeries.seriesInstanceUID) {
+            oldCase.seriesList[index][input.target.id] = input.target.value
+          }
+        })
+      }
+      this.setState({
+        oldCase
+      })
     } else {
       const { Case } = this.state;
       if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'seriesDate', 'seriesTime', 'total'].indexOf(input.target.id) < 0) {
         Case[input.target.id] = input.target.value;
       } else {
         //seriesData
-        let { currentSeries, Case } = this.state
+        let { currentSeries } = this.state
         Case.seriesList.map((obj, index) => {
           if (obj.seriesInstanceUID === currentSeries.seriesInstanceUID) {
             Case.seriesList[index][input.target.id] = input.target.value
@@ -169,7 +175,7 @@ export class AddCase extends Component {
    * @returns the sorted seriesList
    */
   sortListByIndex(seriesList) {
-    seriesList.sort(function(a, b) {
+    seriesList.sort(function (a, b) {
       return a.seriesNumber.localeCompare(b.seriesNumber);
     });
   }
@@ -228,7 +234,11 @@ export class AddCase extends Component {
   modifyCase(event) {
     event.preventDefault();
     let oldCase = this.state.oldCase;
-    oldCase.files = oldCase.files.concat(imageArray);
+    delete oldCase.creator;
+    delete oldCase.createAt;
+    delete oldCase.collectionID;
+    // return
+    // oldCase.files = oldCase.files.concat(imageArray);
     Meteor.call('modifyCase', oldCase, (error) => {
       if (error) {
         toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
@@ -247,11 +257,12 @@ export class AddCase extends Component {
   }
 
   changeSeriesModalState(index) {
-    const showSeriesState = this.state.showSeriesList
+    const showSeriesState = this.state.showSeriesList;
+    const { oldCase, Case } = this.state;
     if (!showSeriesState) {
       this.setState({
         showSeriesList: !showSeriesState,
-        currentSeries: this.state.Case.seriesList[index]
+        currentSeries: oldCase ? oldCase.seriesList[index] : Case.seriesList[index]
       })
     } else {
       this.setState({
@@ -265,56 +276,81 @@ export class AddCase extends Component {
     // console.log(this.state.currentSeries.path)
     // return;
     const that = this;
-    const {Case,currentSeries,seriesInstanceUIDList} = this.state;
-    Meteor.call('removeSeries', this.state.currentSeries.path, function (err, res) {
+    const { Case, oldCase, currentSeries, seriesInstanceUIDList } = this.state;
+    if ((oldCase && oldCase.seriesList.length < 2) || (Case.seriesList && Case.seriesList.length < 2)) {
+      toast.warning('series不能少于一个！', { position: toast.POSITION.BOTTOM_RIGHT });
+      return false;
+    }
+    console.log(123)
+    // return
+    Meteor.call('removeSeries', currentSeries.path, function (err, res) {
       if (err) {
         return console.log(err);
       }
-      _.each(Case.seriesList,(obj,index)=>{
-        if(obj.seriesInstanceUID === currentSeries.seriesInstanceUID){
-          Case.seriesList.splice(index,1)
+      let seriesList = oldCase ? oldCase.seriesList : Case.seriesList
+      _.each(seriesList, (obj, index) => {
+        if (obj.seriesInstanceUID === currentSeries.seriesInstanceUID) {
+          seriesList.splice(index, 1)
         }
       })
-      _.each(seriesInstanceUIDList,(obj,index)=>{
-        if(obj === currentSeries.seriesInstanceUID){
-          seriesInstanceUIDList.splice(index,1)
+      _.each(seriesInstanceUIDList, (obj, index) => {
+        if (obj === currentSeries.seriesInstanceUID) {
+          seriesInstanceUIDList.splice(index, 1)
         }
       })
-      if(Case.seriesList.length < 1){
-        Case.seriesList = undefined
+      if (oldCase) {
+        oldCase.seriesList = seriesList;
+        modifyCase = {
+          _id: oldCase._id,
+          seriesList: seriesList
+        }
+        Meteor.call('modifyCase', modifyCase, (error) => {
+          if (error) {
+            toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+          } else {
+            that.setState({
+              currentSeries: {},
+              oldCase,
+              seriesInstanceUIDList
+            })
+            toast.success("series删除成功", { position: toast.POSITION.BOTTOM_RIGHT });
+          }
+        })
+      } else {
+        Case.seriesList = seriesList
+        that.setState({
+          currentSeries: {},
+          Case,
+          seriesInstanceUIDList
+        })
       }
-      that.setState({
-        currentSeries: {},
-        Case,
-        seriesInstanceUIDList
-      })
       that.changeSeriesModalState()
     })
   }
 
   deleteFile(file) {
-  /* let fileInfo = file.split('/');
-    HTTP.call("DELETE", `/delete/${fileInfo[2]}`, (err, result) => {
-      if (err) {
-        toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
-      } else {
-        let list = this.state.oldFileList;
-        let position = list.indexOf(file);
-        list.splice(position, 1);
-        let newCase = this.state.oldCase;
-        newCase.files = list
-        Meteor.call('modifyCase', newCase, (error) => {
-          if (error) {
-            toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
-          } else {
-            this.setState({
-              oldFileList: list
-            });
-          }
-        });
-        toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
-      }
-    }) */
+    /* let fileInfo = file.split('/');
+      HTTP.call("DELETE", `/delete/${fileInfo[2]}`, (err, result) => {
+        if (err) {
+          toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+        } else {
+          let list = this.state.oldFileList;
+          let position = list.indexOf(file);
+          list.splice(position, 1);
+          let newCase = this.state.oldCase;
+          newCase.files = list
+          Meteor.call('modifyCase', newCase, (error) => {
+            if (error) {
+              toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+            } else {
+              this.setState({
+                oldFileList: list
+              });
+            }
+          });
+          toast.success(result.content, { position: toast.POSITION.BOTTOM_RIGHT });
+        }
+      }) */
   }
 
   /**
@@ -379,8 +415,7 @@ export class AddCase extends Component {
           xhr.addEventListener("load", this.onUploadComplete.bind(this), false);
           xhr.open("POST", "http://localhost:3000/uploads");
           xhr.send(formData);
-          let { Case } = this.state;
-          let oldList = this.state.Case.seriesList
+          let { Case, oldCase } = this.state;
           let seriesInfo = {
             seriesNumber: caseInstance.seriesNumber,
             seriesInstanceUID: caseInstance.seriesInstanceUID,
@@ -389,23 +424,35 @@ export class AddCase extends Component {
             seriesDate: caseInstance.seriesDate,
             total: files.length,
           }
-          if (oldList && oldList.length) {
+          if (oldCase) {
+            let oldList = this.state.oldCase.seriesList
             oldList.push(seriesInfo)
+            oldCase.seriesList = oldList
+            seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID)
+            this.setState({
+              oldCase,
+              currentSeries: seriesInfo
+            })
           } else {
-            oldList = [seriesInfo]
-          }
-          caseInstance.seriesList = oldList;
-          seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID);
-          for(key in Case){
-            if(caseInstance[key] === undefined){
-              caseInstance[key] = Case[key]
+            let oldList = this.state.Case.seriesList
+            if (oldList && oldList.length) {
+              oldList.push(seriesInfo)
+            } else {
+              oldList = [seriesInfo]
             }
+            caseInstance.seriesList = oldList;
+            seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID);
+            for (key in Case) {
+              if (caseInstance[key] === undefined) {
+                caseInstance[key] = Case[key]
+              }
+            }
+            this.setState({
+              Case: caseInstance,
+              seriesInstanceUIDList: seriesInstanceUIDList,
+              currentSeries: seriesInfo
+            });
           }
-          this.setState({
-            Case: caseInstance,
-            seriesInstanceUIDList: seriesInstanceUIDList,
-            currentSeries: seriesInfo
-          });
         }
       });
 
@@ -430,13 +477,14 @@ export class AddCase extends Component {
   }
 
   onUploadComplete(res) {
-    const { Case, currentSeries } = this.state;
-    _.each(Case.seriesList, (obj, index) => {
+    const { Case, oldCase, currentSeries } = this.state;
+    let seriesList = oldCase ? oldCase.seriesList : Case.seriesList;
+    _.each(seriesList, (obj, index) => {
       if (obj.seriesInstanceUID === currentSeries.seriesInstanceUID) {
         obj.path = res.target.response
       }
     })
-    this.setState(Case)
+    this.setState(oldCase ? oldCase : Case)
     toast.success("上传成功", { position: toast.POSITION.BOTTOM_RIGHT });
     // let inputDOM = ReactDOM.findDOMNode(this.refs.customAttributes)
     // inputDOM.innerHTML=`<input type="file" id="customUploader" ref='customAttributes' multiple onChange={() => this.selectFile()}></input>`;
@@ -461,7 +509,7 @@ export class AddCase extends Component {
                 患者姓名
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.patientName:Case.patientName} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.patientName : Case.patientName} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -470,7 +518,7 @@ export class AddCase extends Component {
                 出生日期
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.patientName:Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.patientBirthDate : Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -479,7 +527,7 @@ export class AddCase extends Component {
                 患者年龄
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.patientAge:Case.patientAge} onChange={this.onCaseChange} type="number" />
+                <FormControl value={oldCase ? oldCase.patientAge : Case.patientAge} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -488,8 +536,8 @@ export class AddCase extends Component {
                 患者性别
                     </Col>
               <Col sm={6}>
-                <Radio checked={oldCase?oldCase.patientSex === 'M':Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M" inline>男</Radio>{' '}
-                <Radio checked={oldCase?oldCase.patientSex === 'F':Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F" inline>女</Radio>{' '}
+                <Radio checked={oldCase ? oldCase.patientSex === 'M' : Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M" inline>男</Radio>{' '}
+                <Radio checked={oldCase ? oldCase.patientSex === 'F' : Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F" inline>女</Radio>{' '}
               </Col>
             </FormGroup>
 
@@ -498,7 +546,7 @@ export class AddCase extends Component {
                 患者编号
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.patientID:Case.patientID} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.patientID : Case.patientID} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -510,7 +558,7 @@ export class AddCase extends Component {
                 accessionNumber
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.accessionNumber:Case.accessionNumber} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.accessionNumber : Case.accessionNumber} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -519,7 +567,7 @@ export class AddCase extends Component {
                 studyID
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.studyID:Case.studyID} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.studyID : Case.studyID} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -528,7 +576,7 @@ export class AddCase extends Component {
                 studyInstanceUID
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.studyInstanceUID:Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
+                <FormControl value={oldCase ? oldCase.studyInstanceUID : Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
               </Col>
             </FormGroup>
 
@@ -537,7 +585,7 @@ export class AddCase extends Component {
                 studyDate
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.studyDate:Case.studyDate} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.studyDate : Case.studyDate} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -546,7 +594,7 @@ export class AddCase extends Component {
                 studyTime
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.studyTime:Case.studyTime} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.studyTime : Case.studyTime} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -555,7 +603,7 @@ export class AddCase extends Component {
                 modality
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.modality:Case.modality} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.modality : Case.modality} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -564,7 +612,7 @@ export class AddCase extends Component {
                 身体部位
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.bodyPart:Case.bodyPart} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.bodyPart : Case.bodyPart} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
 
@@ -573,44 +621,43 @@ export class AddCase extends Component {
                 描述
                       </Col>
               <Col sm={6}>
-                <FormControl value={oldCase?oldCase.studyDescription:Case.studyDescription} onChange={this.onCaseChange} type="text" />
+                <FormControl value={oldCase ? oldCase.studyDescription : Case.studyDescription} onChange={this.onCaseChange} type="text" />
               </Col>
             </FormGroup>
           </div>
 
-          {oldCase?oldCase.seriesList:Case.seriesList &&
-            <div className="well" style={wellStyles}>
-              <Table striped bordered condensed hover>
-                <thead>
-                  <tr>
-                    <th>seriesNumber</th>
-                    <th>seriesInstanceUID</th>
-                    <th>series description</th>
-                    <th>series date</th>
-                    <th>series time</th>
-                    <th>total</th>
-                    <th>option</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(oldCase? oldCase.seriesList:Case.seriesList).map((obj, index) => {
-                    return (
-                      <tr key={index}>
-                        <td>{obj.seriesNumber}</td>
-                        <td>{obj.seriesInstanceUID}</td>
-                        <td>{obj.seriesDescription}</td>
-                        <td>{obj.seriesDate}</td>
-                        <td>{obj.seriesTime}</td>
-                        <td>{obj.total}</td>
-                        <td><Button onClick={this.changeSeriesModalState.bind(this, index)}>查看删除</Button></td>
-                      </tr>)
-                  })
-                  }
+          <div className="well" style={wellStyles}>
+            <Table striped bordered condensed hover>
+              <thead>
+                <tr>
+                  <th>seriesNumber</th>
+                  <th>seriesInstanceUID</th>
+                  <th>series description</th>
+                  <th>series date</th>
+                  <th>series time</th>
+                  <th>total</th>
+                  <th>option</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(oldCase ? oldCase.seriesList : Case.seriesList) && (oldCase ? oldCase.seriesList : Case.seriesList).map((obj, index) => {
+                  return (
+                    <tr key={index}>
+                      <td>{obj.seriesNumber}</td>
+                      <td>{obj.seriesInstanceUID}</td>
+                      <td>{obj.seriesDescription}</td>
+                      <td>{obj.seriesDate}</td>
+                      <td>{obj.seriesTime}</td>
+                      <td>{obj.total}</td>
+                      <td><Button onClick={this.changeSeriesModalState.bind(this, index)}>查看删除</Button></td>
+                    </tr>)
+                })
+                }
 
-                </tbody>
-              </Table>
+              </tbody>
+            </Table>
 
-            </div>}
+          </div>
 
           {/* <div className="well" style={wellStyles}>
             <FormGroup controlId="formHorizontalPassword">
@@ -739,7 +786,7 @@ export class AddCase extends Component {
               <FormGroup controlId="total">
                 <ControlLabel>total slice number</ControlLabel>
                 {' '}
-                <FormControl value={this.state.currentSeries && this.state.currentSeries.total} onChange={this.onCaseChange} type="text" readOnly/>
+                <FormControl value={this.state.currentSeries && this.state.currentSeries.total} onChange={this.onCaseChange} type="text" readOnly />
               </FormGroup>
             </Form>
           </Modal.Body>
