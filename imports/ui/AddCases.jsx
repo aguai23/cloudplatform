@@ -413,7 +413,7 @@ export class AddCase extends Component {
             formData.append(path, files[i], files[i].name);
           }
           xhr.addEventListener("load", this.onUploadComplete.bind(this), false);
-          xhr.open("POST", "http://localhost:3000/uploads");
+          xhr.open("POST", `${Meteor.settings.public.server}/uploads`);
           xhr.send(formData);
           let { Case, oldCase } = this.state;
           let seriesInfo = {

@@ -4,6 +4,6 @@
   "MAX_FILE_SIZE": 0,
 
   "public": {
-
+    "server":"http://localhost:3000"
   }
 }
