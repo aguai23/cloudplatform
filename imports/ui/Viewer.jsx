@@ -170,6 +170,7 @@ export default class Viewer extends Component {
             timer: undefined,
             lastY: 0,
             startY: 0,
+            curSeriesIndex: 1,
 
             isSeriesPanelOpened: false,
             isDiagnosisPanelOpened: false,
@@ -234,7 +235,7 @@ export default class Viewer extends Component {
             container: document.getElementById("viewer")
         }, (err) => {
             if (err) {
-                return console.log(err);
+                return console.error(err);
             }
 
             cornerstone.enable(this.state.container);
@@ -263,9 +264,9 @@ export default class Viewer extends Component {
         /**
          * send a request to require server load all cases first
          */
-        Meteor.call('prepareDicoms', this.props.location.state, (error, result) => {
+        Meteor.call('prepareDicoms', this.props.location.state, this.state.curSeriesIndex, (error, result) => {
             if (error) {
-                console.log(error)
+                console.error(error)
             } else {
                 if (result.status === "SUCCESS") {
                     this.setState({
@@ -277,7 +278,7 @@ export default class Viewer extends Component {
                         pixelSpacing: result.pixelSpacing,
                         thickness: result.thickness
                     });
-                    this.setSlice(this.state.index);
+                    this.setSlice(this.state.curSeriesIndex, this.state.index);
                     //set info here
                     let element = $("#viewer");
                     element.on("CornerstoneImageRendered", this.updateInfo);
@@ -317,7 +318,6 @@ export default class Viewer extends Component {
      * updates window dimensions
      */
     updateDimensions() {
-        console.log('resize');
         this.setState({
             windowWidth: window.innerWidth,
             windowHeight: window.innerHeight,
@@ -332,7 +332,7 @@ export default class Viewer extends Component {
      */
     increaseSlice() {
         if (this.state.index < this.state.imageNumber) {
-            this.setSlice(this.state.index + 1);
+            this.setSlice(this.state.curSeriesIndex, this.state.index + 1);
         }
     }
 
@@ -341,7 +341,7 @@ export default class Viewer extends Component {
      */
     decreaseSlice() {
         if (this.state.index > 1) {
-            this.setSlice(this.state.index - 1);
+            this.setSlice(this.state.curSeriesIndex, this.state.index - 1);
         }
     }
 
@@ -349,9 +349,9 @@ export default class Viewer extends Component {
      * set image slice
      * @param index image index
      */
-    setSlice(index) {
+    setSlice(curSeriesIndex, index) {
         if (!this.state.dicomObj[index]) {
-            Meteor.call('getDicom', index, (err, result) => {
+            Meteor.call('getDicom', curSeriesIndex, index, (err, result) => {
                 let image = result;
                 let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
                 image.getPixelData = function () {
@@ -688,7 +688,7 @@ export default class Viewer extends Component {
                 // HTTP.call('GET', 'http://192.168.12.128:5000/lung_nodule/' + 'home/cai/Documents/Data/test', (error, res) => {
                 HTTP.call('GET', 'http://192.168.12.158:3000/test', (error, res) => {
                     if(error) {
-                        return console.log(error);
+                        return console.error(error);
                     }
 
                     // console.log(res);
@@ -853,17 +853,14 @@ export default class Viewer extends Component {
     onClickDiagnosisRow(key) {
         $('div').removeClass('active-diagnosis-row');
         $('#diagnosis-item-' + key).addClass('active-diagnosis-row');
-        this.setSlice(Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice));
+        this.setSlice(this.state.curSeriesIndex, Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice));
     }
 
     /**
      * clear all tool data, e.g. rec, probe and angle
      */
     clearToolData() {
-        console.log('cornerstoneTools.globalImageIdSpecificToolStateManager', cornerstoneTools.globalImageIdSpecificToolStateManager);
-
         let toolState = cornerstoneTools.globalImageIdSpecificToolStateManager.toolState;
-        console.log(toolState);
         let element = cornerstone.getEnabledElement(this.state.container);
 
         if(!toolState.hasOwnProperty(element.image.imageId)) {
@@ -951,7 +948,7 @@ export default class Viewer extends Component {
      */
     onDragScrollBar() {
         let scrollbar = document.getElementById("scrollbar");
-        this.setSlice(parseInt(scrollbar.value));
+        this.setSlice(this.state.curSeriesIndex, parseInt(scrollbar.value));
     }
 
     getCaret(isOpened) {
@@ -1194,6 +1191,7 @@ export default class Viewer extends Component {
                         WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
                       }}
                     >
+
                     </div>
                   }
                 </Motion>
