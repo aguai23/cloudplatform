@@ -393,48 +393,45 @@ export default class Viewer extends Component {
     navSelectHandler(selectedKey) {
         switch (selectedKey) {
             case 1:
-                this.toggleSeriesPanel();
-                break;
-
-            case 2:
                 this.setWindowTool();
                 break;
 
-            case 3:
+            case 2:
                 this.setZoomTool();
                 break;
 
-            case 4:
+            case 3:
                 this.setPanTool();
                 break;
 
-            case 5:
+            case 4:
                 this.setLengthTool();
                 break;
 
-            case 6:
+            case 5:
                 this.setDrawTool();
                 break;
 
-            case 7:
+            case 6:
                 this.setProbeTool();
                 break;
 
-            case 8:
+            case 7:
                 this.setAngleTool();
                 break;
 
-            case 9:
+            case 8:
                 this.setHighlightTool();
                 break;
 
-            case 10:
+            case 9:
                 this.setMagnifyTool();
                 break;
 
-            case 11:
+            case 10:
                 this.setAnnotationTool();
                 break;
+                
             default:
                 console.error(error);
         }
@@ -1055,13 +1052,12 @@ export default class Viewer extends Component {
               <div id="top" style={style.top}>
                 <Navbar inverse collapseOnSelect style={{ marginBottom: '0'}}>
                   <Navbar.Collapse style={{minWidth: '1300px'}}>
-                    <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                      <NavItem eventKey={1} href="#">
-                        <div style={style.icon} >
-                          <FontAwesome name='files-o' size='2x' />
-                        </div>
+                    <Navbar.Text className="button" onClick={() => this.toggleSeriesPanel()}>
+                        <FontAwesome name='files-o' size='2x' />
+                        <br />
                         <span>序列</span>
-                      </NavItem>
+                    </Navbar.Text>
+                    <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
                       <NavItem eventKey={2} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='adjust' size='2x' />
