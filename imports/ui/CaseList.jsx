@@ -21,7 +21,7 @@ export class CaseList extends Component {
     super(props);
 
     this.state = {
-      cases: Cases.find({collectionId: this.props.params.collectionId}).fetch(),
+      cases: Cases.find({collectionID: this.props.params.collectionId}).fetch(),
       isSearchClicked: false
     };
 
@@ -45,18 +45,18 @@ export class CaseList extends Component {
   }
 
   searchCase() {
-    let name = this.input.value;
+    let patientName = this.input.value;
 
     if(this.state.isSearchClicked) return;
 
-    if(name === undefined || name.length === 0) {
+    if(patientName === undefined || patientName.length === 0) {
       toast.warning("查询条件不能为空", { position: toast.POSITION.BOTTOM_RIGHT });
       return
     }
 
     this.setState({
       isSearchClicked: true,
-      cases: Cases.find({ name: {$regex: '.*'  + name + '.*', $options:"i"}}).fetch()
+      cases: Cases.find({ patientName: {$regex: '.*'  + patientName + '.*', $options:"i"}}).fetch()
     });
   }
 
@@ -119,12 +119,12 @@ export class CaseList extends Component {
           </thead>
           <tbody>
             {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
-              let collectionCol = this.state.isSearchClicked ? <td>{specificCase.collectionId}</td> : undefined;
+              let collectionCol = this.state.isSearchClicked ? <td>{specificCase.collectionID}</td> : undefined;
               return (
                 <tr key={specificCase._id}>
                   <td>{specificCase.patientName}</td>
                   <td>{specificCase.patientAge}</td>
-                  <td>{specificCase.patientSex === 'male' ? '男' : '女'}</td>
+                  <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
                   <td>{specificCase.createAt}</td>
                   {collectionCol}
                   <td>
