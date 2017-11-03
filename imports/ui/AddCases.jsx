@@ -281,8 +281,6 @@ export class AddCase extends Component {
       toast.warning('series不能少于一个！', { position: toast.POSITION.BOTTOM_RIGHT });
       return false;
     }
-    console.log(123)
-    // return
     Meteor.call('removeSeries', currentSeries.path, function (err, res) {
       if (err) {
         return console.log(err);
