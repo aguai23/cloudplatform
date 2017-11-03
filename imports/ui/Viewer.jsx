@@ -145,6 +145,8 @@ const style = {
 
 };
 
+var intervalHandler = undefined;
+
 export default class Viewer extends Component {
     /**
      * constructor, run at first
@@ -239,6 +241,7 @@ export default class Viewer extends Component {
             }
 
             cornerstone.enable(this.state.container);
+            cornerstone.enable(document.getElementById('thumbnail'));
             cornerstoneTools.addStackStateManager(this.state.container, 'stack');
             cornerstoneTools.toolColors.setToolColor("#ffcc33");
         });
@@ -255,7 +258,7 @@ export default class Viewer extends Component {
         /**
          * get current date and time
          */
-        window.setInterval(() => {
+        intervalHandler = window.setInterval(() => {
             this.setState({
                 dateTime: new Date().toLocaleString()
             });
@@ -264,39 +267,44 @@ export default class Viewer extends Component {
         /**
          * send a request to require server load all cases first
          */
-        Meteor.call('prepareDicoms', this.props.location.state, this.state.curSeriesIndex, (error, result) => {
-            if (error) {
-                console.error(error)
-            } else {
-                if (result.status === "SUCCESS") {
-                    this.setState({
-                        imageNumber: result.imageNumber,
-                        patientId: result.patientId,
-                        patientName: result.patientName,
-                        rows: result.rows,
-                        cols: result.cols,
-                        pixelSpacing: result.pixelSpacing,
-                        thickness: result.thickness
-                    });
-                    this.setSlice(this.state.curSeriesIndex, this.state.index);
-                    //set info here
-                    let element = $("#viewer");
-                    element.on("CornerstoneImageRendered", this.updateInfo);
-                    /**
-                     * set scroll tool for default mousewheel operation
-                     */
-                    this.setScrollTool();
-                }
+        this.initMainCanvas(this.props.location.state, this.state.curSeriesIndex);
 
-            }
-        });
-
-
+        /**
+         * set scroll tool for default mousewheel operation
+         */
+        this.setScrollTool();
 
     }
 
     componentWillUnmount() {
         window.removeEventListener("resize", () => this.updateDimensions());
+        window.clearInterval(intervalHandler);
+    }
+
+    initMainCanvas(caseId, seriesIndex) {
+      Meteor.call('prepareDicoms', caseId, seriesIndex, (error, result) => {
+          if (error) {
+              console.error(error)
+          } else {
+              if (result.status === "SUCCESS") {
+                  this.setState({
+                      imageNumber: result.imageNumber,
+                      patientId: result.patientId,
+                      patientName: result.patientName,
+                      rows: result.rows,
+                      cols: result.cols,
+                      pixelSpacing: result.pixelSpacing,
+                      thickness: result.thickness
+                  });
+                  this.setSlice(seriesIndex, this.state.index);
+                  //set info here
+                  let element = $("#viewer");
+                  element.on("CornerstoneImageRendered", this.updateInfo);
+
+              }
+
+          }
+      });
     }
 
     /**
@@ -441,7 +449,13 @@ export default class Viewer extends Component {
      * open/close series panel with slide effect
      */
     toggleSeriesPanel() {
-      this.setState({isSeriesPanelOpened: !this.state.isSeriesPanelOpened});
+      this.setState({isSeriesPanelOpened: !this.state.isSeriesPanelOpened}, (err) => {
+        if(err) {
+          return console.error(err);
+        }
+
+        this.setSeriesPanelContent();
+      });
     }
 
     /**
@@ -953,6 +967,46 @@ export default class Viewer extends Component {
             <FontAwesome style={{paddingLeft: '5px', position: 'absolute', marginTop: '5px'}} name='caret-down' size='lg'/>
     }
 
+    setSeriesPanelContent() {
+        // console.log(this.state.dicomObj[1]);
+        if(this.state.isSeriesPanelOpened) {
+          this.enableThumbnailCanvas(document.getElementById('thumbnail'));
+        } else {
+          this.disableThumbnailCanvas(document.getElementById('thumbnail'));
+        }
+    }
+
+    enableThumbnailCanvas(element) {
+        let enabledElements = cornerstone.getEnabledElements();
+
+        for(let i = 0; i < enabledElements.length; i++) {
+          if(element === enabledElements[i]) {
+            return;
+          }
+
+          let image = this.state.dicomObj[1];
+          let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+          image.getPixelData = function () {
+              return pixelData;
+          };
+
+          $('#thumbnail').fadeIn({
+              done: function () {
+                  cornerstone.displayImage(element, image);
+              }
+          });
+        }
+    }
+
+    disableThumbnailCanvas(element) {
+        // cornerstone.disable(element);
+        $('#thumbnail').fadeOut({
+            done: function () {
+
+            }
+        });
+    }
+
     render() {
         let results = [];
 
@@ -1058,19 +1112,19 @@ export default class Viewer extends Component {
                         <span>序列</span>
                     </Navbar.Text>
                     <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                      <NavItem eventKey={2} href="#">
+                      <NavItem eventKey={1} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='adjust' size='2x' />
                         </div>
                         <span>窗宽窗位</span>
                       </NavItem>
-                      <NavItem eventKey={3} href="#">
+                      <NavItem eventKey={2} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='search' size='2x' />
                         </div>
                         <span>缩放</span>
                       </NavItem>
-                      <NavItem eventKey={4} href="#">
+                      <NavItem eventKey={3} href="#">
                         <div style={style.icon}>
                           <FontAwesome name='hand-paper-o' size='2x' />
                         </div>
@@ -1097,43 +1151,43 @@ export default class Viewer extends Component {
                             </Navbar.Text>
                             <Navbar.Text style={{borderLeft: '2px solid #9ccef9', height: '50px'}}></Navbar.Text>
                             <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                                <NavItem eventKey={11} href="#">
+                                <NavItem eventKey={10} href="#">
                                     <div style={style.icon}>
                                         <FontAwesome name='arrow-left' size='2x' />
                                     </div>
                                     <span>标注</span>
                                 </NavItem>
-                                <NavItem eventKey={5} href="#">
+                                <NavItem eventKey={4} href="#">
                                     <div style={style.icon}>
                                         <FontAwesome name='arrows-h' size='2x' />
                                     </div>
                                     <span>测量</span>
                                 </NavItem>
-                                <NavItem eventKey={6} href="#">
+                                <NavItem eventKey={5} href="#">
                                     <div style={style.icon}>
                                         <FontAwesome name='square-o' size='2x' />
                                     </div>
                                     <span>矩形</span>
                                 </NavItem>
-                                <NavItem eventKey={7} href="#">
+                                <NavItem eventKey={6} href="#">
                                     <div style={style.icon}>
                                         <FontAwesome name='circle-o' size='2x' />
                                     </div>
                                     <span>圆点</span>
                                 </NavItem>
-                                <NavItem eventKey={8} href="#">
+                                <NavItem eventKey={7} href="#">
                                     <div style={style.icon}>
                                         <FontAwesome name='chevron-down' size='2x' />
                                     </div>
                                     <span>角度</span>
                                 </NavItem>
-                                <NavItem eventKey={9} href="#">
+                                <NavItem eventKey={8} href="#">
                                     <div style={style.icon}>
                                         <FontAwesome name='sun-o' size='2x' />
                                     </div>
                                     <span>高亮</span>
                                 </NavItem>
-                                <NavItem eventKey={10} href="#">
+                                <NavItem eventKey={9} href="#">
                                     <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={magnifyPopover} onClick={() => this.toggleMagnifyPopover()} onExited={() => this.toggleMagnifyPopover()}>
                                         <div>
                                             <div style={style.icon}>
@@ -1187,7 +1241,9 @@ export default class Viewer extends Component {
                         WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
                       }}
                     >
-
+                      <div id="thumbnail" onClick={() => {
+                          //this.initMainCanvas(this.props.location.state, this.state.curSeriesIndex + 2);
+                        }}></div>
                     </div>
                   }
                 </Motion>
