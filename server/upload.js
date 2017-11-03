@@ -32,7 +32,7 @@ Picker.route('/uploads', function(params, req, res, next) {
     let form = new formidable.IncomingForm();
 
     form.multiples = true;
-    form.uploadDir = '/uploads';
+    form.uploadDir = uploadedFilesPath;
 
     // form.on('field', (name, value) => {
     //   form.uploadDir += '/' + value;
