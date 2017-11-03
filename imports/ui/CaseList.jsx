@@ -21,7 +21,7 @@ export class CaseList extends Component {
     super(props);
 
     this.state = {
-      cases: Cases.find({collectionID: this.props.params.collectionId}).fetch(),
+      cases: Cases.find({ collectionID: this.props.params.collectionId }).fetch(),
       isSearchClicked: false
     };
 
@@ -29,16 +29,35 @@ export class CaseList extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if(nextProps.cases !== this.state.cases) {
-      this.setState({cases: nextProps.cases});
+    if (nextProps.cases !== this.state.cases) {
+      this.setState({ cases: nextProps.cases });
     }
   }
 
   deleteCase(caseId) {
+    let { cases } = this.state;
+    let pathList = new Array()
+    _.each(cases, (obj) => {
+      if (obj._id === caseId) {
+        _.each(obj.seriesList, (series) => {
+          pathList.push(series.path)
+        })
+      }
+    })
     Meteor.call('deleteCase', caseId, (error) => {
       if (error) {
-        toast.error("somethings wrong" + error.reason, { position: toast.POSITION.BOTTOM_RIGHT });
+        toast.error("somethings wrong at deleteCase" + error.reason, { position: toast.POSITION.BOTTOM_RIGHT });
+        return false
       } else {
+        _.each(pathList, (path) => {
+          Meteor.call('removeSeries', path, function (err, res) {
+            if (err) {
+              toast.error("somethings wrong at delete files" + error.reason, { position: toast.POSITION.BOTTOM_RIGHT });
+            } else {
+              return false
+            }
+          })
+        })
         toast.success("病例删除成功", { position: toast.POSITION.BOTTOM_RIGHT });
       }
     });
@@ -47,16 +66,16 @@ export class CaseList extends Component {
   searchCase() {
     let patientName = this.input.value;
 
-    if(this.state.isSearchClicked) return;
+    if (this.state.isSearchClicked) return;
 
-    if(patientName === undefined || patientName.length === 0) {
+    if (patientName === undefined || patientName.length === 0) {
       toast.warning("查询条件不能为空", { position: toast.POSITION.BOTTOM_RIGHT });
       return
     }
 
     this.setState({
       isSearchClicked: true,
-      cases: Cases.find({ patientName: {$regex: '.*'  + patientName + '.*', $options:"i"}}).fetch()
+      cases: Cases.find({ patientName: { $regex: '.*' + patientName + '.*', $options: "i" } }).fetch()
     });
   }
 
@@ -70,23 +89,23 @@ export class CaseList extends Component {
 
   render() {
     const that = this;
-    let tHead = this.state.cases.length > 0 ? ( !this.state.isSearchClicked ?
-                  (<tr>
-                      <th>姓名</th>
-                      <th>年龄</th>
-                      <th>性别</th>
-                      <th>创建时间</th>
-                      <th>操作</th>
-                    </tr>) :
-                    (<tr>
-                      <th>姓名</th>
-                      <th>年龄</th>
-                      <th>性别</th>
-                      <th>创建时间</th>
-                      <th>所属数据集</th>
-                      <th>操作</th>
-                    </tr>)) :
-                  <tr><th>未找到符合搜索条件的病例</th></tr>;
+    let tHead = this.state.cases.length > 0 ? (!this.state.isSearchClicked ?
+      (<tr>
+        <th>姓名</th>
+        <th>年龄</th>
+        <th>性别</th>
+        <th>创建时间</th>
+        <th>操作</th>
+      </tr>) :
+      (<tr>
+        <th>姓名</th>
+        <th>年龄</th>
+        <th>性别</th>
+        <th>创建时间</th>
+        <th>所属数据集</th>
+        <th>操作</th>
+      </tr>)) :
+      <tr><th>未找到符合搜索条件的病例</th></tr>;
 
     let searchResult = this.state.isSearchClicked ? ("共计" + this.state.cases.length + "条搜索结果") : undefined;
 
@@ -95,7 +114,7 @@ export class CaseList extends Component {
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
-            <Link to={`/newCase?collection=${this.props.params.collectionId}`}>新建</Link>
+              <Link to={`/newCase?collection=${this.props.params.collectionId}`}>新建</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>
@@ -112,38 +131,38 @@ export class CaseList extends Component {
         </Navbar>
 
         <div className="container">
-        <div style={style.searchResult}>{searchResult}</div>
-        <Table striped bordered condensed hover>
-          <thead>
-            {tHead}
-          </thead>
-          <tbody>
-            {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
-              let collectionCol = this.state.isSearchClicked ? <td>{specificCase.collectionID}</td> : undefined;
-              return (
-                <tr key={specificCase._id}>
-                  <td>{specificCase.patientName}</td>
-                  <td>{specificCase.patientAge}</td>
-                  <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
-                  <td>{specificCase.createAt}</td>
-                  {collectionCol}
-                  <td>
-                    <Link to={{
+          <div style={style.searchResult}>{searchResult}</div>
+          <Table striped bordered condensed hover>
+            <thead>
+              {tHead}
+            </thead>
+            <tbody>
+              {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
+                let collectionCol = this.state.isSearchClicked ? <td>{specificCase.collectionID}</td> : undefined;
+                return (
+                  <tr key={specificCase._id}>
+                    <td>{specificCase.patientName}</td>
+                    <td>{specificCase.patientAge}</td>
+                    <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
+                    <td>{specificCase.createAt}</td>
+                    {collectionCol}
+                    <td>
+                      <Link to={{
                         pathname: '/viewer',
                         state: specificCase._id
                       }} className="glyphicon glyphicon-picture"></Link>
-                    &nbsp;&nbsp;&nbsp;
-                    <Link  to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil"></Link>
-                    &nbsp;&nbsp;&nbsp;
+                      &nbsp;&nbsp;&nbsp;
+                    <Link to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil"></Link>
+                      &nbsp;&nbsp;&nbsp;
                     <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, specificCase._id)}></span>
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
                 )
               })
-            }
-          </tbody>
-        </Table>
-      </div>
+              }
+            </tbody>
+          </Table>
+        </div>
         <ToastContainer
           position="bottom-right"
           type="info"
@@ -167,7 +186,7 @@ export default withTracker(props => {
 
   return {
     // cases: Cases.find({collectionId: props.params.collectionId}).fetch(),
-    cases: Cases.find({collectionID: props.params.collectionId}).fetch(),
+    cases: Cases.find({ collectionID: props.params.collectionId }).fetch(),
     listLoading: !handle.ready()
   }
 })(CaseList);
