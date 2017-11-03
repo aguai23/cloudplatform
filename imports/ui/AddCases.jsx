@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
-import { browserHistory } from 'react-router';
+import { browserHistory, Link } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
 import { HTTP } from 'meteor/http';
@@ -647,7 +647,13 @@ export class AddCase extends Component {
                       <td>{obj.seriesDate}</td>
                       <td>{obj.seriesTime}</td>
                       <td>{obj.total}</td>
-                      <td><Button onClick={this.changeSeriesModalState.bind(this, index)}>查看删除</Button></td>
+                      <td>
+                        <Button onClick={this.changeSeriesModalState.bind(this, index)}>详情</Button>&nbsp;
+                        <Link to={{
+                        pathname: '/viewer',
+                        state: oldCase && oldCase._id
+                      }} className="btn btn-default">看片</Link>
+                      </td>
                     </tr>)
                 })
                 }
