@@ -170,7 +170,7 @@ export default class Viewer extends Component {
             timer: undefined,
             lastY: 0,
             startY: 0,
-            curSeriesIndex: 1,
+            curSeriesIndex: 0,
 
             isSeriesPanelOpened: false,
             isDiagnosisPanelOpened: false,
@@ -431,7 +431,7 @@ export default class Viewer extends Component {
             case 10:
                 this.setAnnotationTool();
                 break;
-                
+
             default:
                 console.error(error);
         }
