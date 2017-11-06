@@ -10,11 +10,10 @@ import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../library/cornerstoneTools';
 import FontAwesome from 'react-fontawesome';
 import { Marks } from '../api/marks';
-import {Cases} from "../api/cases";
+import { Cases } from '../api/cases';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
-import { Cases } from '../api/cases';
 import "./css/viewer.css";
 
 
