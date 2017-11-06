@@ -721,7 +721,7 @@ export default class Viewer extends Component {
                         this.setState({isLoadingPanelFinished: true});
                         cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
 
-                        let caseId = this.props.location.state;
+                        let caseId = this.props.location.state.caseId;
                         let elements = [this.state.container];
                         let currentState = cornerstoneTools.appState.save(elements);
                         let result = JSON.parse(res.content);
