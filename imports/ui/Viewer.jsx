@@ -13,7 +13,7 @@ import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
-
+import { Cases } from '../api/cases';
 import "./css/viewer.css";
 
 
@@ -172,7 +172,7 @@ export default class Viewer extends Component {
             timer: undefined,
             lastY: 0,
             startY: 0,
-            curSeriesIndex: 0,
+            curSeriesIndex: this.props.location.state.index ? this.props.location.state.index : 0,
 
             isSeriesPanelOpened: false,
             isDiagnosisPanelOpened: false,
@@ -585,17 +585,21 @@ export default class Viewer extends Component {
             })
         });
 
+        let caseInfo = Cases.findOne({_id:this.props.location.state.caseId});
+        let seriesInstanceUID = caseInfo.seriesList[this.state.curSeriesIndex].seriesInstanceUID
+
         let mark = {
             imageIdToolState: appState.imageIdToolState,
             elementToolState: appState.elementToolState,
             elementViewport: appState.elementViewport,
             source: 'USER',
             createAt: new Date(),
-            caseId: this.props.location.state.caseId,
+            caseId: this.props.location.state.caseId,            
+            seriesInstanceUID: seriesInstanceUID,
             ownerId: Meteor.userId(),
         };
 
-        let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state.caseId });
+        let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
         if (oldState) {
             mark._id = oldState._id;
             Meteor.call('modifyMark', mark, (error) => {
@@ -622,24 +626,30 @@ export default class Viewer extends Component {
     restoreState() {
         let elements = [this.state.container];
         let currentState = cornerstoneTools.appState.save(elements);
-        let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state.caseId });
-
+        let caseInfo = Cases.findOne({_id:this.props.location.state.caseId});
+        let seriesInstanceUID = caseInfo.seriesList[this.state.curSeriesIndex].seriesInstanceUID
+        let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID:seriesInstanceUID });
         /**
          * save system mark to old mark
          */
+        if(oldState){
         _.mapObject(currentState.imageIdToolState, (currentVal, currentImageId) => {
-            _.mapObject(oldState.imageIdToolState, (oldVal, oldImageId) => {
-                if (currentImageId === oldImageId) {
-                    _.mapObject(currentVal, (data, type) => {
-                        if (type === 'ellipticalRoi') {
-                            oldState.imageIdToolState[oldImageId]['ellipticalRoi']['data'] = data.data
-                        }
-                    })
-                }
-            })
-        });
+          _.mapObject(oldState.imageIdToolState, (oldVal, oldImageId) => {
+              if (currentImageId === oldImageId) {
+                  _.mapObject(currentVal, (data, type) => {
+                      if (type === 'ellipticalRoi') {
+                          oldState.imageIdToolState[oldImageId]['ellipticalRoi']['data'] = data.data
+                      }
+                  })
+              }
+          })
+      });
 
-        cornerstoneTools.appState.restore(oldState)
+      cornerstoneTools.appState.restore(oldState)
+        } else {
+          toast.warning('无历史标注!')
+        }
+
     }
 
     /**
