@@ -11,7 +11,6 @@ import cornerstoneTools from '../library/cornerstoneTools';
 import FontAwesome from 'react-fontawesome';
 import { Cases } from '../api/cases';
 import { Marks } from '../api/marks';
-import { Cases } from '../api/cases';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
@@ -621,7 +620,7 @@ export default class Viewer extends Component {
             elementViewport: appState.elementViewport,
             source: 'USER',
             createAt: new Date(),
-            caseId: this.props.location.state.caseId,            
+            caseId: this.props.location.state.caseId,
             seriesInstanceUID: seriesInstanceUID,
             ownerId: Meteor.userId(),
         };
@@ -962,7 +961,7 @@ export default class Viewer extends Component {
     setSeriesPanelContent() {
         if(this.state.isSeriesPanelOpened) {
             if(this.state.seriesList.length === 0) {
-                let foundCase = Cases.findOne({_id: this.props.location.state});
+                let foundCase = Cases.findOne({_id: this.props.location.state.caseId});
 
                 this.setState({
                     seriesList: foundCase.seriesList
@@ -997,7 +996,7 @@ export default class Viewer extends Component {
       this.setState({
         curSeriesIndex: seriesIndex
       }, function() {
-        this.initMainCanvas(this.props.location.state, this.state.curSeriesIndex);
+        this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
         this.toggleSeriesPanel();
       });
     }
@@ -1271,7 +1270,6 @@ export default class Viewer extends Component {
                         WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
                       }}
                     >
-<<<<<<< HEAD
                       {
                         this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
                           return (
@@ -1290,11 +1288,6 @@ export default class Viewer extends Component {
                       <div className="thumbnail-container">
                         <div className="thumbnailDiv"></div>
                       </div>
-=======
-                      <div id="thumbnail" onClick={() => {
-                          //this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex + 2);
-                        }}></div>
->>>>>>> af4ac6f33e97b482da0db8203a653640a67b5756
                     </div>
                   }
                 </Motion>

@@ -1,9 +1,9 @@
 {
   "FILE_INPUT_NAME": "qqfile",
-  "UPLOADED_FILES_PATH": "/home/yunzhe/Downloads/data/",
+  "UPLOADED_FILES_PATH": "/uploads",
   "MAX_FILE_SIZE": 0,
   "public": {
     "ALGORITHM_SERVER": "http://192.168.12.158:5000",
-    "server":"http://192.168.12.158:3000"
+    "server":"http://localhost:3000"
   }
 }
