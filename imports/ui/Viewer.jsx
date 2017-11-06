@@ -181,11 +181,9 @@ export default class Viewer extends Component {
             isRotateMenuOpened: false
 
         };
-
         this.updateInfo = this.updateInfo.bind(this);
         this.setSlice = this.setSlice.bind(this);
         this.onDragScrollBar = this.onDragScrollBar.bind(this);
-        Meteor.subscribe('cases');
     }
 
     /**
@@ -267,7 +265,7 @@ export default class Viewer extends Component {
         /**
          * send a request to require server load all cases first
          */
-        this.initMainCanvas(this.props.location.state, this.state.curSeriesIndex);
+        this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
 
         /**
          * set scroll tool for default mousewheel operation
@@ -593,11 +591,11 @@ export default class Viewer extends Component {
             elementViewport: appState.elementViewport,
             source: 'USER',
             createAt: new Date(),
-            caseId: this.props.location.state,
+            caseId: this.props.location.state.caseId,
             ownerId: Meteor.userId(),
         };
 
-        let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state });
+        let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state.caseId });
         if (oldState) {
             mark._id = oldState._id;
             Meteor.call('modifyMark', mark, (error) => {
@@ -624,7 +622,7 @@ export default class Viewer extends Component {
     restoreState() {
         let elements = [this.state.container];
         let currentState = cornerstoneTools.appState.save(elements);
-        let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state });
+        let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state.caseId });
 
         /**
          * save system mark to old mark
@@ -709,7 +707,7 @@ export default class Viewer extends Component {
                     const algorithmInfo = JSON.parse(sessionStorage.getItem('algorithm'));
                     cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
 
-                    let caseId = this.props.location.state;
+                    let caseId = this.props.location.state.caseId;
                     let elements = [this.state.container];
                     let currentState = cornerstoneTools.appState.save(elements);
                     if (algorithmInfo) {
@@ -1242,7 +1240,7 @@ export default class Viewer extends Component {
                       }}
                     >
                       <div id="thumbnail" onClick={() => {
-                          //this.initMainCanvas(this.props.location.state, this.state.curSeriesIndex + 2);
+                          //this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex + 2);
                         }}></div>
                     </div>
                   }
@@ -1301,3 +1299,4 @@ export default class Viewer extends Component {
     }
 }
 Meteor.subscribe('marks');
+Meteor.subscribe('cases');

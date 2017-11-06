@@ -149,7 +149,7 @@ export class CaseList extends Component {
                     <td>
                       <Link to={{
                         pathname: '/viewer',
-                        state: specificCase._id
+                        state: { caseId: specificCase._id }
                       }} className="glyphicon glyphicon-picture"></Link>
                       &nbsp;&nbsp;&nbsp;
                     <Link to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil"></Link>

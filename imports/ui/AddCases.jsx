@@ -650,9 +650,9 @@ export class AddCase extends Component {
                       <td>
                         <Button onClick={this.changeSeriesModalState.bind(this, index)}>详情</Button>&nbsp;
                         <Link to={{
-                        pathname: '/viewer',
-                        state: oldCase && oldCase._id
-                      }} className="btn btn-default">看片</Link>
+                          pathname: '/viewer',
+                          state: { caseId: oldCase && oldCase._id, index: index }
+                        }} className="btn btn-default">看片</Link>
                       </td>
                     </tr>)
                 })
