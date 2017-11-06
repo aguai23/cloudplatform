@@ -22,7 +22,7 @@ export default class SingleCollectionInList extends Component {
     return (
       <div>
         <Link to={{
-            pathname: '/datasets/' + this.props.dataCollection._id,
+            pathname: '/datasets/' + this.props.dataCollection.name,
             state: this.props.dataCollection.name
           }}>
           {this.props.dataCollection.name + (this.props.dataCollection.equip ? " / " + this.props.dataCollection.equip : "")}

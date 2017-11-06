@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import React, { Component, PropTypes } from 'react';
-
+import { DataCollections } from '../api/dataCollections';
 import { Button, Checkbox, ControlLabel, Form, FormControl, Modal } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { ToastContainer, toast } from 'react-toastify';
@@ -43,21 +43,27 @@ export default class ModalAddCollection extends Component {
       dataCollection._id = this.props.dataCollection._id;
       Meteor.call('updateDataCollection', dataCollection, (error) => {
         if (error) {
-          console.log("Failed to modify collection. " + error.reason);
+          toast.error("Failed to modify collection. " + error.reason);
         } else {
           toast.success("数据集修改成功!");
         }
         this.setState({ showModal: false });
       })
     } else {
-      Meteor.call('insertDataCollection', dataCollection, (error) => {
-        if (error) {
-          console.log("Failed to add new collection. " + error.reason);
-        } else {
-          toast.success("数据集添加成功!");
-        }
-        this.setState({ showModal: false });
-      });
+      let flag = DataCollections.findOne({ name: dataCollection.name })
+      if (flag) {
+        toast.error('该数据集已存在!')
+      } else {
+        Meteor.call('insertDataCollection', dataCollection, (error) => {
+          if (error) {
+            toast.error("Failed to add new collection. " + error.reason);
+          } else {
+            toast.success("数据集添加成功!");
+          }
+          this.setState({ showModal: false });
+        });
+
+      }
     }
   }
 

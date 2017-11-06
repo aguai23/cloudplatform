@@ -22,7 +22,7 @@ Meteor.startup(() => {
         <Route path="datasets" component={Main}>
         </Route>
         <Route path="newCase" component={AddCase}/>
-        <Route path="datasets/:collectionId" component={CaseList}/>
+        <Route path="datasets/:collectionName" component={CaseList}/>
       </Route>
         <Route path="login" component={Login}/>
         <Route path="registration" component={Registration}/>

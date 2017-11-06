@@ -82,7 +82,7 @@ export class AddCase extends Component {
     });
 
     this.state = {
-      collectionId: this.props.location.query.collection,
+      collectionName: this.props.location.query.collection,
       Case: {
         accessionNumber: '',
         patientID: '',
@@ -216,7 +216,7 @@ export class AddCase extends Component {
         bodyPart: Case.bodyPart,
         studyDescription: Case.studyDescription,
         seriesList: sortedSeriesList,
-        collectionID: this.state.collectionId,
+        collectionName: this.state.collectionName,
         creator: Meteor.userId(),
       }
 
@@ -236,7 +236,7 @@ export class AddCase extends Component {
     let oldCase = this.state.oldCase;
     delete oldCase.creator;
     delete oldCase.createAt;
-    delete oldCase.collectionID;
+    delete oldCase.collectionName;
     // return
     // oldCase.files = oldCase.files.concat(imageArray);
     Meteor.call('modifyCase', oldCase, (error) => {

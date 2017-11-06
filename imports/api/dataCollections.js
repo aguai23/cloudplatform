@@ -19,7 +19,8 @@ DataCollections.deny({
 const DataCollectionSchema = new SimpleSchema({
   name: {
     label: '名称',
-    type: String
+    type: String,
+    unique: true
   },
   type: {
     label: 'values: PUBLIC/PRIVATE/FAVORITES',
