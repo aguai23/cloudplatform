@@ -352,6 +352,22 @@ export class AddCase extends Component {
   }
 
   /**
+   * rename file according to its index
+   */
+  renameFile(file, cb) {
+    let reader = new FileReader();
+
+    reader.onloadend = function(event) {
+      let dataset = dicomParser.parseDicom(new Uint8Array(event.target.result));
+      let index = parseInt(dataset.string('x00200013'));
+      let newName = file.name.substring(0, file.name.length - 4) + '_' + index + '.dcm';
+      cb(newName);
+    }
+
+    reader.readAsArrayBuffer(file);
+  }
+
+  /**
    * Parse one dicom file, which is used to get common information when uploading
    * @param filePath the absolute path where the dicom placed
    * @return {Object} the standard dicom information
@@ -407,70 +423,83 @@ export class AddCase extends Component {
           let xhr = new XMLHttpRequest();
           let formData = new FormData();
           formData.append('path', path);
+          let proms = [];
           for (let i = 0; i < files.length; i++) {
-            formData.append(path, files[i], files[i].name);
+            proms.push(new Promise((resolve, reject) => this.renameFile(files[i], resolve)));
           }
-          xhr.addEventListener("load", this.onUploadComplete.bind(this), false);
-          xhr.open("POST", `${Meteor.settings.public.server}/uploads`);
-          xhr.send(formData);
-          let { Case, oldCase } = this.state;
-          let seriesInfo = {
-            seriesNumber: caseInstance.seriesNumber,
-            seriesInstanceUID: caseInstance.seriesInstanceUID,
-            seriesDescription: caseInstance.seriesDescription,
-            seriesTime: caseInstance.seriesTime,
-            seriesDate: caseInstance.seriesDate,
-            total: files.length,
-          }
-          if (oldCase) {
-            let oldList = this.state.oldCase.seriesList
-            oldList.push(seriesInfo)
-            oldCase.seriesList = oldList
-            seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID)
-            this.setState({
-              oldCase,
-              currentSeries: seriesInfo
-            })
-          } else {
-            let oldList = this.state.Case.seriesList
-            if (oldList && oldList.length) {
+
+          let self = this;
+          Promise.all(proms).then(function(result) {
+            for(let i = 0; i < result.length; i++) {
+              formData.append(path, files[i], result[i]);
+            }
+
+            xhr.addEventListener("load", self.onUploadComplete.bind(self), false);
+            xhr.open("POST", `${Meteor.settings.public.server}/uploads`);
+            xhr.send(formData);
+            let { Case, oldCase } = self.state;
+            let seriesInfo = {
+              seriesNumber: caseInstance.seriesNumber,
+              seriesInstanceUID: caseInstance.seriesInstanceUID,
+              seriesDescription: caseInstance.seriesDescription,
+              seriesTime: caseInstance.seriesTime,
+              seriesDate: caseInstance.seriesDate,
+              total: files.length,
+            }
+            if (oldCase) {
+              let oldList = self.state.oldCase.seriesList
               oldList.push(seriesInfo)
+              oldCase.seriesList = oldList
+              seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID)
+              self.setState({
+                oldCase,
+                currentSeries: seriesInfo
+              })
             } else {
-              oldList = [seriesInfo]
-            }
-            caseInstance.seriesList = oldList;
-            seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID);
-            for (key in Case) {
-              if (caseInstance[key] === undefined) {
-                caseInstance[key] = Case[key]
+              let oldList = self.state.Case.seriesList
+              if (oldList && oldList.length) {
+                oldList.push(seriesInfo)
+              } else {
+                oldList = [seriesInfo]
               }
+              caseInstance.seriesList = oldList;
+              seriesInstanceUIDList.push(seriesInfo.seriesInstanceUID);
+              for (key in Case) {
+                if (caseInstance[key] === undefined) {
+                  caseInstance[key] = Case[key]
+                }
+              }
+              self.setState({
+                Case: caseInstance,
+                seriesInstanceUIDList: seriesInstanceUIDList,
+                currentSeries: seriesInfo
+              });
             }
-            this.setState({
-              Case: caseInstance,
-              seriesInstanceUIDList: seriesInstanceUIDList,
-              currentSeries: seriesInfo
+
+            for (let i = 0; i < files.length; i++) {
+              let fileSize = 0;
+              if (files[i].size > 1024 * 1024) {
+                fileSize = (Math.round(files[i].size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+              } else {
+                fileSize = (Math.round(files[i].size * 100 / 1024) / 100).toString() + 'KB';
+              }
+              let temp = files[i].name.split('.');
+              selectedFiles.push({
+                name: files[i].name,
+                size: fileSize,
+                ext: temp.length > 0 ? temp[temp.length - 1] : ''
+              });
+            }
+            self.setState({
+              selectedFiles: selectedFiles
             });
-          }
+          }).catch(function(err) {
+            console.error(err);
+          });
+
         }
       });
 
-      for (let i = 0; i < files.length; i++) {
-        let fileSize = 0;
-        if (files[i].size > 1024 * 1024) {
-          fileSize = (Math.round(files[i].size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
-        } else {
-          fileSize = (Math.round(files[i].size * 100 / 1024) / 100).toString() + 'KB';
-        }
-        let temp = files[i].name.split('.');
-        selectedFiles.push({
-          name: files[i].name,
-          size: fileSize,
-          ext: temp.length > 0 ? temp[temp.length - 1] : ''
-        });
-      }
-      this.setState({
-        selectedFiles: selectedFiles
-      });
     }
   }
 

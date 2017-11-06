@@ -11,7 +11,9 @@ var fs = require('fs'),
     path = require('path');
 
 var dicomObj = {};
+var thumbnailArray = [];
 var currentCaseId = undefined;
+
 Meteor.methods({
 
   /**
@@ -25,8 +27,16 @@ Meteor.methods({
 
     currentCaseId = caseId;
 
-    if(userId) {
+    if(!userId) {
+      return result;
+    }
+
+    if(dicomObj[userId] === undefined) {
       dicomObj[userId] = {};
+    }
+
+    if(seriesIndex !== undefined && dicomObj[userId][seriesIndex] === undefined) {
+      dicomObj[userId][seriesIndex] = {};
     }
 
     /**
@@ -34,12 +44,16 @@ Meteor.methods({
      */
     let foundCase = Cases.findOne({_id: caseId});
 
+    if(thumbnailArray.length === 0) {
+      for(let i = 0; i < foundCase.seriesList.length; i++) {
+        initThumbnail(i, foundCase.seriesList[i].path);
+      }
+    }
+
     /**
      * parse all DICOMs and save
      */
-    if(userId && seriesIndex != undefined && foundCase.seriesList && foundCase.seriesList.length > 0) {
-      dicomObj[userId][seriesIndex] = {};
-
+    if(userId && seriesIndex !== undefined && foundCase.seriesList && foundCase.seriesList.length > 0) {
       let patientName = undefined,
           patientId = undefined,
           rows = undefined,
@@ -91,7 +105,7 @@ Meteor.methods({
 
     var result = {};
 
-    result.imageId = currentCaseId + "#" + index;
+    result.imageId = currentCaseId + "#" + seriesIndex + '#' + index;
     result.status = 'SUCCESS';
 
     result.imageBuf = dicomObj[userId][seriesIndex][index-1].byteArray;
@@ -101,25 +115,84 @@ Meteor.methods({
     result.getPixelData = function() {};
     result.minPixelValue = 0;
     result.maxPixelValue = 4096;
-    result.slope = dicomObj[userId][seriesIndex][index-1].string('x00281053').length === 0 ? 0 : parseInt(dicomObj[userId][seriesIndex][index-1].string('x00281053'));
-    result.intercept = dicomObj[userId][seriesIndex][index-1].string('x00281052').length === 0 ? -1024 : parseInt(dicomObj[userId][seriesIndex][index-1].string('x00281052'));
+    result.slope = dicomObj[userId][seriesIndex][index-1].string('x00281053') ? parseInt(dicomObj[userId][seriesIndex][index-1].string('x00281053')) : 0;
+    result.intercept = dicomObj[userId][seriesIndex][index-1].string('x00281052') ? parseInt(dicomObj[userId][seriesIndex][index-1].string('x00281052')) : -1024;
     result.windowCenter = -600;
     result.windowWidth = 1500;
-    result.columns = dicomObj[userId][seriesIndex][index-1].string('x00280011').length === 0 ? 512 : parseInt(dicomObj[userId][seriesIndex][index-1].string('x00280011'));
-    result.rows = dicomObj[userId][seriesIndex][index-1].string('x00280010').length === 0 ? 512 : parseInt(dicomObj[userId][seriesIndex][index-1].string('x00280010'));
+    result.columns = dicomObj[userId][seriesIndex][index-1].string('x00280011') ? parseInt(dicomObj[userId][seriesIndex][index-1].string('x00280011')) : 512;
+    result.rows = dicomObj[userId][seriesIndex][index-1].string('x00280010') ? parseInt(dicomObj[userId][seriesIndex][index-1].string('x00280010')) : 512;
     result.width = result.columns;
     result.height = result.rows;
     result.sizeInBytes = result.rows * result.columns * 2;
 
     var pixelspacing = dicomObj[userId][seriesIndex][index - 1].string('x00280030');
-    var spacings = pixelspacing.split("\\");
-    if (spacings.length === 2) {
-      result.rowPixelSpacing = parseFloat(spacings[0]);
-      result.columnPixelSpacing = parseFloat(spacings[1]);
+
+    if(pixelspacing) {
+      let spacings = pixelspacing.split("\\");
+      if (spacings.length === 2) {
+        result.rowPixelSpacing = parseFloat(spacings[0]);
+        result.columnPixelSpacing = parseFloat(spacings[1]);
+      }
     }
 
+    return result;
+  },
+
+  /**
+   * get parsed dicom information for thumbnails
+   */
+  getThumbnailDicoms() {
+    if(!thumbnailArray)  return {status: 'FAILURE'};
+
+    let result = {};
+    result.array = [];
+
+    result.status = 'SUCCESS';
+
+    for(let i = 0; i < thumbnailArray.length; i++) {
+      let colVal = thumbnailArray[i].string('x00280011') ? parseInt(thumbnailArray[i].string('x00280011')) : 512,
+          rowVal = thumbnailArray[i].string('x00280010') ? parseInt(thumbnailArray[i].string('x00280010')) : 512;
+      result.array.push({
+        imageBuf: thumbnailArray[i].byteArray,
+        pixelDataOffset: thumbnailArray[i].elements.x7fe00010.dataOffset,
+        pixelDataLength: thumbnailArray[i].elements.x7fe00010.length,
+        getPixelData: function() {},
+        minPixelValue: 0,
+        maxPixelValue: 4096,
+        slope: thumbnailArray[i].string('x00281053') ? parseInt(thumbnailArray[i].string('x00281053')) : 0,
+        intercept: thumbnailArray[i].string('x00281052') ? parseInt(thumbnailArray[i].string('x00281052')) : -1024,
+        windowCenter: -600,
+        windowWidth: 1500,
+        columns: colVal,
+        rows: rowVal,
+        width: colVal,
+        height: rowVal,
+        sizeInBytes: rowVal * colVal * 2
+      });
+    }
 
     return result;
   }
 
 });
+
+/**
+ * initialize thumbnails for series panel
+ * @param seriesIndex the corresponding series index for the thumbnail
+ * @param dirPath the directory path where the dicom stores for this series
+ */
+function initThumbnail(seriesIndex, dirPath) {
+  let fileNames = fs.readdirSync(dirPath);
+
+  for(let i = 0; i < fileNames.length; i++) {
+    let tokens = fileNames[i].split('_');
+
+    if(tokens[tokens.length - 1] === '1.dcm') {
+      let data = fs.readFileSync(path.join(dirPath, fileNames[i]));
+      thumbnailArray[seriesIndex] = dicomParser.parseDicom(data);
+      return;
+    }
+  }
+
+
+}

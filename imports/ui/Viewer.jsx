@@ -9,6 +9,7 @@ import dicomParse from 'dicom-parser';
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../library/cornerstoneTools';
 import FontAwesome from 'react-fontawesome';
+import { Cases } from '../api/cases';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
@@ -157,6 +158,7 @@ export default class Viewer extends Component {
         this.state = {
             container: {},
             dicomObj: {},
+            seriesList: [],
             circleVisible: true,
             index: 1,
             imageNumber: 0,
@@ -241,7 +243,6 @@ export default class Viewer extends Component {
             }
 
             cornerstone.enable(this.state.container);
-            cornerstone.enable(document.getElementById('thumbnail'));
             cornerstoneTools.addStackStateManager(this.state.container, 'stack');
             cornerstoneTools.toolColors.setToolColor("#ffcc33");
         });
@@ -274,11 +275,25 @@ export default class Viewer extends Component {
          */
         this.setScrollTool();
 
+        this.getThumbnails();
+
     }
 
     componentWillUnmount() {
         window.removeEventListener("resize", () => this.updateDimensions());
         window.clearInterval(intervalHandler);
+    }
+
+    getThumbnails() {
+      Meteor.call('getThumbnailDicoms', (err, result) => {
+        if(err) {
+          return console.error(err);
+        }
+
+        this.setState({
+          thumbnailArray: result.array
+        });
+      });
     }
 
     initMainCanvas(caseId, seriesIndex) {
@@ -358,15 +373,27 @@ export default class Viewer extends Component {
      * @param index image index
      */
     setSlice(curSeriesIndex, index) {
-        if (!this.state.dicomObj[index]) {
+        if(!this.state.dicomObj[curSeriesIndex]) {
+            let tempObj = Object.assign({}, this.state.dicomObj);
+            tempObj[curSeriesIndex] = {};
+            this.setState({
+              dicomObj: tempObj
+            });
+        }
+
+        if (!this.state.dicomObj[curSeriesIndex][index]) {
             Meteor.call('getDicom', curSeriesIndex, index, (err, result) => {
+                if(err) {
+                  return console.error(err);
+                }
+
                 let image = result;
                 let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
                 image.getPixelData = function () {
                     return pixelData
                 };
                 let currentObj = this.state.dicomObj;
-                currentObj[index] = image;
+                currentObj[curSeriesIndex][index] = image;
                 this.setState({
                     dicomObj: currentObj
                 });
@@ -375,7 +402,7 @@ export default class Viewer extends Component {
                 if (index === 1) {
                     viewport.scale = 1.2;
                 }
-                cornerstone.displayImage(this.state.container, this.state.dicomObj[index], viewport);
+                cornerstone.displayImage(this.state.container, this.state.dicomObj[curSeriesIndex][index], viewport);
 
                 let measurementData = {
                     currentImageIdIndex: this.state.index,
@@ -385,7 +412,7 @@ export default class Viewer extends Component {
                 cornerstoneTools.addToolState(this.state.container, 'stack', measurementData);
             });
         } else {
-            cornerstone.displayImage(this.state.container, this.state.dicomObj[index])
+            cornerstone.displayImage(this.state.container, this.state.dicomObj[curSeriesIndex][index])
         }
         let scrollbar = document.getElementById("scrollbar");
         scrollbar.value = index;
@@ -967,43 +994,84 @@ export default class Viewer extends Component {
             <FontAwesome style={{paddingLeft: '5px', position: 'absolute', marginTop: '5px'}} name='caret-down' size='lg'/>
     }
 
+    /**
+     * initialize series panel
+     */
     setSeriesPanelContent() {
-        // console.log(this.state.dicomObj[1]);
         if(this.state.isSeriesPanelOpened) {
-          this.enableThumbnailCanvas(document.getElementById('thumbnail'));
-        } else {
-          this.disableThumbnailCanvas(document.getElementById('thumbnail'));
-        }
-    }
+            if(this.state.seriesList.length === 0) {
+                let foundCase = Cases.findOne({_id: this.props.location.state});
 
-    enableThumbnailCanvas(element) {
-        let enabledElements = cornerstone.getEnabledElements();
-
-        for(let i = 0; i < enabledElements.length; i++) {
-          if(element === enabledElements[i]) {
-            return;
-          }
-
-          let image = this.state.dicomObj[1];
-          let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-          image.getPixelData = function () {
-              return pixelData;
-          };
-
-          $('#thumbnail').fadeIn({
-              done: function () {
-                  cornerstone.displayImage(element, image);
-              }
-          });
-        }
-    }
-
-    disableThumbnailCanvas(element) {
-        // cornerstone.disable(element);
-        $('#thumbnail').fadeOut({
-            done: function () {
-
+                this.setState({
+                    seriesList: foundCase.seriesList
+                }, function() {
+                    for(let i = 0; i < this.state.seriesList.length; i++) {
+                      let element = document.getElementById('thumbnail' + i);
+                      cornerstone.enable(element);
+                      this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
+                    }
+                });
+            } else {
+                for(let i = 0; i < this.state.seriesList.length; i++) {
+                    this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
+                }
             }
+
+
+        } else {
+            for(let i = 0; i < this.state.seriesList.length; i++) {
+                this.disableThumbnailCanvas(document.getElementById('thumbnail' + i));
+            }
+        }
+    }
+
+    /**
+     * handler to switch series when clicking thumbnails
+     * @param seriesIndex the index of requesting series
+     */
+    switchSeries(seriesIndex) {
+      if(this.state.curSeriesIndex === seriesIndex) return;
+
+      this.setState({
+        curSeriesIndex: seriesIndex
+      }, function() {
+        this.initMainCanvas(this.props.location.state, this.state.curSeriesIndex);
+        this.toggleSeriesPanel();
+      });
+    }
+
+    /**
+     * draw thumbnails onto canvas
+     * @param seriesIndex the index of requesting series
+     * @param element the DOM element that holds corresponding thumbnail canvas
+     */
+    enableThumbnailCanvas(seriesIndex, element) {
+      let enabledElements = cornerstone.getEnabledElements();
+
+      for(let i = 0; i < enabledElements.length; i++) {
+        if(element === enabledElements[i]) {
+          return;
+        }
+      }
+
+      let image = this.state.thumbnailArray[seriesIndex];
+      let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+      image.getPixelData = function () {
+        return pixelData;
+      };
+
+      $(element.parentNode).fadeIn(500, function () {
+        cornerstone.displayImage(element, image);
+      });
+    }
+
+    /**
+     * handler to switch series when clicking thumbnails
+     * @param element the DOM element that holds corresponding thumbnail canvas
+     */
+    disableThumbnailCanvas(element) {
+        $(element.parentNode).fadeOut(500, function() {
+          // cornerstone.disable(element);
         });
     }
 
@@ -1241,9 +1309,24 @@ export default class Viewer extends Component {
                         WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
                       }}
                     >
-                      <div id="thumbnail" onClick={() => {
-                          //this.initMainCanvas(this.props.location.state, this.state.curSeriesIndex + 2);
-                        }}></div>
+                      {
+                        this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
+                          return (
+                            <div className={"thumbnail-container " + ( this.state.curSeriesIndex === index ? 'active-thumbnail' : '')} key={'thumbnail' + index}>
+                              <div className="thumbnailDiv" id={'thumbnail' + index} onDoubleClick={() => { this.switchSeries(index) }}></div>
+                            </div>
+                          )
+                        })
+                      }
+                      <div className="thumbnail-container">
+                        <div className="thumbnailDiv"></div>
+                      </div>
+                      <div className="thumbnail-container">
+                        <div className="thumbnailDiv"></div>
+                      </div>
+                      <div className="thumbnail-container">
+                        <div className="thumbnailDiv"></div>
+                      </div>
                     </div>
                   }
                 </Motion>
