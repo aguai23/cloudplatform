@@ -21,7 +21,7 @@ export class CaseList extends Component {
     super(props);
 
     this.state = {
-      cases: Cases.find({ collectionID: this.props.params.collectionId }).fetch(),
+      cases: Cases.find({ collectionName: this.props.params.collectionName }).fetch(),
       isSearchClicked: false
     };
 
@@ -114,7 +114,7 @@ export class CaseList extends Component {
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
-              <Link to={`/newCase?collection=${this.props.params.collectionId}`}>新建</Link>
+              <Link to={`/newCase?collection=${this.props.params.collectionName}`}>新建</Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>
@@ -138,7 +138,7 @@ export class CaseList extends Component {
             </thead>
             <tbody>
               {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
-                let collectionCol = this.state.isSearchClicked ? <td>{specificCase.collectionID}</td> : undefined;
+                let collectionCol = this.state.isSearchClicked ? <td>{specificCase.collectionName}</td> : undefined;
                 return (
                   <tr key={specificCase._id}>
                     <td>{specificCase.patientName}</td>
@@ -149,7 +149,7 @@ export class CaseList extends Component {
                     <td>
                       <Link to={{
                         pathname: '/viewer',
-                        state: specificCase._id
+                        state: { caseId: specificCase._id }
                       }} className="glyphicon glyphicon-picture"></Link>
                       &nbsp;&nbsp;&nbsp;
                     <Link to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil"></Link>
@@ -183,10 +183,8 @@ CaseList.contextTypes = {
 
 export default withTracker(props => {
   const handle = Meteor.subscribe('cases');
-
   return {
-    // cases: Cases.find({collectionId: props.params.collectionId}).fetch(),
-    cases: Cases.find({ collectionID: props.params.collectionId }).fetch(),
+    cases: Cases.find({ collectionName: props.params.collectionName }).fetch(),
     listLoading: !handle.ready()
   }
 })(CaseList);

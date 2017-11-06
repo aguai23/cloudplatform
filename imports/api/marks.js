@@ -41,9 +41,12 @@ const MarkSchema = new SimpleSchema({
     label: '时间',
     type: Date
   },
-  //TODO: caseId --> case.serisNumber
   caseId: {
     label: '所属病例',
+    type: String
+  },
+  seriesInstanceUID: {
+    label: 'seriesInstanceUID',
     type: String
   },
   ownerId: {

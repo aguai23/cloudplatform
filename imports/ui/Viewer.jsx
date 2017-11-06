@@ -11,10 +11,10 @@ import cornerstoneTools from '../library/cornerstoneTools';
 import FontAwesome from 'react-fontawesome';
 import { Cases } from '../api/cases';
 import { Marks } from '../api/marks';
+import { Cases } from '../api/cases';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
-
 import "./css/viewer.css";
 
 
@@ -174,7 +174,7 @@ export default class Viewer extends Component {
             timer: undefined,
             lastY: 0,
             startY: 0,
-            curSeriesIndex: 0,
+            curSeriesIndex: this.props.location.state.index ? this.props.location.state.index : 0,
 
             isSeriesPanelOpened: false,
             isDiagnosisPanelOpened: false,
@@ -183,11 +183,9 @@ export default class Viewer extends Component {
             isRotateMenuOpened: false
 
         };
-
         this.updateInfo = this.updateInfo.bind(this);
         this.setSlice = this.setSlice.bind(this);
         this.onDragScrollBar = this.onDragScrollBar.bind(this);
-        Meteor.subscribe('cases');
     }
 
     /**
@@ -268,7 +266,7 @@ export default class Viewer extends Component {
         /**
          * send a request to require server load all cases first
          */
-        this.initMainCanvas(this.props.location.state, this.state.curSeriesIndex);
+        this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
 
         /**
          * set scroll tool for default mousewheel operation
@@ -297,29 +295,29 @@ export default class Viewer extends Component {
     }
 
     initMainCanvas(caseId, seriesIndex) {
-      Meteor.call('prepareDicoms', caseId, seriesIndex, (error, result) => {
-          if (error) {
-              console.error(error)
-          } else {
-              if (result.status === "SUCCESS") {
-                  this.setState({
-                      imageNumber: result.imageNumber,
-                      patientId: result.patientId,
-                      patientName: result.patientName,
-                      rows: result.rows,
-                      cols: result.cols,
-                      pixelSpacing: result.pixelSpacing,
-                      thickness: result.thickness
-                  });
-                  this.setSlice(seriesIndex, this.state.index);
-                  //set info here
-                  let element = $("#viewer");
-                  element.on("CornerstoneImageRendered", this.updateInfo);
+        Meteor.call('prepareDicoms', caseId, seriesIndex, (error, result) => {
+            if (error) {
+                console.error(error)
+            } else {
+                if (result.status === "SUCCESS") {
+                    this.setState({
+                        imageNumber: result.imageNumber,
+                        patientId: result.patientId,
+                        patientName: result.patientName,
+                        rows: result.rows,
+                        cols: result.cols,
+                        pixelSpacing: result.pixelSpacing,
+                        thickness: result.thickness
+                    });
+                    this.setSlice(seriesIndex, this.state.index);
+                    //set info here
+                    let element = $("#viewer");
+                    element.on("CornerstoneImageRendered", this.updateInfo);
 
-              }
+                }
 
-          }
-      });
+            }
+        });
     }
 
     /**
@@ -407,7 +405,7 @@ export default class Viewer extends Component {
                 let measurementData = {
                     currentImageIdIndex: this.state.index,
                     imageIds: image.imageId
-                }
+                };
 
                 cornerstoneTools.addToolState(this.state.container, 'stack', measurementData);
             });
@@ -476,13 +474,13 @@ export default class Viewer extends Component {
      * open/close series panel with slide effect
      */
     toggleSeriesPanel() {
-      this.setState({isSeriesPanelOpened: !this.state.isSeriesPanelOpened}, (err) => {
-        if(err) {
-          return console.error(err);
-        }
+        this.setState({isSeriesPanelOpened: !this.state.isSeriesPanelOpened}, (err) => {
+            if(err) {
+                return console.error(err);
+            }
 
-        this.setSeriesPanelContent();
-      });
+            this.setSeriesPanelContent();
+        });
     }
 
     /**
@@ -614,17 +612,21 @@ export default class Viewer extends Component {
             })
         });
 
+        let caseInfo = Cases.findOne({_id:this.props.location.state.caseId});
+        let seriesInstanceUID = caseInfo.seriesList[this.state.curSeriesIndex].seriesInstanceUID
+
         let mark = {
             imageIdToolState: appState.imageIdToolState,
             elementToolState: appState.elementToolState,
             elementViewport: appState.elementViewport,
             source: 'USER',
             createAt: new Date(),
-            caseId: this.props.location.state,
+            caseId: this.props.location.state.caseId,            
+            seriesInstanceUID: seriesInstanceUID,
             ownerId: Meteor.userId(),
         };
 
-        let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state });
+        let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
         if (oldState) {
             mark._id = oldState._id;
             Meteor.call('modifyMark', mark, (error) => {
@@ -651,24 +653,30 @@ export default class Viewer extends Component {
     restoreState() {
         let elements = [this.state.container];
         let currentState = cornerstoneTools.appState.save(elements);
-        let oldState = Marks.findOne({ ownerId: Meteor.userId(), caseId: this.props.location.state });
-
+        let caseInfo = Cases.findOne({_id:this.props.location.state.caseId});
+        let seriesInstanceUID = caseInfo.seriesList[this.state.curSeriesIndex].seriesInstanceUID
+        let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID:seriesInstanceUID });
         /**
          * save system mark to old mark
          */
+        if(oldState){
         _.mapObject(currentState.imageIdToolState, (currentVal, currentImageId) => {
-            _.mapObject(oldState.imageIdToolState, (oldVal, oldImageId) => {
-                if (currentImageId === oldImageId) {
-                    _.mapObject(currentVal, (data, type) => {
-                        if (type === 'ellipticalRoi') {
-                            oldState.imageIdToolState[oldImageId]['ellipticalRoi']['data'] = data.data
-                        }
-                    })
-                }
-            })
-        });
+          _.mapObject(oldState.imageIdToolState, (oldVal, oldImageId) => {
+              if (currentImageId === oldImageId) {
+                  _.mapObject(currentVal, (data, type) => {
+                      if (type === 'ellipticalRoi') {
+                          oldState.imageIdToolState[oldImageId]['ellipticalRoi']['data'] = data.data
+                      }
+                  })
+              }
+          })
+      });
 
-        cornerstoneTools.appState.restore(oldState)
+      cornerstoneTools.appState.restore(oldState)
+        } else {
+          toast.warning('无历史标注!')
+        }
+
     }
 
     /**
@@ -722,86 +730,41 @@ export default class Viewer extends Component {
                 if(this.state.isLoadingPanelFinished) {
                     return;
                 }
-
-                // HTTP.call('GET', 'http://192.168.12.128:5000/lung_nodule/' + 'home/cai/Documents/Data/test', (error, res) => {
-                HTTP.call('GET', 'http://192.168.12.158:3000/test', (error, res) => {
-                    if(error) {
-                        return console.error(error);
-                    }
-
-                    // console.log(res);
-
-                    this.setState({isLoadingPanelFinished: true});
-
-                    const algorithmInfo = JSON.parse(sessionStorage.getItem('algorithm'));
-                    cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-
-                    let caseId = this.props.location.state;
-                    let elements = [this.state.container];
-                    let currentState = cornerstoneTools.appState.save(elements);
-                    if (algorithmInfo) {
-                        if (!this.state.diagnosisResult) {
-                            this.extract(algorithmInfo.temp);
+                let foundcase = Cases.findOne({_id:this.props.location.state.caseId});
+                // console.log(this.props.location.state);
+                // console.log(foundcase);
+                const start = new Date().getTime();
+                console.log(Meteor.settings.public.ALGORITHM_SERVER);
+                HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
+                    foundcase.seriesList[this.state.curSeriesIndex].path,
+                    (error, res) => {
+                        if(error) {
+                            return console.error(error);
                         }
-                        _.mapObject(algorithmInfo.picList, (val, key) => {
-                            if (!currentState.imageIdToolState[`${caseId}#${key}`]) {
-                                currentState.imageIdToolState[`${caseId}#${key}`] = { ellipticalRoi: { data: [] } }
-                            }
-                            currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: algorithmInfo.picList[key] }
-                        })
-                    } else {
-                        let temp = {
-                            "1_77": { "y1": 127, "y0": 80, "x0": 190, "x1": 227, "prob": 0.99508569469171382 },
-                            "1_76": { "y1": 133, "y0": 77, "x0": 189, "x1": 231, "prob": 0.99508569469171382 },
-                            "1_75": { "y1": 136, "y0": 77, "x0": 189, "x1": 237, "prob": 0.99508569469171382 },
-                            "1_74": { "y1": 135, "y0": 78, "x0": 190, "x1": 240, "prob": 0.99508569469171382 },
-                            "1_73": { "y1": 133, "y0": 82, "x0": 197, "x1": 245, "prob": 0.99508569469171382 },
-                            "1_72": { "y1": 135, "y0": 85, "x0": 200, "x1": 245, "prob": 0.99508569469171382 },
-                            "1_71": { "y1": 135, "y0": 93, "x0": 210, "x1": 245, "prob": 0.99508569469171382 },
-                            "1_70": { "y1": 135, "y0": 98, "x0": 211, "x1": 245, "prob": 0.99508569469171382 },
-                            "1_69": { "y1": 132, "y0": 107, "x0": 219, "x1": 243, "prob": 0.99508569469171382 },
-                            "1_68": { "y1": 128, "y0": 110, "x0": 224, "x1": 243, "prob": 0.99508569469171382 },
-                            "2_113": { "y1": 406, "y0": 385, "x0": 163, "x1": 183, "prob": 0.99221461777707087 },
-                            "2_112": { "y1": 408, "y0": 382, "x0": 158, "x1": 186, "prob": 0.99221461777707087 },
-                            "2_111": { "y1": 406, "y0": 379, "x0": 160, "x1": 186, "prob": 0.99221461777707087 },
-                            "2_110": { "y1": 405, "y0": 379, "x0": 163, "x1": 186, "prob": 0.99221461777707087 },
-                            "3_87": { "y1": 135, "y0": 109, "x0": 155, "x1": 172, "prob": 0.99058158466960267 },
-                            "3_86": { "y1": 148, "y0": 101, "x0": 147, "x1": 186, "prob": 0.99058158466960267 },
-                            "3_85": { "y1": 149, "y0": 91, "x0": 147, "x1": 192, "prob": 0.99058158466960267 },
-                            "3_84": { "y1": 148, "y0": 90, "x0": 146, "x1": 196, "prob": 0.99058158466960267 },
-                            "3_83": { "y1": 146, "y0": 88, "x0": 150, "x1": 200, "prob": 0.99058158466960267 },
-                            "3_82": { "y1": 146, "y0": 88, "x0": 154, "x1": 204, "prob": 0.99058158466960267 },
-                            "3_81": { "y1": 146, "y0": 88, "x0": 158, "x1": 205, "prob": 0.99058158466960267 },
-                            "3_80": { "y1": 146, "y0": 90, "x0": 160, "x1": 205, "prob": 0.99058158466960267 },
-                            "3_79": { "y1": 146, "y0": 91, "x0": 165, "x1": 207, "prob": 0.99058158466960267 },
-                            "3_78": { "y1": 146, "y0": 93, "x0": 168, "x1": 207, "prob": 0.99058158466960267 },
-                            "3_77": { "y1": 141, "y0": 98, "x0": 178, "x1": 202, "prob": 0.99058158466960267 },
-                            "4_75": { "y1": 250, "y0": 232, "x0": 333, "x1": 355, "prob": 0.98716848544019287 },
-                            "4_74": { "y1": 251, "y0": 230, "x0": 329, "x1": 357, "prob": 0.98716848544019287 },
-                            "4_73": { "y1": 251, "y0": 230, "x0": 328, "x1": 360, "prob": 0.98716848544019287 },
-                            "4_72": { "y1": 251, "y0": 230, "x0": 328, "x1": 359, "prob": 0.98716848544019287 },
-                            "4_71": { "y1": 250, "y0": 235, "x0": 334, "x1": 352, "prob": 0.98716848544019287 },
-                            "5_69": { "y1": 151, "y0": 104, "x0": 240, "x1": 269, "prob": 0.982299394580053 },
-                            "5_68": { "y1": 154, "y0": 104, "x0": 237, "x1": 272, "prob": 0.982299394580053 },
-                            "5_67": { "y1": 157, "y0": 106, "x0": 235, "x1": 283, "prob": 0.982299394580053 },
-                            "5_66": { "y1": 156, "y0": 106, "x0": 238, "x1": 290, "prob": 0.982299394580053 },
-                            "5_65": { "y1": 152, "y0": 107, "x0": 243, "x1": 296, "prob": 0.982299394580053 },
-                            "5_64": { "y1": 148, "y0": 110, "x0": 253, "x1": 295, "prob": 0.982299394580053 }
-                        };
+                        const end = new Date().getTime();
+                        console.log("total time " + (end - start)/1000);
 
+
+                        this.setState({isLoadingPanelFinished: true});
+                        cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
+
+                        let caseId = this.props.location.state.caseId;
+                        let elements = [this.state.container];
+                        let currentState = cornerstoneTools.appState.save(elements);
+                        let result = JSON.parse(res.content);
                         if (!this.state.diagnosisResult) {
-                            this.extract(temp);
+                            this.extract(result);
                         }
 
-                        let picList = {}
-                        _.mapObject(temp, (val, key) => {
+                        let picList = {};
+                        _.mapObject(result, (val, key) => {
                             val.num = key.split("_")[0];
                             if (picList[key.split("_")[1]] != undefined) {
                                 picList[key.split("_")[1]].push(val)
                             } else {
                                 picList[key.split("_")[1]] = [val]
                             }
-                        })
+                        });
                         _.mapObject(picList, (val, key) => {
                             if (!currentState.imageIdToolState[`${caseId}#${key}`]) {
                                 currentState.imageIdToolState[`${caseId}#${key}`] = { ellipticalRoi: { data: [] } }
@@ -842,13 +805,12 @@ export default class Viewer extends Component {
                                 standard.handles.end.y = obj.x1;
                                 standard.handles.textBox.index = obj.num;
                                 tempList.push(standard)
-                            })
-                            picList[key] = tempList
-                            sessionStorage.setItem('algorithm', JSON.stringify({ temp, picList }))
+                            });
+                            picList[key] = tempList;
                             currentState.imageIdToolState[`${caseId}#${key}`].ellipticalRoi = { data: tempList }
                         })
-                    }
-                });
+
+                    });
             } else {
                 $('#diagnosisInfo').fadeOut({
                     done: function () {
@@ -1171,41 +1133,41 @@ export default class Viewer extends Component {
 
         return (
             <div id="body" style={style.body}>
-              <div id="top" style={style.top}>
-                <Navbar inverse collapseOnSelect style={{ marginBottom: '0'}}>
-                  <Navbar.Collapse style={{minWidth: '1300px'}}>
-                    <Navbar.Text className="button" onClick={() => this.toggleSeriesPanel()}>
-                        <FontAwesome name='files-o' size='2x' />
-                        <br />
-                        <span>序列</span>
-                    </Navbar.Text>
-                    <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                      <NavItem eventKey={1} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='adjust' size='2x' />
-                        </div>
-                        <span>窗宽窗位</span>
-                      </NavItem>
-                      <NavItem eventKey={2} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='search' size='2x' />
-                        </div>
-                        <span>缩放</span>
-                      </NavItem>
-                      <NavItem eventKey={3} href="#">
-                        <div style={style.icon}>
-                          <FontAwesome name='hand-paper-o' size='2x' />
-                        </div>
-                        <span>拖动</span>
-                      </NavItem>
-                    </Nav>
-                    <Navbar.Text className="button" onClick={() => this.invertViewport()}>
-                      <FontAwesome name='square' size='2x' />
-                      <br />
-                      <span>反色</span>
-                    </Navbar.Text>
-                    <Navbar.Text className="button">
-                      <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={rotatePopover} onClick={() => this.toggleRotatePopover()} onExited={() => this.toggleRotatePopover()}>
+                <div id="top" style={style.top}>
+                    <Navbar inverse collapseOnSelect style={{ marginBottom: '0'}}>
+                        <Navbar.Collapse style={{minWidth: '1300px'}}>
+                            <Navbar.Text className="button" onClick={() => this.toggleSeriesPanel()}>
+                                <FontAwesome name='files-o' size='2x' />
+                                <br />
+                                <span>序列</span>
+                            </Navbar.Text>
+                            <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
+                                <NavItem eventKey={1} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='adjust' size='2x' />
+                                    </div>
+                                    <span>窗宽窗位</span>
+                                </NavItem>
+                                <NavItem eventKey={2} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='search' size='2x' />
+                                    </div>
+                                    <span>缩放</span>
+                                </NavItem>
+                                <NavItem eventKey={3} href="#">
+                                    <div style={style.icon}>
+                                        <FontAwesome name='hand-paper-o' size='2x' />
+                                    </div>
+                                    <span>拖动</span>
+                                </NavItem>
+                            </Nav>
+                            <Navbar.Text className="button" onClick={() => this.invertViewport()}>
+                                <FontAwesome name='square' size='2x' />
+                                <br />
+                                <span>反色</span>
+                            </Navbar.Text>
+                            <Navbar.Text className="button">
+                                <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={rotatePopover} onClick={() => this.toggleRotatePopover()} onExited={() => this.toggleRotatePopover()}>
                         <span>
                           <FontAwesome name='cog' size='2x' />
                           <br />
@@ -1309,6 +1271,7 @@ export default class Viewer extends Component {
                         WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
                       }}
                     >
+<<<<<<< HEAD
                       {
                         this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
                           return (
@@ -1327,6 +1290,11 @@ export default class Viewer extends Component {
                       <div className="thumbnail-container">
                         <div className="thumbnailDiv"></div>
                       </div>
+=======
+                      <div id="thumbnail" onClick={() => {
+                          //this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex + 2);
+                        }}></div>
+>>>>>>> af4ac6f33e97b482da0db8203a653640a67b5756
                     </div>
                   }
                 </Motion>
@@ -1384,3 +1352,4 @@ export default class Viewer extends Component {
     }
 }
 Meteor.subscribe('marks');
+Meteor.subscribe('cases');

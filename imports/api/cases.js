@@ -146,8 +146,8 @@ const CaseSchema = new SimpleSchema({
         blackbox: true,
         optional: true
     },
-    collectionID: {
-        label: 'collectionId',
+    collectionName: {
+        label: 'collectionName',
         type: String
     },
     creator: {
