@@ -1273,21 +1273,24 @@ export default class Viewer extends Component {
                       {
                         this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
                           return (
-                            <div className={"thumbnail-container " + ( this.state.curSeriesIndex === index ? 'active-thumbnail' : '')} key={'thumbnail' + index}>
-                              <div className="thumbnailDiv" id={'thumbnail' + index} onDoubleClick={() => { this.switchSeries(index) }}></div>
+                            <div key={'thumbnail' + index} onDoubleClick={() => { this.switchSeries(index) }}>
+                              <div className={"thumbnail-container " + ( this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
+                                <div className="thumbnailDiv" id={'thumbnail' + index}></div>
+                              </div>
+                              <div className="thumbnail-info">
+                                <div className="col-sm-8">
+                                  {this.state.seriesList[index].seriesDescription}
+                                </div>
+                                <div className="col-sm-4" style={{textAlign: 'center', color: '#91b9cd'}}>
+                                  <div><b style={{color: '#4da2f2'}}>S</b>{' ' + this.state.seriesList[index].seriesNumber}</div>
+                                  <div><FontAwesome name='ellipsis-v' size='lg' /></div>
+                                  <div><FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}</div>
+                                </div>
+                              </div>
                             </div>
                           )
                         })
                       }
-                      <div className="thumbnail-container">
-                        <div className="thumbnailDiv"></div>
-                      </div>
-                      <div className="thumbnail-container">
-                        <div className="thumbnailDiv"></div>
-                      </div>
-                      <div className="thumbnail-container">
-                        <div className="thumbnailDiv"></div>
-                      </div>
                     </div>
                   }
                 </Motion>
