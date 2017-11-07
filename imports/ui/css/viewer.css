@@ -92,22 +92,7 @@ input[type=range]::-webkit-slider-thumb:active {
 }
 
 .seriesPanel::-webkit-scrollbar {
-  /*width:12px;*/
-}
-
-.seriesPanel::-webkit-scrollbar:active {
-  /*width:12px;*/
-  background-color: red;
-}
-
-.seriesPanel::-webkit-scrollbar-track {
-  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-  border-radius: 10px;
-}
-
-.seriesPanel::-webkit-scrollbar-thumb {
-  border-radius: 10px;
-  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+  display: none;
 }
 
 .thumbnail-container {
@@ -115,7 +100,7 @@ input[type=range]::-webkit-slider-thumb:active {
   padding: 20px;
   margin: 0 auto;
   margin-top: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   border: 1px solid #4da2f2;
   border-radius: 10px;
   cursor: pointer;
@@ -127,6 +112,15 @@ input[type=range]::-webkit-slider-thumb:active {
 
 .thumbnailDiv {
   width: 160px;
-  height: 160px;
+  height: 120px;
   margin: 0 auto
+}
+
+.thumbnail-info {
+  color: white;
+  font-size: 10px;
+  font-weight: 100;
+  padding-left: 20px;
+  padding-right: 20px;
+  cursor: pointer;
 }

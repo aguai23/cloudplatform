@@ -671,7 +671,7 @@ export default class Viewer extends Component {
           }
         })
       });
-      
+
       cornerstoneTools.appState.restore(oldState)
     } else {
       toast.warning('无历史标注!')
@@ -816,11 +816,11 @@ export default class Viewer extends Component {
               toast.success('诊断完成')
               const end = new Date().getTime();
               console.log("total time " + (end - start) / 1000);
-  
-  
+
+
               this.setState({ isLoadingPanelFinished: true });
               cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-  
+
               let caseId = this.props.location.state.caseId;
               let elements = [this.state.container];
               let currentState = cornerstoneTools.appState.save(elements);
@@ -828,7 +828,7 @@ export default class Viewer extends Component {
               if (!this.state.diagnosisResult) {
                 this.extract(result);
               }
-  
+
               let picList = {};
               _.mapObject(result, (val, key) => {
                 val.num = key.split("_")[0];
@@ -881,7 +881,7 @@ export default class Viewer extends Component {
                 });
                 picList[key] = tempList;
                 currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
-              }) 
+              })
             });
         }
       } else {
@@ -1347,21 +1347,24 @@ export default class Viewer extends Component {
               {
                 this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
                   return (
-                    <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')} key={'thumbnail' + index}>
-                      <div className="thumbnailDiv" id={'thumbnail' + index} onDoubleClick={() => { this.switchSeries(index) }}></div>
+                    <div key={'thumbnail' + index} onDoubleClick={() => { this.switchSeries(index) }}>
+                      <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
+                        <div className="thumbnailDiv" id={'thumbnail' + index}></div>
+                      </div>
+                      <div className="thumbnail-info">
+                        <div className="col-sm-8">
+                          {this.state.seriesList[index].seriesDescription}
+                        </div>
+                        <div className="col-sm-4" style={{ textAlign: 'center', color: '#91b9cd' }}>
+                          <div><b style={{ color: '#4da2f2' }}>S</b>{' ' + this.state.seriesList[index].seriesNumber}</div>
+                          <div><FontAwesome name='ellipsis-v' size='lg' /></div>
+                          <div><FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}</div>
+                        </div>
+                      </div>
                     </div>
                   )
                 })
               }
-              <div className="thumbnail-container">
-                <div className="thumbnailDiv"></div>
-              </div>
-              <div className="thumbnail-container">
-                <div className="thumbnailDiv"></div>
-              </div>
-              <div className="thumbnail-container">
-                <div className="thumbnailDiv"></div>
-              </div>
             </div>
           }
         </Motion>

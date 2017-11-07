@@ -423,6 +423,7 @@ export class AddCase extends Component {
           let xhr = new XMLHttpRequest();
           let formData = new FormData();
           formData.append('path', path);
+          console.log('start parsing', new Date());
           let proms = [];
           for (let i = 0; i < files.length; i++) {
             proms.push(new Promise((resolve, reject) => this.renameFile(files[i], resolve)));
@@ -430,6 +431,7 @@ export class AddCase extends Component {
 
           let self = this;
           Promise.all(proms).then(function(result) {
+            console.log('after parsing', new Date());
             for(let i = 0; i < result.length; i++) {
               formData.append(path, files[i], result[i]);
             }
@@ -504,6 +506,7 @@ export class AddCase extends Component {
   }
 
   onUploadComplete(res) {
+    console.log('complete uploading', new Date());
     const { Case, oldCase, currentSeries } = this.state;
     let seriesList = oldCase ? oldCase.seriesList : Case.seriesList;
     _.each(seriesList, (obj, index) => {
