@@ -16,20 +16,18 @@ Cases.deny({
 });
 
 const diagnose = new SimpleSchema({
-  seriesNumber: {
-    label: 'seriesNumber',
+    seriesInstanceUID: {
+    label: 'seriesInstanceUID',
     type: String
   },
   circle: {
     label: 'circleResult',
-    type: Object,
-    blackbox: true,
+    type: String,
     optional: true
   },
   border: {
     label: 'borderResult',
-    type: Object,
-    blackbox: true,
+    type: String,
     optional: true
   }
 });

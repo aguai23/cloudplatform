@@ -104,8 +104,8 @@ Meteor.methods({
     if(!userId || !dicomObj[userId][seriesIndex][index-1])  return {status: 'FAILURE'};
 
     var result = {};
-
-    result.imageId = currentCaseId + "#" + seriesIndex + '#' + index;
+    let seriesNumber = dicomObj[userId][seriesIndex][index-1].string('x00200011')?dicomObj[userId][seriesIndex][index-1].string('x00200011'):0
+    result.imageId = currentCaseId + "#" + seriesNumber + '#' + index;
     result.status = 'SUCCESS';
 
     result.imageBuf = dicomObj[userId][seriesIndex][index-1].byteArray;
