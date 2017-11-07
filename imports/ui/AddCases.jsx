@@ -407,11 +407,25 @@ export class AddCase extends Component {
     reader.readAsArrayBuffer(file);
   }
 
+  isDicomFile(file) {
+    let fileName = file.name;
+    return fileName.substring(fileName.lastIndexOf('.') + 1) === 'dcm';
+  }
+
   selectFile() {
+    console.log('upload started', new Date());
     let files = document.getElementById('customUploader').files;
     if (files && files.length > 0) {
       let selectedFiles = [];
-      this.parseSingleDicom(files[0], (res) => {
+      let firstDicomIndex = 0;
+
+      // find first dicom file
+      while(!this.isDicomFile(files[firstDicomIndex])) {
+        firstDicomIndex++;
+      }
+
+      // parse first dicom file to get series information
+      this.parseSingleDicom(files[firstDicomIndex], (res) => {
         let seriesInstanceUIDList = this.state.seriesInstanceUIDList && this.state.seriesInstanceUIDList.length > 0 ? this.state.seriesInstanceUIDList : [];
         if (seriesInstanceUIDList.indexOf(res.seriesInstanceUID) < 0) {
           let caseInstance = res;
@@ -423,15 +437,18 @@ export class AddCase extends Component {
           let xhr = new XMLHttpRequest();
           let formData = new FormData();
           formData.append('path', path);
-          console.log('start parsing', new Date());
+          console.log('parsing started', new Date());
           let proms = [];
           for (let i = 0; i < files.length; i++) {
-            proms.push(new Promise((resolve, reject) => this.renameFile(files[i], resolve)));
+            // upload only dicom files
+            if(this.isDicomFile(files[i])) {
+              proms.push(new Promise((resolve, reject) => this.renameFile(files[i], resolve)));
+            }
           }
 
           let self = this;
           Promise.all(proms).then(function(result) {
-            console.log('after parsing', new Date());
+            console.log('parsing completed', new Date());
             for(let i = 0; i < result.length; i++) {
               formData.append(path, files[i], result[i]);
             }
@@ -506,7 +523,7 @@ export class AddCase extends Component {
   }
 
   onUploadComplete(res) {
-    console.log('complete uploading', new Date());
+    console.log('upload completed', new Date());
     const { Case, oldCase, currentSeries } = this.state;
     let seriesList = oldCase ? oldCase.seriesList : Case.seriesList;
     _.each(seriesList, (obj, index) => {
