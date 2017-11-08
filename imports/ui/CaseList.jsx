@@ -104,6 +104,7 @@ export class CaseList extends Component {
         <th>设备</th>
         <th>影像时间</th>
         <th>生日</th>
+        <th>影像描述</th>
         <th>操作</th>
       </tr>  :
       <tr><th>未找到符合搜索条件的病例</th></tr>;
@@ -151,6 +152,7 @@ export class CaseList extends Component {
                   <td>{specificCase.modality}</td>
                   <td>{specificCase.studyDate}</td>
                   <td>{specificCase.patientBirthDate}</td>
+                  <td>{specificCase.studyDescription}</td>
                   {collectionCol}
                   <td>
                     <Link to={{

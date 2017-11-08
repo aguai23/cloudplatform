@@ -179,7 +179,8 @@ export default class Viewer extends Component {
       isDiagnosisPanelOpened: false,
       isLoadingPanelFinished: false,
       isMagnifyToolOpened: false,
-      isRotateMenuOpened: false
+      isRotateMenuOpened: false,
+      imageLoaded: false
 
     };
     this.updateInfo = this.updateInfo.bind(this);
@@ -243,17 +244,6 @@ export default class Viewer extends Component {
       cornerstoneTools.addStackStateManager(this.state.container, 'stack');
       cornerstoneTools.toolColors.setToolColor("#ffcc33");
       
-      cornerstoneTools.rectangleRoi.deactivate(this.state.container, 1);
-      cornerstoneTools.wwwc.deactivate(this.state.container, 1);
-      cornerstoneTools.pan.deactivate(this.state.container, 1);
-      cornerstoneTools.zoom.deactivate(this.state.container, 1);
-      cornerstoneTools.zoomWheel.deactivate(this.state.container);
-      cornerstoneTools.length.deactivate(this.state.container, 1);
-      cornerstoneTools.probe.deactivate(this.state.container, 1);
-      cornerstoneTools.angle.deactivate(this.state.container, 1);
-      cornerstoneTools.highlight.disable(this.state.container, 1);
-      cornerstoneTools.magnify.deactivate(this.state.container, 1);
-      cornerstoneTools.arrowAnnotate.deactivate(this.state.container, 1);
     });
 
     /**
@@ -419,6 +409,10 @@ export default class Viewer extends Component {
         };
 
         cornerstoneTools.addToolState(this.state.container, 'stack', measurementData);
+        if (! this.state.imageLoaded) {
+          this.disableAllTools();
+          this.state.imageLoaded = true;
+        }
       });
     } else {
       cornerstone.displayImage(this.state.container, this.state.dicomObj[curSeriesIndex][index])
@@ -428,6 +422,7 @@ export default class Viewer extends Component {
     this.setState({
       index: index
     });
+
   }
 
   /**
