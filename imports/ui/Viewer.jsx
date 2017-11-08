@@ -947,9 +947,10 @@ export default class Viewer extends Component {
    * clear all tool data, e.g. rec, probe and angle
    */
   clearToolData() {
-    let toolState = cornerstoneTools.globalImageIdSpecificToolStateManager.toolState;
+    let elements = [this.state.container];
+    let currentState = cornerstoneTools.appState.save(elements);
     let element = cornerstone.getEnabledElement(this.state.container);
-
+    let toolState = currentState.imageIdToolState;
     if (!toolState.hasOwnProperty(element.image.imageId)) {
       return;
     }
@@ -1413,7 +1414,7 @@ export default class Viewer extends Component {
               <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
               <br />
               <span className="pull-left">层厚: {this.state.thickness} mm</span>
-              <br/>
+              <br />
               <span className="pull-left">像素间距: {this.state.pixelSpacing} </span>
 
             </div>
