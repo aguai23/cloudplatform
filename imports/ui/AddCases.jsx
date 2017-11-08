@@ -263,9 +263,6 @@ export class AddCase extends Component {
           collectionName: this.state.collectionName,
           creator: Meteor.userId(),
         }
-        if (Case.studyInstanceUID) {
-          standardCase._id = Case.studyInstanceUID
-        }
 
         Meteor.call('insertCase', standardCase, (error) => {
           if (error) {
