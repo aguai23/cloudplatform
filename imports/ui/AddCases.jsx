@@ -11,6 +11,7 @@ import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
 import { withTracker } from 'meteor/react-meteor-data';
 import { Line } from 'rc-progress';
+import FontAwesome from 'react-fontawesome';
 
 import dicomParser from 'dicom-parser';
 
@@ -546,11 +547,10 @@ export class AddCase extends Component {
     });
     this.setState(oldCase ? oldCase : Case)
     toast.success("上传成功", { position: toast.POSITION.BOTTOM_RIGHT });
-    // let inputDOM = ReactDOM.findDOMNode(this.refs.customAttributes)
-    // inputDOM.innerHTML=`<input type="file" id="customUploader" ref='customAttributes' multiple onChange={() => this.selectFile()}></input>`;
-    // console.log(ReactDOM.findDOMNode(this.refs.customAttributes).value)
-    // console.log(ReactDOM.findDOMNode(this.refs.customAttributes).files)
-    //TODO: clear fileList after upload
+
+    this.setState({
+      selectedFiles: []
+    });
   }
 
   render() {
@@ -560,8 +560,21 @@ export class AddCase extends Component {
     const Case = this.state.Case;
 
     return (
-      <div className="container">
-        <h3>{oldCase ? `修改病例` : '添加新病例'}</h3>
+      <div className="container" style={{padding: '20px'}}>
+        <div style={{textAlign: 'center'}}><h2>{oldCase ? `修改病例` : '添加新病例'}</h2></div>
+
+        <form id="form1" encType="multipart/form-data" method="post">
+          <div>
+            <input type="file" id="customUploader" ref="customAttributes" multiple onChange={() => this.selectFile()}></input>
+            <label htmlFor="customUploader" className="btn btn-success"><FontAwesome name='upload' size='lg' style={{marginRight: '20px'}}/>批量上传DICOM文件</label>
+          </div>
+        </form>
+
+        <div style={{display: (this.state.uploadProgress < 0 ? 'none' : 'block'), textAlign: 'center'}}>
+          <h4>{this.state.uploadProgress + '%'}</h4>
+          <Line percent={this.state.uploadProgress} strokeWidth="1" strokeColor="#2db7f5" />
+        </div>
+
         <Form horizontal>
           <div className="well" style={wellStyles}>
             <FormGroup controlId="patientName">
@@ -726,27 +739,14 @@ export class AddCase extends Component {
           </div>
 
           <FormGroup>
-            <Col smOffset={3} sm={8}>
-              {oldCase ? <Button onClick={this.modifyCase} bsStyle="success" disabled={!this.state.isUploadFinished}>修改</Button> :
-                <Button onClick={this.submitCases} bsStyle="success" disabled={!this.state.isUploadFinished}>新建</Button>
-              }
-              &nbsp;&nbsp;
-              <Button onClick={browserHistory.goBack}>返回</Button>
-
-            </Col>
+            <div className="col-sm-4"></div>
+            <div className="col-sm-4">
+              <Button className="btn-large" onClick={oldCase ? this.modifyCase : this.submitCases} bsStyle="success" disabled={!this.state.isUploadFinished}>{oldCase ? '修改' : '新建'}</Button>
+              <Button className="pull-right btn-large" onClick={browserHistory.goBack} bsStyle="warning">返回</Button>
+            </div>
+            <div className="col-sm-4"></div>
           </FormGroup>
         </Form>
-
-        <form id="form1" encType="multipart/form-data" method="post">
-          <div>
-            <label htmlFor="customUploader">Select a file to upload</label>
-            <input type="file" id="customUploader" ref='customAttributes' multiple onChange={() => this.selectFile()}></input>
-          </div>
-        </form>
-
-        <div style={{display: (this.state.uploadProgress < 0 ? 'none' : 'block')}}>
-          <Line percent={this.state.uploadProgress} strokeWidth="1" strokeColor="#2db7f5" />
-        </div>
 
         <ToastContainer
           position="bottom-right"
