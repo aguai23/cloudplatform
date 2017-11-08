@@ -243,7 +243,7 @@ export default class Viewer extends Component {
       cornerstone.enable(this.state.container);
       cornerstoneTools.addStackStateManager(this.state.container, 'stack');
       cornerstoneTools.toolColors.setToolColor("#ffcc33");
-      
+
     });
 
     /**
@@ -422,7 +422,6 @@ export default class Viewer extends Component {
     this.setState({
       index: index
     });
-
   }
 
   /**
@@ -637,7 +636,8 @@ export default class Viewer extends Component {
       mark._id = oldState._id;
       Meteor.call('modifyMark', mark, (error) => {
         if (error) {
-          toast.error(`标注保存失败,${error.reacon}`)
+          toast.error(`标注保存失败,${error.reason}`);
+          return console.error(error);
         } else {
           toast.success("标注保存成功!");
         }
@@ -645,7 +645,8 @@ export default class Viewer extends Component {
     } else {
       Meteor.call('insertMark', mark, (error) => {
         if (error) {
-          toast.error(`标注保存失败,${error.reacon}`)
+          toast.error(`标注保存失败,${error.reason}`);
+          return console.error(error);
         } else {
           toast.success("标注保存成功!");
         }
@@ -940,9 +941,10 @@ export default class Viewer extends Component {
    * clear all tool data, e.g. rec, probe and angle
    */
   clearToolData() {
-    let toolState = cornerstoneTools.globalImageIdSpecificToolStateManager.toolState;
+    let elements = [this.state.container];
+    let currentState = cornerstoneTools.appState.save(elements);
     let element = cornerstone.getEnabledElement(this.state.container);
-
+    let toolState = currentState.imageIdToolState;
     if (!toolState.hasOwnProperty(element.image.imageId)) {
       return;
     }
