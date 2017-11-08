@@ -5,7 +5,7 @@ import { browserHistory, Link } from 'react-router';
 import { Cases } from '../api/cases';
 import { Session } from "meteor/session";
 import { HTTP } from 'meteor/http';
-import { Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Modal, Table } from 'react-bootstrap';
+import { Grid, Row, Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Modal, Table } from 'react-bootstrap';
 import Gallery from 'react-fine-uploader';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
@@ -83,7 +83,7 @@ export class AddCase extends Component {
     });
 
     let seriesInstanceUIDList = new Array();
-    if(oldCase){
+    if (oldCase) {
       _.each(oldCase.seriesList, (obj) => {
         seriesInstanceUIDList.push(obj.seriesInstanceUID)
       })
@@ -473,8 +473,8 @@ export class AddCase extends Component {
         if (seriesInstanceUIDList.indexOf(res.seriesInstanceUID) < 0) {
           let caseInstance = res;
 
-          const currentStudyUID = this.state.oldCase?this.state.oldCase.studyInstanceUID:this.state.Case.studyInstanceUID
-          if(currentStudyUID && caseInstance.studyInstanceUID !== currentStudyUID){
+          const currentStudyUID = this.state.oldCase ? this.state.oldCase.studyInstanceUID : this.state.Case.studyInstanceUID
+          if (currentStudyUID && caseInstance.studyInstanceUID !== currentStudyUID) {
             toast.error('该series不属于这个study!')
             return
           }
@@ -575,7 +575,7 @@ export class AddCase extends Component {
   }
 
   onUpdateProgress(evt) {
-    if(evt.lengthComputable) {
+    if (evt.lengthComputable) {
       this.setState({
         uploadProgress: (evt.loaded / evt.total * 100).toFixed(2)
       });
@@ -611,156 +611,188 @@ export class AddCase extends Component {
     const Case = this.state.Case;
 
     return (
-      <div className="container" style={{padding: '20px'}}>
-        <div style={{textAlign: 'center'}}><h2>{oldCase ? `修改病例` : '添加新病例'}</h2></div>
+      <div className="container" style={{ padding: '20px' }}>
+        <div style={{ textAlign: 'center' }}><h2>{oldCase ? `修改病例` : '添加新病例'}</h2></div>
 
         <form id="form1" encType="multipart/form-data" method="post">
           <div>
             <input type="file" id="customUploader" ref="customAttributes" multiple onChange={() => this.selectFile()}></input>
-            <label htmlFor="customUploader" className="btn btn-success"><FontAwesome name='upload' size='lg' style={{marginRight: '20px'}}/>批量上传DICOM文件</label>
+            <label htmlFor="customUploader" className="btn btn-success"><FontAwesome name='upload' size='lg' style={{ marginRight: '20px' }} />批量上传DICOM文件</label>
           </div>
         </form>
 
-        <div style={{display: (this.state.uploadProgress < 0 ? 'none' : 'block'), textAlign: 'center'}}>
+        <div style={{ display: (this.state.uploadProgress < 0 ? 'none' : 'block'), textAlign: 'center' }}>
           <h4>{this.state.uploadProgress + '%'}</h4>
           <Line percent={this.state.uploadProgress} strokeWidth="1" strokeColor="#2db7f5" />
         </div>
-
         <Form horizontal>
           <div className="well" style={wellStyles}>
-            <FormGroup controlId="patientName">
-              <Col componentClass={ControlLabel} sm={2}>
-                患者姓名
-                      </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.patientName : Case.patientName} onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
 
-            <FormGroup controlId="patientBirthDate">
-              <Col componentClass={ControlLabel} sm={2}>
-                出生日期
+            <Row className="show-grid">
+              <Col md={6} mdPush={6}>
+                <FormGroup controlId="patientBirthDate">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    出生日期
                       </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.patientBirthDate : Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.patientBirthDate : Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
               </Col>
-            </FormGroup>
-
-            <FormGroup controlId="patientAge">
-              <Col componentClass={ControlLabel} sm={2}>
-                患者年龄
+              <Col md={6} mdPull={6}>
+                <FormGroup controlId="patientName">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    患者姓名
                       </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.patientAge : Case.patientAge} onChange={this.onCaseChange} type="text" />
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.patientName : Case.patientName} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
               </Col>
-            </FormGroup>
-
-            <FormGroup controlId="patientSex">
-              <Col componentClass={ControlLabel} sm={2}>
-                患者性别
+            </Row>
+            <Row className="show-grid">
+              <Col md={6} mdPush={6}>
+                <FormGroup controlId="patientSex">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    患者性别
                     </Col>
-              <Col sm={6}>
-                <Radio checked={oldCase ? oldCase.patientSex === 'M' : Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M" inline>男</Radio>{' '}
-                <Radio checked={oldCase ? oldCase.patientSex === 'F' : Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F" inline>女</Radio>{' '}
+                  <Col sm={6}>
+                    <Radio checked={oldCase ? oldCase.patientSex === 'M' : Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M" inline>男</Radio>{' '}
+                    <Radio checked={oldCase ? oldCase.patientSex === 'F' : Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F" inline>女</Radio>{' '}
+                  </Col>
+                </FormGroup>
               </Col>
-            </FormGroup>
-
-            <FormGroup controlId="patientID">
-              <Col componentClass={ControlLabel} sm={2}>
-                患者编号
+              <Col md={6} mdPull={6}>
+                <FormGroup controlId="patientAge">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    患者年龄
                       </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.patientID : Case.patientID} onChange={this.onCaseChange} type="text" />
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.patientAge : Case.patientAge} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
               </Col>
-            </FormGroup>
+            </Row>
+            <Row className="show-grid">
+              <Col md={6} mdPush={6}>
+
+              </Col>
+              <Col md={6} mdPull={6}>
+
+                <FormGroup controlId="patientID">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    患者编号
+                      </Col>
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.patientID : Case.patientID} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
+              </Col>
+            </Row>
 
           </div>
 
           <div className="well" style={wellStyles}>
-            <FormGroup controlId="accessionNumber">
-              <Col componentClass={ControlLabel} sm={2}>
-                accessionNumber
-                      </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.accessionNumber : Case.accessionNumber} onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
 
-            <FormGroup controlId="studyID">
-              <Col componentClass={ControlLabel} sm={2}>
-                studyID
+            <Row className="show-grid">
+              <Col md={6} mdPush={6}>
+                <FormGroup controlId="studyID">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    检查号
                       </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.studyID : Case.studyID} onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.studyID : Case.studyID} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
 
-            <FormGroup controlId="studyInstanceUID">
-              <Col componentClass={ControlLabel} sm={2}>
-                studyInstanceUID
-                      </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.studyInstanceUID : Case.studyInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
               </Col>
-            </FormGroup>
+              <Col md={6} mdPull={6}>
+                <FormGroup controlId="accessionNumber">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    检查流水
+                      </Col>
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.accessionNumber : Case.accessionNumber} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
 
-            <FormGroup controlId="studyDate">
-              <Col componentClass={ControlLabel} sm={2}>
-                studyDate
-                      </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.studyDate : Case.studyDate} onChange={this.onCaseChange} type="text" />
               </Col>
-            </FormGroup>
+            </Row>
+            <Row className="show-grid">
+              <Col md={6} mdPush={6}>
 
-            <FormGroup controlId="studyTime">
-              <Col componentClass={ControlLabel} sm={2}>
-                studyTime
+                <FormGroup controlId="studyTime">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    检查时间
                       </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.studyTime : Case.studyTime} onChange={this.onCaseChange} type="text" />
-              </Col>
-            </FormGroup>
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.studyTime : Case.studyTime} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
 
-            <FormGroup controlId="modality">
-              <Col componentClass={ControlLabel} sm={2}>
-                modality
-                      </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.modality : Case.modality} onChange={this.onCaseChange} type="text" />
               </Col>
-            </FormGroup>
+              <Col md={6} mdPull={6}>
+                <FormGroup controlId="studyDate">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    检查日期
+                      </Col>
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.studyDate : Case.studyDate} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
 
-            <FormGroup controlId="bodyPart">
-              <Col componentClass={ControlLabel} sm={2}>
-                身体部位
-                      </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.bodyPart : Case.bodyPart} onChange={this.onCaseChange} type="text" />
               </Col>
-            </FormGroup>
+            </Row>
+            <Row className="show-grid">
+              <Col md={6} mdPush={6}>
+                <FormGroup controlId="bodyPart">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    身体部位
+                      </Col>
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.bodyPart : Case.bodyPart} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
 
-            <FormGroup controlId="studyDescription">
-              <Col componentClass={ControlLabel} sm={2}>
-                描述
-                      </Col>
-              <Col sm={6}>
-                <FormControl value={oldCase ? oldCase.studyDescription : Case.studyDescription} onChange={this.onCaseChange} type="text" />
               </Col>
-            </FormGroup>
+              <Col md={6} mdPull={6}>
+
+                <FormGroup controlId="modality">
+                  <Col componentClass={ControlLabel} sm={2}>
+                    设备类型
+                      </Col>
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.modality : Case.modality} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
+              </Col>
+            </Row>
+            <Row className="show-grid">
+              <Col sm={12} md={12}>
+                <FormGroup controlId="studyDescription">
+                  <Col componentClass={ControlLabel} sm={1}>
+                    描述
+                      </Col>
+                  <Col sm={6}>
+                    <FormControl value={oldCase ? oldCase.studyDescription : Case.studyDescription} onChange={this.onCaseChange} type="text" />
+                  </Col>
+                </FormGroup>
+              </Col>
+            </Row>
+
           </div>
 
           <div className="well" style={wellStyles}>
             <Table striped bordered condensed hover>
               <thead>
                 <tr>
-                  <th>seriesNumber</th>
-                  <th>seriesInstanceUID</th>
-                  <th>series description</th>
-                  <th>series date</th>
-                  <th>series time</th>
-                  <th>total</th>
-                  <th>option</th>
+                  <th>序列流水号</th>
+                  <th>序列编号</th>
+                  <th>序列描述</th>
+                  <th>日期</th>
+                  <th>时间</th>
+                  <th>图像数</th>
+                  <th>选项</th>
                 </tr>
               </thead>
               <tbody>
@@ -778,7 +810,7 @@ export class AddCase extends Component {
                         <Link to={{
                           pathname: '/viewer',
                           state: { caseId: oldCase && oldCase._id, index: index }
-                        }} className="btn btn-default">看片</Link>
+                        }} className="btn btn-default">浏览</Link>
                       </td>
                     </tr>)
                 })
@@ -830,47 +862,47 @@ export class AddCase extends Component {
 
         <Modal bsSize="small" show={this.state.showSeriesList} onHide={this.changeSeriesModalState.bind(this)}>
           <Modal.Header closeButton>
-            <Modal.Title>seriesInstanceUID</Modal.Title>
+            <Modal.Title>序列信息</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form inline>
               <FormGroup controlId="seriesNumber">
-                <ControlLabel>seriesNumber</ControlLabel>
+                <ControlLabel>流水号</ControlLabel>
                 {' '}
                 <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesNumber} onChange={this.onCaseChange} type="text" />
               </FormGroup>
             </Form>
             <Form inline>
               <FormGroup controlId="seriesInstanceUID">
-                <ControlLabel>seriesInstanceUID</ControlLabel>
+                <ControlLabel>编号&nbsp;&nbsp;&nbsp;&nbsp;</ControlLabel>
                 {' '}
                 <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesInstanceUID} onChange={this.onCaseChange} type="text" readOnly />
               </FormGroup>
             </Form>
             <Form inline>
               <FormGroup controlId="seriesDescription">
-                <ControlLabel>seriesDescription</ControlLabel>
+                <ControlLabel>描述&nbsp;&nbsp;&nbsp;&nbsp;</ControlLabel>
                 {' '}
                 <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesDescription} onChange={this.onCaseChange} type="text" />
               </FormGroup>
             </Form>
             <Form inline>
               <FormGroup controlId="seriesDate">
-                <ControlLabel>seriesDate&nbsp;&nbsp;&nbsp;&nbsp;</ControlLabel>
+                <ControlLabel>日期&nbsp;&nbsp;&nbsp;&nbsp;</ControlLabel>
                 {' '}
                 <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesDate} onChange={this.onCaseChange} type="text" />
               </FormGroup>
             </Form>
             <Form inline>
               <FormGroup controlId="seriesTime">
-                <ControlLabel>seriesTime&nbsp;&nbsp;&nbsp;&nbsp;</ControlLabel>
+                <ControlLabel>时间&nbsp;&nbsp;&nbsp;&nbsp;</ControlLabel>
                 {' '}
                 <FormControl value={this.state.currentSeries && this.state.currentSeries.seriesTime} onChange={this.onCaseChange} type="text" />
               </FormGroup>
             </Form>
             <Form inline>
               <FormGroup controlId="total">
-                <ControlLabel>total slice number</ControlLabel>
+                <ControlLabel>图像数</ControlLabel>
                 {' '}
                 <FormControl value={this.state.currentSeries && this.state.currentSeries.total} onChange={this.onCaseChange} type="text" readOnly />
               </FormGroup>
