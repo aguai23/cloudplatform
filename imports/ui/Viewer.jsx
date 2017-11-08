@@ -242,6 +242,18 @@ export default class Viewer extends Component {
       cornerstone.enable(this.state.container);
       cornerstoneTools.addStackStateManager(this.state.container, 'stack');
       cornerstoneTools.toolColors.setToolColor("#ffcc33");
+      
+      cornerstoneTools.rectangleRoi.deactivate(this.state.container, 1);
+      cornerstoneTools.wwwc.deactivate(this.state.container, 1);
+      cornerstoneTools.pan.deactivate(this.state.container, 1);
+      cornerstoneTools.zoom.deactivate(this.state.container, 1);
+      cornerstoneTools.zoomWheel.deactivate(this.state.container);
+      cornerstoneTools.length.deactivate(this.state.container, 1);
+      cornerstoneTools.probe.deactivate(this.state.container, 1);
+      cornerstoneTools.angle.deactivate(this.state.container, 1);
+      cornerstoneTools.highlight.disable(this.state.container, 1);
+      cornerstoneTools.magnify.deactivate(this.state.container, 1);
+      cornerstoneTools.arrowAnnotate.deactivate(this.state.container, 1);
     });
 
     /**
@@ -1385,7 +1397,7 @@ export default class Viewer extends Component {
               <div>
                 <span>病人姓名: {this.state.patientName}</span>
                 <br />
-                <span>病人id: {this.state.patientId}</span>
+                <span>检查号: {this.state.patientId}</span>
               </div>
             </div>
             <div style={{ ...style.dicomInfo, ...style.textInfo, ...style.disableSelection }} id="dicomInfo">
@@ -1398,7 +1410,9 @@ export default class Viewer extends Component {
               <br />
               <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
               <br />
-              <span className="pull-left">层厚: {this.state.thickness} 像素间距: {this.state.pixelSpacing}</span>
+              <span className="pull-left">层厚: {this.state.thickness} mm</span>
+              <br/>
+              <span className="pull-left">像素间距: {this.state.pixelSpacing} </span>
 
             </div>
             <div style={{ ...style.timeInfo, ...style.textInfo, ...style.disableSelection }} id="timeInfo">

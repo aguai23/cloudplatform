@@ -73,8 +73,8 @@ Meteor.methods({
 
         patientName = dataset.string('x00100010');
         patientId = dataset.string('x00100020');
-        rows = dataset.string('x00280010');
-        cols = dataset.string('x00280011');
+        rows = dataset.uint16('x00280010');
+        cols = dataset.uint16('x00280011');
         pixelSpacing = dataset.string('x00280030');
         thickness = dataset.string('x00180050');
 
