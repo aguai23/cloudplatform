@@ -34,27 +34,19 @@ Picker.route('/uploads', function(params, req, res, next) {
     form.multiples = true;
     form.uploadDir = uploadedFilesPath;
 
-    // form.on('field', (name, value) => {
-    //   form.uploadDir += '/' + value;
-    //   mkdirp(form.uploadDir, function(error) {
-    //     if(error) {
-    //       console.error('Failed to create directory. Error: ' + error);
-    //     }
-    //   });
-    // });
+    form.on('field', (name, value) => {
+      localPath = path.join(form.uploadDir, value);
+      mkdirp(localPath, function(error) {
+        if(error) {
+          console.error('Failed to create directory. Error: ' + error);
+        }
+      });
+    });
 
-    form.on('file', (field, file) => {
+    form.on('fileBegin', (field, file) => {
       let dirPath = path.join(form.uploadDir, field);
-      localPath = dirPath;
       if(fs.existsSync(dirPath)) {
-        fs.rename(file.path, path.join(dirPath, file.name));
-      } else {
-        mkdirp(dirPath, (error) => {
-          if(error) {
-            return console.error('An error occurred when creating directory. Error: ' + error);
-          }
-          fs.rename(file.path, path.join(dirPath, file.name));
-        });
+        file.path = path.join(dirPath, file.name);
       }
     });
 
