@@ -10,6 +10,7 @@ import Gallery from 'react-fine-uploader';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
 import { withTracker } from 'meteor/react-meteor-data';
+import { Line } from 'rc-progress';
 
 import dicomParser from 'dicom-parser';
 
@@ -43,7 +44,6 @@ export class AddCase extends Component {
         },
         callbacks: {
           onAllComplete: function (ids) {
-            // console.log("imageArray", imageArray);
             that.setState({ isUploadFinished: true });
           },
           onComplete: function (id, name, response) {
@@ -105,7 +105,9 @@ export class AddCase extends Component {
       showFilesList: false,
       showSeriesList: false,
 
-      selectedFiles: []
+      selectedFiles: [],
+
+      uploadProgress: -1
     };
 
     this.onCaseChange = this.onCaseChange.bind(this);
@@ -273,8 +275,6 @@ export class AddCase extends Component {
   }
 
   removeSeries() {
-    // console.log(this.state.currentSeries.path)
-    // return;
     const that = this;
     const { Case, oldCase, currentSeries, seriesInstanceUIDList } = this.state;
     if ((oldCase && oldCase.seriesList.length < 2) || (Case.seriesList && Case.seriesList.length < 2)) {
@@ -283,7 +283,7 @@ export class AddCase extends Component {
     }
     Meteor.call('removeSeries', currentSeries.path, function (err, res) {
       if (err) {
-        return console.log(err);
+        return console.error(err);
       }
       let seriesList = oldCase ? oldCase.seriesList : Case.seriesList
       _.each(seriesList, (obj, index) => {
@@ -376,10 +376,7 @@ export class AddCase extends Component {
     let reader = new FileReader();
 
     reader.onloadend = function (event) {
-      // let buffer = new Buffer(event.target.result);
-      // console.log(buffer);
       let result = {};
-
       let dataset = dicomParser.parseDicom(new Uint8Array(event.target.result));
 
       result.seriesInstanceUID = dataset.string('x0020000e');
@@ -409,7 +406,10 @@ export class AddCase extends Component {
 
   isDicomFile(file) {
     let fileName = file.name;
-    return fileName.substring(fileName.lastIndexOf('.') + 1) === 'dcm';
+
+    // place holder for better method to detect dicom files
+    //return fileName.substring(fileName.lastIndexOf('.') + 1) === 'dcm';
+    return true;
   }
 
   selectFile() {
@@ -429,7 +429,6 @@ export class AddCase extends Component {
         let seriesInstanceUIDList = this.state.seriesInstanceUIDList && this.state.seriesInstanceUIDList.length > 0 ? this.state.seriesInstanceUIDList : [];
         if (seriesInstanceUIDList.indexOf(res.seriesInstanceUID) < 0) {
           let caseInstance = res;
-          toast.info("开始上传，请稍后", { position: toast.POSITION.BOTTOM_RIGHT });
 
           //upload Series files
           let date = caseInstance.studyDate ? caseInstance.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
@@ -453,6 +452,7 @@ export class AddCase extends Component {
               formData.append(path, files[i], result[i]);
             }
 
+            xhr.upload.onprogress = self.onUpdateProgress.bind(self);
             xhr.addEventListener("load", self.onUploadComplete.bind(self), false);
             xhr.open("POST", `${Meteor.settings.public.server}/uploads`);
             xhr.send(formData);
@@ -522,15 +522,28 @@ export class AddCase extends Component {
     }
   }
 
+  onUpdateProgress(evt) {
+    if(evt.lengthComputable) {
+      this.setState({
+        uploadProgress: (evt.loaded / evt.total * 100).toFixed(2)
+      });
+    } else {
+      console.error('Failed to calculate upload progress');
+    }
+  }
+
   onUploadComplete(res) {
     console.log('upload completed', new Date());
+    this.setState({
+      uploadProgress: -1
+    });
     const { Case, oldCase, currentSeries } = this.state;
     let seriesList = oldCase ? oldCase.seriesList : Case.seriesList;
     _.each(seriesList, (obj, index) => {
       if (obj.seriesInstanceUID === currentSeries.seriesInstanceUID) {
         obj.path = res.target.response
       }
-    })
+    });
     this.setState(oldCase ? oldCase : Case)
     toast.success("上传成功", { position: toast.POSITION.BOTTOM_RIGHT });
     // let inputDOM = ReactDOM.findDOMNode(this.refs.customAttributes)
@@ -712,22 +725,6 @@ export class AddCase extends Component {
 
           </div>
 
-          {/* <div className="well" style={wellStyles}>
-            <FormGroup controlId="formHorizontalPassword">
-              <Col componentClass={ControlLabel} sm={2}>
-                图片
-                      </Col>
-              <Col sm={6}>
-                <Gallery uploader={this.uploader} />
-              </Col>
-              <Col>
-                {oldCase &&
-                  <Button onClick={this.changeFilesModalState}>查看已有图片</Button>
-                }
-              </Col>
-            </FormGroup>
-          </div> */}
-
           <FormGroup>
             <Col smOffset={3} sm={8}>
               {oldCase ? <Button onClick={this.modifyCase} bsStyle="success" disabled={!this.state.isUploadFinished}>修改</Button> :
@@ -746,31 +743,16 @@ export class AddCase extends Component {
             <input type="file" id="customUploader" ref='customAttributes' multiple onChange={() => this.selectFile()}></input>
           </div>
         </form>
-        <div>
-          <div>
-            <div className="col-sm-4">Name</div>
-            <div className="col-sm-4">Size</div>
-            <div className="col-sm-4">Ext</div>
-          </div>
-          <div>
-            {
-              this.state.selectedFiles.map((file, i) => {
-                return (
-                  <div key={'file' + i}>
-                    <div className="col-sm-4">{file.name}</div>
-                    <div className="col-sm-4">{file.size}</div>
-                    <div className="col-sm-4">{file.ext}</div>
-                  </div>
-                );
-              })
-            }
-          </div>
+
+        <div style={{display: (this.state.uploadProgress < 0 ? 'none' : 'block')}}>
+          <Line percent={this.state.uploadProgress} strokeWidth="1" strokeColor="#2db7f5" />
         </div>
+
         <ToastContainer
           position="bottom-right"
           type="info"
-          autoClose={5000}
-          hideProgressBar={false}
+          autoClose={2000}
+          hideProgressBar={true}
           newestOnTop={false}
           closeOnClick
           pauseOnHover
