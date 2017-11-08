@@ -242,7 +242,7 @@ export default class Viewer extends Component {
       cornerstone.enable(this.state.container);
       cornerstoneTools.addStackStateManager(this.state.container, 'stack');
       cornerstoneTools.toolColors.setToolColor("#ffcc33");
-      
+
       cornerstoneTools.rectangleRoi.deactivate(this.state.container, 1);
       cornerstoneTools.wwwc.deactivate(this.state.container, 1);
       cornerstoneTools.pan.deactivate(this.state.container, 1);
@@ -642,7 +642,8 @@ export default class Viewer extends Component {
       mark._id = oldState._id;
       Meteor.call('modifyMark', mark, (error) => {
         if (error) {
-          toast.error(`标注保存失败,${error.reacon}`)
+          toast.error(`标注保存失败,${error.reason}`);
+          return console.error(error);
         } else {
           toast.success("标注保存成功!");
         }
@@ -650,7 +651,8 @@ export default class Viewer extends Component {
     } else {
       Meteor.call('insertMark', mark, (error) => {
         if (error) {
-          toast.error(`标注保存失败,${error.reacon}`)
+          toast.error(`标注保存失败,${error.reason}`);
+          return console.error(error);
         } else {
           toast.success("标注保存成功!");
         }

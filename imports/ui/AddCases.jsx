@@ -81,7 +81,7 @@ export class AddCase extends Component {
         }
       }
     });
-    
+
     let seriesInstanceUIDList = new Array();
     if(oldCase){
       _.each(oldCase.seriesList, (obj) => {
@@ -405,7 +405,8 @@ export class AddCase extends Component {
     reader.onloadend = function (event) {
       let dataset = dicomParser.parseDicom(new Uint8Array(event.target.result));
       let index = parseInt(dataset.string('x00200013'));
-      let newName = file.name.substring(0, file.name.length - 4) + '_' + index + '.dcm';
+      let offset = (file.name.indexOf('.dcm') > -1) ? 4 : 0;
+      let newName = file.name.substring(0, file.name.length - offset) + '_' + index + '.dcm';
       cb(newName);
     }
 
@@ -480,7 +481,7 @@ export class AddCase extends Component {
             toast.error('该series不属于这个study!')
             return
           }
-          
+
           //upload Series files
           let date = caseInstance.studyDate ? caseInstance.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
           let path = date + '/' + caseInstance.studyInstanceUID + '/' + caseInstance.seriesInstanceUID;
