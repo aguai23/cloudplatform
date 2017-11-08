@@ -81,6 +81,13 @@ export class AddCase extends Component {
         }
       }
     });
+    
+    let seriesInstanceUIDList = new Array();
+    if(oldCase){
+      _.each(oldCase.seriesList, (obj) => {
+        seriesInstanceUIDList.push(obj.seriesInstanceUID)
+      })
+    }
 
     this.state = {
       collectionName: this.props.location.query.collection,
@@ -105,7 +112,7 @@ export class AddCase extends Component {
       isUploadFinished: true,
       showFilesList: false,
       showSeriesList: false,
-
+      seriesInstanceUIDList,
       selectedFiles: [],
 
       uploadProgress: -1
@@ -201,36 +208,74 @@ export class AddCase extends Component {
       toast.error("请检验并完善信息", { position: toast.POSITION.BOTTOM_RIGHT });
       return;
     } else {
-      const sortedSeriesList = this.state.Case.seriesList.slice();
-      this.sortListByIndex(sortedSeriesList);
+      const oldCase = Cases.findOne({ studyInstanceUID: Case.studyInstanceUID });
+      const oldSeriesUIDList = [];
+      const willSubmitSeries = [];
+      if (oldCase) {
+        let flag = false;
+        _.each(oldCase.seriesList, (item) => {
+          oldSeriesUIDList.push(item.seriesInstanceUID)
+          willSubmitSeries.push(item)
+        })
+        _.each(this.state.seriesList, (item, index) => {
+          if (oldSeriesUIDList.indexOf(item.seriesInstanceUID) < 0) {
+            willSubmitSeries.push(item)
+            flag = true
+          }
+        })
+        if (flag) {
+          // 进行修改
+          let tempCase = {
+            _id: oldCase._id,
+            seriesList: willSubmitSeries
+          }
+          Meteor.call('modifyCase', tempCase, (error) => {
+            if (error) {
+              toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+            } else {
+              toast.success("添加新series成功", { position: toast.POSITION.BOTTOM_RIGHT });
+              Meteor.setTimeout(browserHistory.goBack, 2000)
+            }
+          })
 
-      const standardCase = {
-        accessionNumber: Case.accessionNumber,
-        patientID: Case.patientID,
-        patientName: Case.patientName,
-        patientBirthDate: Case.patientBirthDate,
-        patientAge: Case.patientAge,
-        patientSex: Case.patientSex,
-        studyID: Case.studyID,
-        studyInstanceUID: Case.studyInstanceUID,
-        studyDate: Case.studyDate,
-        studyTime: Case.studyTime,
-        modality: Case.modality,
-        bodyPart: Case.bodyPart,
-        studyDescription: Case.studyDescription,
-        seriesList: sortedSeriesList,
-        collectionName: this.state.collectionName,
-        creator: Meteor.userId(),
-      }
-
-      Meteor.call('insertCase', standardCase, (error) => {
-        if (error) {
-          toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
         } else {
-          toast.success("病例添加成功", { position: toast.POSITION.BOTTOM_RIGHT });
-          Meteor.setTimeout(browserHistory.goBack, 2000)
+          toast.error('已有该series!')
         }
-      });
+      } else {
+        const sortedSeriesList = this.state.Case.seriesList.slice();
+        this.sortListByIndex(sortedSeriesList);
+
+        const standardCase = {
+          accessionNumber: Case.accessionNumber,
+          patientID: Case.patientID,
+          patientName: Case.patientName,
+          patientBirthDate: Case.patientBirthDate,
+          patientAge: Case.patientAge,
+          patientSex: Case.patientSex,
+          studyID: Case.studyID,
+          studyInstanceUID: Case.studyInstanceUID,
+          studyDate: Case.studyDate,
+          studyTime: Case.studyTime,
+          modality: Case.modality,
+          bodyPart: Case.bodyPart,
+          studyDescription: Case.studyDescription,
+          seriesList: sortedSeriesList,
+          collectionName: this.state.collectionName,
+          creator: Meteor.userId(),
+        }
+        if (Case.studyInstanceUID) {
+          standardCase._id = Case.studyInstanceUID
+        }
+
+        Meteor.call('insertCase', standardCase, (error) => {
+          if (error) {
+            toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
+          } else {
+            toast.success("病例添加成功", { position: toast.POSITION.BOTTOM_RIGHT });
+            Meteor.setTimeout(browserHistory.goBack, 2000)
+          }
+        });
+      }
     }
   }
 
@@ -240,8 +285,7 @@ export class AddCase extends Component {
     delete oldCase.creator;
     delete oldCase.createAt;
     delete oldCase.collectionName;
-    // return
-    // oldCase.files = oldCase.files.concat(imageArray);
+
     Meteor.call('modifyCase', oldCase, (error) => {
       if (error) {
         toast.error(`somethings wrong${error.reason}`, { position: toast.POSITION.BOTTOM_RIGHT });
@@ -358,7 +402,7 @@ export class AddCase extends Component {
   renameFile(file, cb) {
     let reader = new FileReader();
 
-    reader.onloadend = function(event) {
+    reader.onloadend = function (event) {
       let dataset = dicomParser.parseDicom(new Uint8Array(event.target.result));
       let index = parseInt(dataset.string('x00200013'));
       let newName = file.name.substring(0, file.name.length - 4) + '_' + index + '.dcm';
@@ -421,7 +465,7 @@ export class AddCase extends Component {
       let firstDicomIndex = 0;
 
       // find first dicom file
-      while(!this.isDicomFile(files[firstDicomIndex])) {
+      while (!this.isDicomFile(files[firstDicomIndex])) {
         firstDicomIndex++;
       }
 
@@ -431,6 +475,12 @@ export class AddCase extends Component {
         if (seriesInstanceUIDList.indexOf(res.seriesInstanceUID) < 0) {
           let caseInstance = res;
 
+          const currentStudyUID = this.state.oldCase?this.state.oldCase.studyInstanceUID:this.state.Case.studyInstanceUID
+          if(currentStudyUID && caseInstance.studyInstanceUID !== currentStudyUID){
+            toast.error('该series不属于这个study!')
+            return
+          }
+          
           //upload Series files
           let date = caseInstance.studyDate ? caseInstance.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
           let path = date + '/' + caseInstance.studyInstanceUID + '/' + caseInstance.seriesInstanceUID;
@@ -441,15 +491,15 @@ export class AddCase extends Component {
           let proms = [];
           for (let i = 0; i < files.length; i++) {
             // upload only dicom files
-            if(this.isDicomFile(files[i])) {
+            if (this.isDicomFile(files[i])) {
               proms.push(new Promise((resolve, reject) => this.renameFile(files[i], resolve)));
             }
           }
 
           let self = this;
-          Promise.all(proms).then(function(result) {
+          Promise.all(proms).then(function (result) {
             console.log('parsing completed', new Date());
-            for(let i = 0; i < result.length; i++) {
+            for (let i = 0; i < result.length; i++) {
               formData.append(path, files[i], result[i]);
             }
 
@@ -513,10 +563,13 @@ export class AddCase extends Component {
             self.setState({
               selectedFiles: selectedFiles
             });
-          }).catch(function(err) {
+          }).catch(function (err) {
             console.error(err);
           });
 
+        } else {
+          toast.error('已存在该series!')
+          return
         }
       });
 
