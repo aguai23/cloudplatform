@@ -80,6 +80,13 @@ export class AddCase extends Component {
         }
       }
     });
+    
+    let seriesInstanceUIDList = new Array();
+    if(oldCase){
+      _.each(oldCase.seriesList, (obj) => {
+        seriesInstanceUIDList.push(obj.seriesInstanceUID)
+      })
+    }
 
     this.state = {
       collectionName: this.props.location.query.collection,
@@ -104,7 +111,7 @@ export class AddCase extends Component {
       isUploadFinished: true,
       showFilesList: false,
       showSeriesList: false,
-
+      seriesInstanceUIDList,
       selectedFiles: [],
 
       uploadProgress: -1
@@ -467,6 +474,12 @@ export class AddCase extends Component {
         if (seriesInstanceUIDList.indexOf(res.seriesInstanceUID) < 0) {
           let caseInstance = res;
 
+          const currentStudyUID = this.state.oldCase?this.state.oldCase.studyInstanceUID:this.state.Case.studyInstanceUID
+          if(currentStudyUID && caseInstance.studyInstanceUID !== currentStudyUID){
+            toast.error('该series不属于这个study!')
+            return
+          }
+          
           //upload Series files
           let date = caseInstance.studyDate ? caseInstance.studyDate : new Date().toISOString().substring(0, 10).replace(/\-/g, '');
           let path = date + '/' + caseInstance.studyInstanceUID + '/' + caseInstance.seriesInstanceUID;
@@ -553,6 +566,9 @@ export class AddCase extends Component {
             console.error(err);
           });
 
+        } else {
+          toast.error('已存在该series!')
+          return
         }
       });
 
