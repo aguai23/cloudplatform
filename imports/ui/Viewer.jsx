@@ -1360,7 +1360,7 @@ export default class Viewer extends Component {
                       <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
                         <div className="thumbnailDiv" id={'thumbnail' + index}></div>
                       </div>
-                      <div className="thumbnail-info">
+                      <div className="thumbnail-info row">
                         <div className="col-sm-8">
                           {this.state.seriesList[index].seriesDescription}
                         </div>
