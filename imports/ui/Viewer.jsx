@@ -262,7 +262,7 @@ export default class Viewer extends Component {
      */
     this.setScrollTool();
 
-    this.getThumbnails();
+    this.getThumbnails(this.props.location.state.caseId);
 
   }
 
@@ -270,12 +270,11 @@ export default class Viewer extends Component {
     window.removeEventListener("resize", () => this.updateDimensions());
   }
 
-  getThumbnails() {
-    Meteor.call('getThumbnailDicoms', (err, result) => {
+  getThumbnails(caseId) {
+    Meteor.call('getThumbnailDicoms', caseId, (err, result) => {
       if (err) {
         return console.error(err);
       }
-
       this.setState({
         thumbnailArray: result.array
       });
@@ -304,7 +303,6 @@ export default class Viewer extends Component {
           //set info here
           let element = $("#viewer");
           element.on("CornerstoneImageRendered", this.updateInfo);
-
         }
 
       }

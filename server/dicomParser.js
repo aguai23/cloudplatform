@@ -22,8 +22,9 @@ Meteor.methods({
 
   /**
    * Parse all DICOMs that belongs to the requested case
-     @param caseId the id of requested caseId
-     @returns {status}
+   @param caseId the id of requested caseId
+   @param seriesIndex which series to load
+   @returns {{status: string}}
    */
   prepareDicoms(caseId, seriesIndex) {
     let result = {
@@ -52,56 +53,33 @@ Meteor.methods({
       _id: caseId
     });
 
-    if (thumbnailArray.length === 0) {
-      for (let i = 0; i < foundCase.seriesList.length; i++) {
-        initThumbnail(i, foundCase.seriesList[i].path);
-      }
-    }
-
     /**
      * parse all DICOMs and save
      */
-    if (userId && seriesIndex !== undefined && foundCase.seriesList && foundCase.seriesList.length > 0) {
-      let patientName = undefined,
-        patientId = undefined,
-        rows = undefined,
-        cols = undefined,
-        pixelSpacing = undefined,
-        thickness = undefined;
+    let dirPath = foundCase.seriesList[seriesIndex].path;
 
-      let dirPath = foundCase.seriesList[seriesIndex].path;
+    let fileNames = fs.readdirSync(dirPath);
 
-      let fileNames = fs.readdirSync(dirPath);
-
-      for (let i = 0; i < fileNames.length; i++) {
-        let data = fs.readFileSync(path.join(dirPath, fileNames[i]));
-        let dataset = dicomParser.parseDicom(data);
-
-        let index = parseInt(dataset.string('x00200013'));
-
-        patientName = dataset.string('x00100010');
-        patientId = dataset.string('x00100020');
-        rows = dataset.uint16('x00280010');
-        cols = dataset.uint16('x00280011');
-        pixelSpacing = dataset.string('x00280030');
-        thickness = dataset.string('x00180050');
-        seriesDate = dataset.string('x00080021');
-        seriesTime = dataset.string('x00080031');
-
-        dicomObj[userId][seriesIndex][index - 1] = dataset;
+    for (let i = 0; i < fileNames.length; i++) {
+      let data = fs.readFileSync(path.join(dirPath, fileNames[i]));
+      let dataset = dicomParser.parseDicom(data);
+      let index = parseInt(dataset.string('x00200013'));
+      console.log("prepare dicom" + i);
+      if (i === 0) {
+        result.patientName = dataset.string('x00100010');
+        result.patientId = dataset.string('x00100020');
+        result.rows = dataset.uint16('x00280010');
+        result.cols = dataset.uint16('x00280011');
+        result.pixelSpacing = dataset.string('x00280030');
+        result.thickness = dataset.string('x00180050');
+        result.seriesDate = dataset.string('x00080021');
+        result.seriesTime = dataset.string('x00080031');
       }
 
-      result.status = "SUCCESS";
-      result.imageNumber = fileNames.length;
-      result.patientName = patientName;
-      result.patientId = patientId;
-      result.rows = rows;
-      result.cols = cols;
-      result.pixelSpacing = pixelSpacing;
-      result.thickness = thickness;
-      result.seriesDate = seriesDate;
-      result.seriesTime = seriesTime;
+      dicomObj[userId][seriesIndex][index - 1] = dataset;
     }
+    result.status = "SUCCESS";
+    result.imageNumber = fileNames.length;
     return result;
   },
 
@@ -154,11 +132,25 @@ Meteor.methods({
 
   /**
    * get parsed dicom information for thumbnails
+   * @param caseId
    */
-  getThumbnailDicoms() {
+  getThumbnailDicoms(caseId) {
     if (!thumbnailArray) return {
       status: 'FAILURE'
     };
+
+    if(thumbnailArray.length === 0) {
+      let foundCase = Cases.findOne({
+        _id: caseId
+      });
+
+      if (thumbnailArray.length === 0) {
+        for (let i = 0; i < foundCase.seriesList.length; i++) {
+          initThumbnail(i, foundCase.seriesList[i].path);
+        }
+      }
+
+    }
 
     let result = {};
     result.array = [];
@@ -166,8 +158,8 @@ Meteor.methods({
     result.status = 'SUCCESS';
 
     for (let i = 0; i < thumbnailArray.length; i++) {
-      let colVal = thumbnailArray[i].string('x00280011') ? parseInt(thumbnailArray[i].string('x00280011')) : 512,
-        rowVal = thumbnailArray[i].string('x00280010') ? parseInt(thumbnailArray[i].string('x00280010')) : 512;
+      let colVal = thumbnailArray[i].uint16('x00280011') ? thumbnailArray[i].uint16('x00280011') : 512,
+        rowVal = thumbnailArray[i].uint16('x00280010') ? thumbnailArray[i].uint16('x00280010') : 512;
       result.array.push({
         imageBuf: thumbnailArray[i].byteArray,
         pixelDataOffset: thumbnailArray[i].elements.x7fe00010.dataOffset,
@@ -199,7 +191,7 @@ Meteor.methods({
  */
 function initThumbnail(seriesIndex, dirPath) {
   let fileNames = fs.readdirSync(dirPath);
-
+  console.log("prepare thumb");
   for (let i = 0; i < fileNames.length; i++) {
     let tokens = fileNames[i].split('_');
 
