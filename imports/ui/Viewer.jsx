@@ -145,8 +145,6 @@ const style = {
 
 };
 
-var intervalHandler = undefined;
-
 export default class Viewer extends Component {
   /**
    * constructor, run at first
@@ -166,7 +164,6 @@ export default class Viewer extends Component {
         windowCenter: 0,
         windowWidth: 0
       },
-      dateTime: new Date().toLocaleString(),
       isScrollBarHovered: false,
       isScrollBarClicked: false,
       scrollBarStyle: style.scrollBar,
@@ -256,15 +253,6 @@ export default class Viewer extends Component {
     cornerstoneTools.magnify.setConfiguration(config);
 
     /**
-     * get current date and time
-     */
-    intervalHandler = window.setInterval(() => {
-      this.setState({
-        dateTime: new Date().toLocaleString()
-      });
-    }, 1000);
-
-    /**
      * send a request to require server load all cases first
      */
     this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
@@ -280,7 +268,6 @@ export default class Viewer extends Component {
 
   componentWillUnmount() {
     window.removeEventListener("resize", () => this.updateDimensions());
-    window.clearInterval(intervalHandler);
   }
 
   getThumbnails() {
@@ -301,10 +288,13 @@ export default class Viewer extends Component {
         console.error(error)
       } else {
         if (result.status === "SUCCESS") {
+          let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
+          let dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
           this.setState({
             imageNumber: result.imageNumber,
             patientId: result.patientId,
             patientName: result.patientName,
+            dateTime: dateTime,
             rows: result.rows,
             cols: result.cols,
             pixelSpacing: result.pixelSpacing,
@@ -409,7 +399,7 @@ export default class Viewer extends Component {
         };
 
         cornerstoneTools.addToolState(this.state.container, 'stack', measurementData);
-        if (! this.state.imageLoaded) {
+        if (!this.state.imageLoaded) {
           this.disableAllTools();
           this.state.imageLoaded = true;
         }
@@ -1408,7 +1398,7 @@ export default class Viewer extends Component {
               <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
               <br />
               <span className="pull-left">层厚: {this.state.thickness} mm</span>
-              <br/>
+              <br />
               <span className="pull-left">像素间距: {this.state.pixelSpacing} </span>
 
             </div>
