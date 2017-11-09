@@ -1346,7 +1346,7 @@ export default class Viewer extends Component {
               {
                 this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
                   return (
-                    <div key={'thumbnail' + index} onDoubleClick={() => { this.switchSeries(index) }}>
+                    <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index) }}>
                       <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
                         <div className="thumbnailDiv" id={'thumbnail' + index}></div>
                       </div>
