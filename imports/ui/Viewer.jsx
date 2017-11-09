@@ -1255,7 +1255,7 @@ export default class Viewer extends Component {
               <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
                 <NavItem eventKey={10} href="#">
                   <div style={style.icon}>
-                    <FontAwesome name='arrow-left' size='2x' />
+                    <FontAwesome name='arrow-up' size='2x' />
                   </div>
                   <span>标注</span>
                 </NavItem>
@@ -1325,6 +1325,11 @@ export default class Viewer extends Component {
                 <FontAwesome name='stethoscope' size='2x' />
                 <br />
                 <span>诊断</span>
+              </Navbar.Text>
+              <Navbar.Text className="button" onClick={browserHistory.goBack}>
+                <FontAwesome name='reply' size='2x' />
+                <br />
+                <span>返回</span>
               </Navbar.Text>
             </Navbar.Collapse>
           </Navbar>
