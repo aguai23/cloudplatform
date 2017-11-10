@@ -177,7 +177,9 @@ export class CaseList extends Component {
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
-              <Link to={`/newCase?collection=${this.props.params.collectionName}`}>新建</Link>
+              <Link to={`/newCase?collection=${this.props.params.collectionName}`}>
+                <i className="fa fa-plus" style={{color: "green", fontSize: "20px"}}>新建</i>
+              </Link>
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>

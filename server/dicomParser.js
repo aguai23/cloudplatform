@@ -64,7 +64,6 @@ Meteor.methods({
       let data = fs.readFileSync(path.join(dirPath, fileNames[i]));
       let dataset = dicomParser.parseDicom(data);
       let index = parseInt(dataset.string('x00200013'));
-      console.log("prepare dicom" + i);
       if (i === 0) {
         result.patientName = dataset.string('x00100010');
         result.patientId = dataset.string('x00100020');
