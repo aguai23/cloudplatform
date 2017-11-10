@@ -145,8 +145,6 @@ const style = {
 
 };
 
-var intervalHandler = undefined;
-
 export default class Viewer extends Component {
   /**
    * constructor, run at first
@@ -166,7 +164,6 @@ export default class Viewer extends Component {
         windowCenter: 0,
         windowWidth: 0
       },
-      dateTime: new Date().toLocaleString(),
       isScrollBarHovered: false,
       isScrollBarClicked: false,
       scrollBarStyle: style.scrollBar,
@@ -256,15 +253,6 @@ export default class Viewer extends Component {
     cornerstoneTools.magnify.setConfiguration(config);
 
     /**
-     * get current date and time
-     */
-    intervalHandler = window.setInterval(() => {
-      this.setState({
-        dateTime: new Date().toLocaleString()
-      });
-    }, 1000);
-
-    /**
      * send a request to require server load all cases first
      */
     this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
@@ -274,21 +262,19 @@ export default class Viewer extends Component {
      */
     this.setScrollTool();
 
-    this.getThumbnails();
+    this.getThumbnails(this.props.location.state.caseId);
 
   }
 
   componentWillUnmount() {
     window.removeEventListener("resize", () => this.updateDimensions());
-    window.clearInterval(intervalHandler);
   }
 
-  getThumbnails() {
-    Meteor.call('getThumbnailDicoms', (err, result) => {
+  getThumbnails(caseId) {
+    Meteor.call('getThumbnailDicoms', caseId, (err, result) => {
       if (err) {
         return console.error(err);
       }
-
       this.setState({
         thumbnailArray: result.array
       });
@@ -301,10 +287,13 @@ export default class Viewer extends Component {
         console.error(error)
       } else {
         if (result.status === "SUCCESS") {
+          let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
+          let dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
           this.setState({
             imageNumber: result.imageNumber,
             patientId: result.patientId,
             patientName: result.patientName,
+            dateTime: dateTime,
             rows: result.rows,
             cols: result.cols,
             pixelSpacing: result.pixelSpacing,
@@ -314,7 +303,6 @@ export default class Viewer extends Component {
           //set info here
           let element = $("#viewer");
           element.on("CornerstoneImageRendered", this.updateInfo);
-
         }
 
       }
@@ -409,7 +397,7 @@ export default class Viewer extends Component {
         };
 
         cornerstoneTools.addToolState(this.state.container, 'stack', measurementData);
-        if (! this.state.imageLoaded) {
+        if (!this.state.imageLoaded) {
           this.disableAllTools();
           this.state.imageLoaded = true;
         }
@@ -1265,7 +1253,7 @@ export default class Viewer extends Component {
               <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
                 <NavItem eventKey={10} href="#">
                   <div style={style.icon}>
-                    <FontAwesome name='arrow-left' size='2x' />
+                    <FontAwesome name='arrow-up' size='2x' />
                   </div>
                   <span>标注</span>
                 </NavItem>
@@ -1336,6 +1324,11 @@ export default class Viewer extends Component {
                 <br />
                 <span>诊断</span>
               </Navbar.Text>
+              <Navbar.Text className="button" onClick={browserHistory.goBack}>
+                <FontAwesome name='reply' size='2x' />
+                <br />
+                <span>返回</span>
+              </Navbar.Text>
             </Navbar.Collapse>
           </Navbar>
         </div>
@@ -1356,7 +1349,7 @@ export default class Viewer extends Component {
               {
                 this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
                   return (
-                    <div key={'thumbnail' + index} onDoubleClick={() => { this.switchSeries(index) }}>
+                    <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index) }}>
                       <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
                         <div className="thumbnailDiv" id={'thumbnail' + index}></div>
                       </div>
@@ -1408,7 +1401,7 @@ export default class Viewer extends Component {
               <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
               <br />
               <span className="pull-left">层厚: {this.state.thickness} mm</span>
-              <br/>
+              <br />
               <span className="pull-left">像素间距: {this.state.pixelSpacing} </span>
 
             </div>

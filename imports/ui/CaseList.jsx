@@ -6,15 +6,35 @@ import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import { browserHistory, Link } from 'react-router';
 import { toast, ToastContainer } from 'react-toastify';
-
+import "./css/caseList.css";
 const style = {
   searchResult: {
     marginTop: '10px',
     marginBottom: '20px',
     paddingLeft: '20px',
     fontSize: '18px'
+  },
+  searchBar:{
+    width: "17%",
+    height: "50%",
+    marginLeft:"10px",
+    float: "left",
+    borderStyle: "solid",
+    borderColor: "darkcyan",
+    backgroundColor: "aliceblue"
+  },
+  caseList:{
+    marginRight: "10px",
+    width:"80%",
+    marginTop: "10px",
+    float: "right"
+  },
+  formElement:{
+    marginTop: "20px",
+    marginBottom: "30px",
+    marginLeft:"20px"
   }
-}
+};
 
 export class CaseList extends Component {
   constructor(props) {
@@ -22,10 +42,18 @@ export class CaseList extends Component {
 
     this.state = {
       cases: Cases.find({ collectionName: this.props.params.collectionName }).fetch(),
-      isSearchClicked: false
+      isSearchClicked: false,
+      studyID:"",
+      patientName:"",
+      patientAge:0,
+      patientSex:"M",
+      modality:"CT",
+      startTime:"",
+      endTime:""
     };
 
     this.searchCase = this.searchCase.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -64,23 +92,48 @@ export class CaseList extends Component {
   }
 
   searchCase() {
-    let patientName = this.input.value;
-
-    if (this.state.isSearchClicked) return;
-
-    if (patientName === undefined || patientName.length === 0) {
-      toast.warning("查询条件不能为空", { position: toast.POSITION.BOTTOM_RIGHT });
-      return
+    const studyID = this.state.studyID;
+    const patientName = this.state.patientName;
+    const patientAge = this.state.patientAge;
+    const patientSex = this.state.patientSex;
+    const modality = this.state.modality;
+    const startTime = this.state.startTime;
+    const endTime = this.state.endTime;
+    query = {};
+    if (studyID.length > 0) {
+      query.studyID = {$regex : ".*" + studyID + ".*"};
     }
-
+    if (patientName.length > 0) {
+      query.patientName = {$regex : ".*" + patientName+ ".*"};
+    }
+    if (patientSex.length > 0){
+      query.patientSex = patientSex;
+    }
+    if (patientAge > 0) {
+      query.patientAge = "0" + patientAge + "Y";
+    }
+    if (modality.length > 0) {
+      query.modality = modality;
+    }
+    if (startTime.length > 0 && endTime.length > 0) {
+      let startDate = new Date(startTime);
+      let endDate = new Date(endTime);
+      query["$where"] = function () {
+        let date = undefined;
+        if (this.studyDate.length === 8) {
+          date = new Date(this.studyDate.substr(0,4) + "-" +
+            this.studyDate.substr(4,2) + "-" + this.studyDate.substr(6,2));
+        }
+        return date <= endDate && date >= startDate;
+      }
+    }
     this.setState({
       isSearchClicked: true,
-      cases: Cases.find({ patientName: { $regex: '.*' + patientName + '.*', $options: "i" } }).fetch()
+      cases: Cases.find(query).fetch()
     });
   }
 
   reset() {
-    this.input.value = "";
     this.setState({
       isSearchClicked: false,
       cases: this.props.cases
@@ -89,6 +142,14 @@ export class CaseList extends Component {
 
   jumpTo(caseid) {
     window.location = "/newCase?id=" + caseid;
+  }
+
+  handleInputChange(event) {
+    const value = event.target.value;
+    const name = event.target.name;
+    this.setState({
+      [name]: value
+    });
   }
 
   render() {
@@ -120,19 +181,49 @@ export class CaseList extends Component {
             </Navbar.Brand>
             <Navbar.Toggle />
           </Navbar.Header>
-          <Navbar.Collapse>
-            <Navbar.Form pullLeft>
-              <FormGroup>
-                <FormControl inputRef={ref => { this.input = ref }} type="text" placeholder="输入病例名称" />
-              </FormGroup>
-              {' '}
-              <Button onClick={this.searchCase}>查询</Button>
-              <Button onClick={() => this.reset()}>重置</Button>
-            </Navbar.Form>
-          </Navbar.Collapse>
         </Navbar>
+        <div className={"searchBar"} style={style.searchBar}>
+          <div style={style.formElement}>
+            检查号：
+            <input type={"text"} name={"studyID"} value={this.state.studyID} onChange={this.handleInputChange}/>
+          </div>
+          <div style={style.formElement}>
+            姓名：
+            <input type={"text"} name={"patientName"} value={this.state.patientName} onChange={this.handleInputChange}/>
+          </div>
+          <div style={style.formElement}>
+            年龄：
+            <input type={"number"} name={"patientAge"} value={this.state.patientAge} onChange={this.handleInputChange}/>
+          </div>
+          <div style={style.formElement}>
+            性别：
+            <select name={"patientSex"} value={this.state.patientSex} onChange={this.handleInputChange}>
+              <option value={"M"}>男</option>
+              <option value={"F"}>女</option>
+            </select>
+          </div>
+          <div style={style.formElement} >
+            设备：
+            <select name={"modality"} value={this.state.modality} onChange={this.handleInputChange}>
+              <option value={"CT"}>CT</option>
+              <option value={"MR"}>MR</option>
+            </select>
+          </div>
+          <div style={style.formElement}>
+            起始时间：
+            <input type={"date"} name={"startTime"} value={this.state.startTime} onChange={this.handleInputChange}/>
+          </div>
+          <div style={style.formElement}>
+            终止时间：
+            <input type={"date"} name={"endTime"} value={this.state.endTime} onChange={this.handleInputChange}/>
+          </div>
+          <div style={style.formElement}>
+            <Button bsStyle={"primary"} onClick={this.searchCase}>查询</Button>
+            <Button bsStyle={"danger"} onClick={() => this.reset()} style={{marginLeft:"20px"}}>重置</Button>
+          </div>
+        </div>
 
-        <div className="container">
+        <div className="container" style={style.caseList}>
           <div style={style.searchResult}>{searchResult}</div>
           <Table striped bordered condensed hover>
             <thead>
@@ -140,7 +231,6 @@ export class CaseList extends Component {
             </thead>
             <tbody>
             {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
-              let collectionCol = this.state.isSearchClicked ? <td>{specificCase.collectionName}</td> : undefined;
               return (
                 <tr key={specificCase._id} onDoubleClick = {() => this.jumpTo(specificCase._id)}>
                   <td>{specificCase.accessionNumber}</td>
@@ -153,7 +243,6 @@ export class CaseList extends Component {
                   <td>{specificCase.studyDate}</td>
                   <td>{specificCase.patientBirthDate}</td>
                   <td>{specificCase.studyDescription}</td>
-                  {collectionCol}
                   <td>
                     <Link to={{
                       pathname: '/viewer',
