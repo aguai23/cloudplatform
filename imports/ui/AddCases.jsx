@@ -605,12 +605,12 @@ export class AddCase extends Component {
   }
 
   downloadSeries(caseId, seriesIndex) {
+    console.log('task started at', new Date());
     Meteor.call('downloadSeries', caseId, seriesIndex, (err, res) => {
       if(err) {
         return console.log(err);
       }
-
-      console.log('res', res);
+      console.log('task ended at', new Date());
     });
   }
 
