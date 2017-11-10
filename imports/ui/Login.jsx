@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
-
+import "./css/login.css"
 
 const styles = {
 
@@ -55,9 +55,10 @@ export default class Login extends Component {
 
   render() {
     return (
-      <div ref="container" className="container" style={styles.loginBox}>
-        <h3 style={{textAlign: 'center'}}>用户登录</h3>
-        <hr/>
+      <div id = "background">
+        <div ref="container" className="container" style={styles.loginBox}>
+          <h3 style={{textAlign: 'center'}}>用户登录</h3>
+          <hr/>
           <Form horizontal>
             <FormGroup>
               <Col sm={2}>邮箱</Col>
@@ -88,7 +89,7 @@ export default class Login extends Component {
             <a href="registration" className="pull-right" style={styles.linkNoAccountYet}>去注册?</a>
 
           </Form>
-        <ToastContainer
+          <ToastContainer
             position="top-center"
             type="info"
             autoClose={2000}
@@ -96,7 +97,8 @@ export default class Login extends Component {
             newestOnTop={false}
             closeOnClick
             pauseOnHover
-        />
+          />
+        </div>
       </div>
     );
   }
