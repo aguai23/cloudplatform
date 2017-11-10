@@ -177,8 +177,11 @@ export class CaseList extends Component {
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
+              <button onClick={browserHistory.goBack} style={{border:"none", background:"transparent"}}>
+                <i className={"fa fa-angle-left"} style={{color:"red", fontSize:"20px"}}>返回</i>
+              </button>
               <Link to={`/newCase?collection=${this.props.params.collectionName}`}>
-                <i className="fa fa-plus" style={{color: "green", fontSize: "20px"}}>新建</i>
+                <i className="fa fa-plus" style={{color: "green", fontSize: "20px", marginLeft: "20px"}}>新建</i>
               </Link>
             </Navbar.Brand>
             <Navbar.Toggle />
