@@ -12,6 +12,7 @@ import FontAwesome from 'react-fontawesome';
 import { Cases } from '../api/cases';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
+import Progress from 'react-progress';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
 import "./css/viewer.css";
@@ -141,6 +142,16 @@ const style = {
   },
   diagnosisLink: {
     cursor: 'pointer'
+  },
+  progressBar: {
+    top:"10px",
+    left:"30%",
+    height:"20px",
+    width:"800px",
+    position: "relative",
+    verticalAlign:"center",
+    border: '1px solid #aaf7f4',
+    background: "#A9A9A9"
   }
 
 };
@@ -177,7 +188,8 @@ export default class Viewer extends Component {
       isLoadingPanelFinished: false,
       isMagnifyToolOpened: false,
       isRotateMenuOpened: false,
-      imageLoaded: false
+      imageLoaded: false,
+      loadingProgress:0
 
     };
     this.updateInfo = this.updateInfo.bind(this);
@@ -215,7 +227,7 @@ export default class Viewer extends Component {
     };
     document.getElementById('diagnosisInfo').oncontextmenu = function (e) {
       e.preventDefault();
-    }
+    };
 
     /**
      * set the dynamic height for container
@@ -287,6 +299,7 @@ export default class Viewer extends Component {
         console.error(error)
       } else {
         if (result.status === "SUCCESS") {
+
           let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
           let dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
           this.setState({
@@ -297,12 +310,40 @@ export default class Viewer extends Component {
             rows: result.rows,
             cols: result.cols,
             pixelSpacing: result.pixelSpacing,
-            thickness: result.thickness
+            thickness: result.thickness,
+            index:1,
+            loadingProgress:0
           });
           this.setSlice(seriesIndex, this.state.index);
           //set info here
           let element = $("#viewer");
           element.on("CornerstoneImageRendered", this.updateInfo);
+          for(let i = 1; i <= this.state.imageNumber; i++) {
+            if (!this.state.dicomObj[this.state.curSeriesIndex][i]) {
+              let progressBar = document.getElementById("progressBar");
+              progressBar.style.visibility = "visible";
+              Meteor.call('getDicom', this.state.curSeriesIndex, i, (err, result) => {
+                if (err) {
+                  return console.error(err);
+                }
+                this.setState({
+                  loadingProgress: (i * 100)/this.state.imageNumber
+                });
+                if (this.state.loadingProgress === 100) {
+                  let progressBar = document.getElementById("progressBar");
+                  progressBar.style.visibility = "hidden";
+                }
+
+
+                let image = result;
+                let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+                image.getPixelData = function () {
+                  return pixelData
+                };
+                this.state.dicomObj[this.state.curSeriesIndex][i] = image;
+              });
+            }
+          }
         }
 
       }
@@ -379,11 +420,7 @@ export default class Viewer extends Component {
         image.getPixelData = function () {
           return pixelData
         };
-        let currentObj = this.state.dicomObj;
-        currentObj[curSeriesIndex][index] = image;
-        this.setState({
-          dicomObj: currentObj
-        });
+        this.state.dicomObj[curSeriesIndex][index] = image;
 
         var viewport = {};
         if (index === 1) {
@@ -1114,10 +1151,10 @@ export default class Viewer extends Component {
       for (let key in this.state.diagnosisResult) {
         results.push(
           <div className="row diagnosisRow" style={style.diagnosisRow} key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
-            onClick={() => this.onClickDiagnosisRow(key)}>
+               onClick={() => this.onClickDiagnosisRow(key)}>
             <div className="col-xs-4">{key}</div>
             <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
-              + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
+            + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
             <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
           </div>
         );
@@ -1194,11 +1231,11 @@ export default class Viewer extends Component {
           {results}
         </div>
       ) : (
-          <ReactSVG
-            path="/img/spinner.svg"
-            style={{ zIndex: 2000, width: '100%', margin: '0 auto' }}
-          />
-        )
+        <ReactSVG
+          path="/img/spinner.svg"
+          style={{ zIndex: 2000, width: '100%', margin: '0 auto' }}
+        />
+      )
     ) : undefined;
 
     return (
@@ -1340,11 +1377,11 @@ export default class Viewer extends Component {
         <Motion style={{ x: spring(this.state.isSeriesPanelOpened ? 300 : 0) }}>
           {({ x }) =>
             <div className="seriesPanel"
-              style={{
-                height: this.state.containerHeight ? this.state.containerHeight - 10 : 0,
-                top: document.getElementById('top') ? document.getElementById('top').clientHeight + 5 : 0,
-                WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
-              }}
+                 style={{
+                   height: this.state.containerHeight ? this.state.containerHeight - 10 : 0,
+                   top: document.getElementById('top') ? document.getElementById('top').clientHeight + 5 : 0,
+                   WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
+                 }}
             >
               {
                 this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
@@ -1373,16 +1410,19 @@ export default class Viewer extends Component {
 
         <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: this.state.containerWidth } }} className="container">
           <input type={"range"}
-            id={"scrollbar"}
-            min={1}
-            max={this.state.imageNumber}
-            step={1}
-            onInput={this.onDragScrollBar}
-            style={{
-              ...style.scrollBar, ...{ width: this.state.containerHeight },
-              ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
-            }} />
+                 id={"scrollbar"}
+                 min={1}
+                 max={this.state.imageNumber}
+                 step={1}
+                 onInput={this.onDragScrollBar}
+                 style={{
+                   ...style.scrollBar, ...{ width: this.state.containerHeight },
+                   ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
+                 }} />
           <div style={style.viewer} ref="viewerContainer" id="viewer" >
+            <div style={style.progressBar} id={"progressBar"}>
+              <Progress percent={this.state.loadingProgress} color={"#87CEFA"} style={{position:"absolute", height:"20px"}}/>
+            </div>
             <div style={{ ...style.patientInfo, ...style.textInfo, ...style.disableSelection }} id="patientInfo">
               <div>
                 <span>病人姓名: {this.state.patientName}</span>
