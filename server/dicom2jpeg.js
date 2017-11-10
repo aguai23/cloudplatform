@@ -9,27 +9,28 @@ let fs = require('fs'),
 Meteor.methods({
   downloadSeries(caseId, seriesIndex) {
     let caseInstance = Cases.findOne({_id: caseId});
+    let seriesList = caseInstance.seriesList;
 
-    // console.log('caseInstance', caseInstance);
-
-    let series = caseInstance.seriesList[seriesIndex];
-
-    // let jpegPath = path.join('/jpeg', caseInstance.studyInstanceUID, series.seriesInstanceUID);
-    //
-    // if(!fs.existsSync(jpegPath)) {
-    //   mkdirp.sync(jpegPath);
-    // }
-
-    let archive = initArchiver('/zip', series.seriesInstanceUID + '.zip');
-    convertDicomFiles(series.path, archive);
-
-    archive.finalize();
+    if(seriesIndex == undefined) {
+      let archive = initArchiver('/zip', caseInstance.studyInstanceUID + '.zip');
+      for(let i = 0; i < seriesList.length; i++) {
+        archive.directory('subdir/', caseInstance.studyInstanceUID);
+        convertDicomFiles(seriesList[i].seriesInstanceUID, seriesList[i].path, archive);
+      }
+      archive.finalize();
+    } else {
+      let series = seriesList[seriesIndex];
+      let archive = initArchiver('/zip', series.seriesInstanceUID + '.zip');
+      archive.directory('subdir/', series.seriesInstanceUID);
+      convertDicomFiles(series.seriesInstanceUID, series.path, archive);
+      archive.finalize();
+    }
 
     return 'downloadSeries called successfully';
   }
 });
 
-function convertDicomFiles(dirPath, archive) {
+function convertDicomFiles(seriesInstanceUID, dirPath, archive) {
   let fileNames = fs.readdirSync(dirPath);
 
   for(let i = 0; i < fileNames.length; i++) {
@@ -81,7 +82,12 @@ function convertDicomFiles(dirPath, archive) {
     }
 
     let jpegImageData = dicom2jpeg(rawImageData);
-    compressJpeg(archive, jpegImageData.data, fileNames[i]);
+    let options = {
+      name: fileNames[i],
+      directory: seriesInstanceUID
+    };
+
+    compressJpeg(archive, jpegImageData.data, options);
   }
 }
 
@@ -89,10 +95,9 @@ function dicom2jpeg(rawImageData, fileName) {
   return jpeg.encode(rawImageData, 100);
 }
 
-function compressJpeg(archive, imageData, fileName) {
-  let newFileName = fileName.split('.dcm')[0] + '.jpeg';
-
-  archive.append(imageData, {name: newFileName});
+function compressJpeg(archive, imageData, options) {
+  options.name = options.name.split('.dcm')[0] + '.jpeg';
+  archive.append(imageData, options);
 }
 
 function initArchiver(targetDirPath, fileName) {
