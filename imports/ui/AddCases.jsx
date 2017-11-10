@@ -604,6 +604,16 @@ export class AddCase extends Component {
     });
   }
 
+  downloadSeries(caseId, seriesIndex) {
+    Meteor.call('downloadSeries', caseId, seriesIndex, (err, res) => {
+      if(err) {
+        return console.log(err);
+      }
+
+      console.log('res', res);
+    });
+  }
+
   render() {
     const wellStyles = { marginTop: '20px' };
     const filesList = this.state.oldFileList;
@@ -811,6 +821,7 @@ export class AddCase extends Component {
                           pathname: '/viewer',
                           state: { caseId: oldCase && oldCase._id, index: index }
                         }} className="btn btn-default">浏览</Link>
+                        <Button onClick={() => this.downloadSeries(oldCase._id, index)} />
                       </td>
                     </tr>)
                 })

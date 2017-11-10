@@ -36,16 +36,17 @@ Picker.route('/uploads', function(params, req, res, next) {
 
     form.on('field', (name, value) => {
       localPath = path.join(form.uploadDir, value);
-      mkdirp(localPath, function(error) {
-        if(error) {
-          console.error('Failed to create directory. Error: ' + error);
-        }
-      });
+      if(!fs.existsSync(localPath)) {
+        mkdirp.sync(localPath);
+      }
     });
 
     form.on('fileBegin', (field, file) => {
       let dirPath = path.join(form.uploadDir, field);
       if(fs.existsSync(dirPath)) {
+        file.path = path.join(dirPath, file.name);
+      } else {
+        mkdirp.sync(dirPath);
         file.path = path.join(dirPath, file.name);
       }
     });
@@ -55,7 +56,7 @@ Picker.route('/uploads', function(params, req, res, next) {
     });
 
     form.on('error', (err) => {
-      console.log('An error has occurred: \n' + err);
+      console.error('An error has occurred: \n' + err);
     });
 
     form.parse(req);

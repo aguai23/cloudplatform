@@ -150,8 +150,8 @@ Meteor.methods({
     result.status = 'SUCCESS';
 
     for(let i = 0; i < thumbnailArray.length; i++) {
-      let colVal = thumbnailArray[i].string('x00280011') ? parseInt(thumbnailArray[i].string('x00280011')) : 512,
-          rowVal = thumbnailArray[i].string('x00280010') ? parseInt(thumbnailArray[i].string('x00280010')) : 512;
+      let colVal = thumbnailArray[i].uint16('x00280011') ? parseInt(thumbnailArray[i].uint16('x00280011')) : 512,
+          rowVal = thumbnailArray[i].uint16('x00280010') ? parseInt(thumbnailArray[i].uint16('x00280010')) : 512;
       result.array.push({
         imageBuf: thumbnailArray[i].byteArray,
         pixelDataOffset: thumbnailArray[i].elements.x7fe00010.dataOffset,
