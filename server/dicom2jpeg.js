@@ -3,7 +3,8 @@ import { Cases } from '../imports/api/cases';
 let fs = require('fs'),
     path = require('path'),
     jpeg = require('jpeg-js'),
-    mkdirp = require('mkdirp');
+    mkdirp = require('mkdirp'),
+    archiver = require('archiver');
 
 Meteor.methods({
   downloadSeries(caseId, seriesIndex) {
@@ -13,19 +14,22 @@ Meteor.methods({
 
     let series = caseInstance.seriesList[seriesIndex];
 
-    let jpegPath = path.join('/jpeg', caseInstance.studyInstanceUID, series.seriesInstanceUID);
+    // let jpegPath = path.join('/jpeg', caseInstance.studyInstanceUID, series.seriesInstanceUID);
+    //
+    // if(!fs.existsSync(jpegPath)) {
+    //   mkdirp.sync(jpegPath);
+    // }
 
-    if(!fs.existsSync(jpegPath)) {
-      mkdirp.sync(jpegPath);
-    }
+    let archive = initArchiver('/zip', series.seriesInstanceUID + '.zip');
+    convertDicomFiles(series.path, archive);
 
-    convertDicomFiles(series.path, jpegPath);
+    archive.finalize();
 
     return 'downloadSeries called successfully';
   }
 });
 
-function convertDicomFiles(dirPath, jpegPath) {
+function convertDicomFiles(dirPath, archive) {
   let fileNames = fs.readdirSync(dirPath);
 
   for(let i = 0; i < fileNames.length; i++) {
@@ -41,7 +45,6 @@ function convertDicomFiles(dirPath, jpegPath) {
 
     // now treat all dicom as Little Endian encoded as default
     // if(transferSyntaxUID === '1.2.840.10008.1.2.1​')
-
 
 
     // let windowWidth = dataset.string('x00281051');
@@ -71,20 +74,59 @@ function convertDicomFiles(dirPath, jpegPath) {
 
     // let encodedPixelData = dicomParser.readEncapsulatedPixelData(dataset, dataset.elements.x7fe00010, 0);
 
-    dicom2jpeg({
+    let rawImageData = {
       width: imageWidth,
       height: imageHeight,
       data: frameData
-    }, jpegPath, fileNames[i]);
+    }
+
+    let jpegImageData = dicom2jpeg(rawImageData);
+    compressJpeg(archive, jpegImageData.data, fileNames[i]);
   }
 }
 
-function dicom2jpeg(rawImageData, jpegPath, fileName) {
-  var jpegImageData = jpeg.encode(rawImageData, 100);
+function dicom2jpeg(rawImageData, fileName) {
+  return jpeg.encode(rawImageData, 100);
+}
 
-  fs.writeFile(path.join(jpegPath, fileName.split('.dcm')[0] + '.jpeg'), jpegImageData.data, function(err) {
-    if(err) {
-      return console.error(err);
+function compressJpeg(archive, imageData, fileName) {
+  let newFileName = fileName.split('.dcm')[0] + '.jpeg';
+
+  archive.append(imageData, {name: newFileName});
+}
+
+function initArchiver(targetDirPath, fileName) {
+  if(!fs.existsSync(targetDirPath)) {
+    mkdirp.sync(targetDirPath);
+  }
+
+  let output = fs.createWriteStream(path.join(targetDirPath, fileName));
+
+  let archive = archiver('zip', {
+    zlib: {level: 9}
+  });
+
+  output.on('close', () => {
+    // console.log(archive.pointer() + ' total bytes');
+  });
+
+  output.on('end', () => {
+    // console.log('Data has been drained');
+  });
+
+  archive.on('warning', (err) => {
+    if(err.code === 'ENOENT') {
+      console.error(err);
+    } else {
+      throw err;
     }
   });
+
+  archive.on('error', (err) => {
+    throw err;
+  });
+
+  archive.pipe(output);
+
+  return archive;
 }
