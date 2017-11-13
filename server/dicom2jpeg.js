@@ -7,26 +7,47 @@ let fs = require('fs'),
     archiver = require('archiver');
 
 Meteor.methods({
-  downloadSeries(caseId, seriesIndex) {
+  /**
+   * provides download API for client, which handles download request for both study and series
+   *
+   */
+  downloadZip(caseId, seriesIndex) {
+    let res = {
+      status: 'FAILURE'
+    }
+
+    if(caseId === undefined) {
+      res.error = 'Param caseId is required';
+      return res;
+    }
+
     let caseInstance = Cases.findOne({_id: caseId});
+
+    if(caseInstance === undefined) {
+      res.error = 'Case not found. Please provide correct caseId';
+      return res;
+    }
+
     let seriesList = caseInstance.seriesList;
 
     if(seriesIndex == undefined) {
+      // download by study
+      // need to do more work here... (set sub dirctory path in zip)
       let archive = initArchiver('/zip', caseInstance.studyInstanceUID + '.zip');
       for(let i = 0; i < seriesList.length; i++) {
-        archive.directory('subdir/', caseInstance.studyInstanceUID);
         convertDicomFiles(seriesList[i].seriesInstanceUID, seriesList[i].path, archive);
       }
       archive.finalize();
     } else {
-      let series = seriesList[seriesIndex];
-      let archive = initArchiver('/zip', series.seriesInstanceUID + '.zip');
-      archive.directory('subdir/', series.seriesInstanceUID);
-      convertDicomFiles(series.seriesInstanceUID, series.path, archive);
+      // download by series
+      let archive = initArchiver('/zip', seriesList[seriesIndex].seriesInstanceUID + '.zip');
+      convertDicomFiles(seriesList[seriesIndex].seriesInstanceUID, seriesList[seriesIndex].path, archive);
       archive.finalize();
     }
 
-    return 'downloadSeries called successfully';
+    res.status = 'SUCCESS';
+
+    return res;
   }
 });
 

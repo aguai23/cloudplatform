@@ -604,12 +604,13 @@ export class AddCase extends Component {
     });
   }
 
-  downloadSeries(caseId, seriesIndex) {
+  download(caseId, seriesIndex) {
     console.log('task started at', new Date());
-    Meteor.call('downloadSeries', caseId, seriesIndex, (err, res) => {
+    Meteor.call('downloadZip', caseId, seriesIndex, (err, res) => {
       if(err) {
-        return console.log(err);
+        return console.error(err);
       }
+
       console.log('task ended at', new Date());
     });
   }
@@ -816,12 +817,14 @@ export class AddCase extends Component {
                       <td>{obj.seriesTime}</td>
                       <td>{obj.total}</td>
                       <td>
-                        <Button onClick={this.changeSeriesModalState.bind(this, index)}>详情</Button>&nbsp;
+                        <Button onClick={this.changeSeriesModalState.bind(this, index)} style={{marginLeft: '5px'}}>详情</Button>
                         <Link to={{
                           pathname: '/viewer',
                           state: { caseId: oldCase && oldCase._id, index: index }
-                        }} className="btn btn-default">浏览</Link>
-                        <Button onClick={() => this.downloadSeries(oldCase._id, index)} />
+                        }} className="btn btn-default" style={{marginLeft: '5px'}}>浏览</Link>
+                        <Button onClick={() => this.download(oldCase._id, index)} style={{marginLeft: '5px'}}>
+                          <FontAwesome name='download' size='lg' />
+                        </Button>
                       </td>
                     </tr>)
                 })
