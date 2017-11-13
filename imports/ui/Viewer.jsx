@@ -12,7 +12,7 @@ import FontAwesome from 'react-fontawesome';
 import { Cases } from '../api/cases';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
-import Progress from 'rc-progress';
+import Progress from 'react-progress';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
 import "./css/viewer.css";
@@ -47,8 +47,8 @@ const style = {
     overflow: 'hidden'
   },
   viewer: {
-    top: '30px',
-    height: '800px',
+    top: '10px',
+    height: '100%',
     width: '100%',
     position: 'relative',
     margin: '0 auto'
@@ -74,7 +74,7 @@ const style = {
     height: '50px',
     width: '200px',
     color: 'white',
-    marginBottom: '-20px'
+    marginBottom: '20px'
   },
   sliceInfo: {
     position: 'absolute',
@@ -83,7 +83,7 @@ const style = {
     height: '50px',
     width: '400px',
     color: 'white',
-    marginBottom: '-20px'
+    marginBottom: '20px'
   },
   timeInfo: {
     position: 'absolute',
