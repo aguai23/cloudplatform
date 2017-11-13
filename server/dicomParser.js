@@ -134,27 +134,21 @@ Meteor.methods({
    * @param caseId
    */
   getThumbnailDicoms(caseId) {
+    let result = {};
+    result.array = [];
+    result.status = 'SUCCESS';
     if (!thumbnailArray) return {
       status: 'FAILURE'
     };
 
-    if(thumbnailArray.length === 0) {
+    if (thumbnailArray.length === 0) {
       let foundCase = Cases.findOne({
         _id: caseId
       });
-
-      if (thumbnailArray.length === 0) {
-        for (let i = 0; i < foundCase.seriesList.length; i++) {
-          initThumbnail(i, foundCase.seriesList[i].path);
-        }
+      for (let i = 0; i < foundCase.seriesList.length; i++) {
+        initThumbnail(i, foundCase.seriesList[i].path);
       }
-
     }
-
-    let result = {};
-    result.array = [];
-
-    result.status = 'SUCCESS';
 
     for (let i = 0; i < thumbnailArray.length; i++) {
       let colVal = thumbnailArray[i].uint16('x00280011') ? thumbnailArray[i].uint16('x00280011') : 512,

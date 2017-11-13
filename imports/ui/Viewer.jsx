@@ -2,7 +2,7 @@ import { HTTP } from 'meteor/http';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
-import { Button, Navbar, NavItem, Nav, Overlay, OverlayTrigger, Popover, Row, MenuItem } from 'react-bootstrap';
+import { Button, Navbar, NavItem, Nav, Overlay, OverlayTrigger, Popover, Row, MenuItem, ButtonGroup } from 'react-bootstrap';
 import { Motion, spring } from 'react-motion';
 import { Meteor } from 'meteor/meteor';
 import dicomParse from 'dicom-parser';
@@ -49,7 +49,7 @@ const style = {
   viewer: {
     top: '10px',
     height: '100%',
-    width: '100%',
+    width: '80%',
     position: 'relative',
     margin: '0 auto'
   },
@@ -119,7 +119,6 @@ const style = {
   diagnosisBox: {
     position: 'relative',
     width: '20%',
-    display: 'none',
     float: 'left',
     border: '1px solid #aaf7f4',
     padding: '10px 20px 10px 20px',
@@ -144,12 +143,12 @@ const style = {
     cursor: 'pointer'
   },
   progressBar: {
-    top:"10px",
-    left:"30%",
-    height:"20px",
-    width:"800px",
+    top: "10px",
+    left: "30%",
+    height: "20px",
+    width: "800px",
     position: "relative",
-    verticalAlign:"center",
+    verticalAlign: "center",
     border: '1px solid #aaf7f4',
     background: "#A9A9A9"
   }
@@ -183,13 +182,14 @@ export default class Viewer extends Component {
       startY: 0,
       curSeriesIndex: this.props.location.state.index ? this.props.location.state.index : 0,
 
-      isSeriesPanelOpened: false,
       isDiagnosisPanelOpened: false,
       isLoadingPanelFinished: false,
       isMagnifyToolOpened: false,
       isRotateMenuOpened: false,
       imageLoaded: false,
-      loadingProgress:0
+      diagnosisButton: 'primary',
+      thumbnailButton: 'default',
+      loadingProgress: 0
 
     };
     this.updateInfo = this.updateInfo.bind(this);
@@ -289,6 +289,18 @@ export default class Viewer extends Component {
       }
       this.setState({
         thumbnailArray: result.array
+      }, function () {
+        let foundCase = Cases.findOne({ _id: this.props.location.state.caseId });
+
+        this.setState({
+          seriesList: foundCase.seriesList,
+        }, function () {
+          for (let i = 0; i < this.state.seriesList.length; i++) {
+            let element = document.getElementById('thumbnail' + i);
+            cornerstone.enable(element);
+            this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
+          }
+        });
       });
     });
   }
@@ -311,14 +323,14 @@ export default class Viewer extends Component {
             cols: result.cols,
             pixelSpacing: result.pixelSpacing,
             thickness: result.thickness,
-            index:1,
-            loadingProgress:0
+            index: 1,
+            loadingProgress: 0
           });
           this.setSlice(seriesIndex, this.state.index);
           //set info here
           let element = $("#viewer");
           element.on("CornerstoneImageRendered", this.updateInfo);
-          for(let i = 1; i <= this.state.imageNumber; i++) {
+          for (let i = 1; i <= this.state.imageNumber; i++) {
             if (!this.state.dicomObj[this.state.curSeriesIndex][i]) {
               let progressBar = document.getElementById("progressBar");
               progressBar.style.visibility = "visible";
@@ -327,7 +339,7 @@ export default class Viewer extends Component {
                   return console.error(err);
                 }
                 this.setState({
-                  loadingProgress: (i * 100)/this.state.imageNumber
+                  loadingProgress: (i * 100) / this.state.imageNumber
                 });
                 if (this.state.loadingProgress === 100) {
                   let progressBar = document.getElementById("progressBar");
@@ -498,19 +510,6 @@ export default class Viewer extends Component {
       default:
         console.error(error);
     }
-  }
-
-  /**
-   * open/close series panel with slide effect
-   */
-  toggleSeriesPanel() {
-    this.setState({ isSeriesPanelOpened: !this.state.isSeriesPanelOpened }, (err) => {
-      if (err) {
-        return console.error(err);
-      }
-
-      this.setSeriesPanelContent();
-    });
   }
 
   /**
@@ -741,199 +740,6 @@ export default class Viewer extends Component {
   }
 
   /**
-   * get diagnosis information from backend
-   */
-  diagnose() {
-    this.setState({
-      isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened,
-      isSeriesPanelOpened: false
-    }, function () {
-      var self = this;
-      if (this.state.isDiagnosisPanelOpened) {
-        $('#diagnosisInfo').fadeIn({
-          start: function () {
-            self.setState({
-              containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 6)
-            }, function () {
-              cornerstone.resize(this.state.container, false);
-            });
-          }
-        });
-
-        if (this.state.isLoadingPanelFinished) {
-          return;
-        }
-        let foundcase = Cases.findOne({ _id: this.props.location.state.caseId });
-        // console.log(this.props.location.state);
-        // console.log(foundcase);
-        const start = new Date().getTime();
-        const caseInfo = Cases.findOne({ _id: this.props.location.state.caseId });
-        const algorithmInfo = caseInfo.seriesList[this.state.curSeriesIndex].diagnoseResult;
-        const seriesNumber = caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber;
-        if (algorithmInfo && algorithmInfo.circle) {
-          const end = new Date().getTime();
-          console.log("total time " + (end - start) / 1000);
-
-          this.setState({ isLoadingPanelFinished: true });
-          cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-          let caseId = this.props.location.state.caseId;
-          let elements = [this.state.container];
-          let currentState = cornerstoneTools.appState.save(elements);
-          let result = JSON.parse(algorithmInfo.circle)
-          if (!this.state.diagnosisResult) {
-            this.extract(result);
-          }
-
-          let picList = {};
-          _.mapObject(result, (val, key) => {
-            val.num = key.split("_")[0];
-            if (picList[key.split("_")[1]] != undefined) {
-              picList[key.split("_")[1]].push(val)
-            } else {
-              picList[key.split("_")[1]] = [val]
-            }
-          });
-          _.mapObject(picList, (val, key) => {
-            if (!currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`]) {
-              currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`] = { ellipticalRoi: { data: [] } }
-            }
-            let tempList = [];
-            _.each(val, (obj) => {
-              const standard = {
-                visible: true,
-                active: false,
-                invalidated: false,
-                handles: {
-                  start: {
-                    "x": 146.26041666666666,
-                    "y": 91.83333333333331,
-                    "highlight": true,
-                    "active": false
-                  },
-                  end: {
-                    "x": 387.92708333333337,
-                    "y": 275.16666666666663,
-                    "highlight": true,
-                    "active": false
-                  },
-                  textBox: {
-                    "active": false,
-                    "hasMoved": false,
-                    "movesIndependently": false,
-                    "drawnIndependently": true,
-                    "allowedOutsideImage": true,
-                    "hasBoundingBox": true,
-                    "index": 1,
-                  }
-                },
-              };
-              standard.handles.start.x = obj.y0;
-              standard.handles.start.y = obj.x0;
-              standard.handles.end.x = obj.y1;
-              standard.handles.end.y = obj.x1;
-              standard.handles.textBox.index = obj.num;
-              tempList.push(standard)
-            });
-            picList[key] = tempList;
-            currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
-          })
-
-        } else {
-          toast.warning('正在进行诊断，请等待');
-          HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
-            foundcase.seriesList[this.state.curSeriesIndex].path,
-            (error, res) => {
-              if (error) {
-                return console.error(error);
-              }
-              toast.success('诊断完成')
-              const end = new Date().getTime();
-              console.log("total time " + (end - start) / 1000);
-
-
-              this.setState({ isLoadingPanelFinished: true });
-              cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-
-              let caseId = this.props.location.state.caseId;
-              let elements = [this.state.container];
-              let currentState = cornerstoneTools.appState.save(elements);
-              let result = JSON.parse(res.content);
-              if (!this.state.diagnosisResult) {
-                this.extract(result);
-              }
-
-              let picList = {};
-              _.mapObject(result, (val, key) => {
-                val.num = key.split("_")[0];
-                if (picList[key.split("_")[1]] != undefined) {
-                  picList[key.split("_")[1]].push(val)
-                } else {
-                  picList[key.split("_")[1]] = [val]
-                }
-              });
-              _.mapObject(picList, (val, key) => {
-                if (!currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`]) {
-                  currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`] = { ellipticalRoi: { data: [] } }
-                }
-                let tempList = [];
-                _.each(val, (obj) => {
-                  const standard = {
-                    visible: true,
-                    active: false,
-                    invalidated: false,
-                    handles: {
-                      start: {
-                        "x": 146.26041666666666,
-                        "y": 91.83333333333331,
-                        "highlight": true,
-                        "active": false
-                      },
-                      end: {
-                        "x": 387.92708333333337,
-                        "y": 275.16666666666663,
-                        "highlight": true,
-                        "active": false
-                      },
-                      textBox: {
-                        "active": false,
-                        "hasMoved": false,
-                        "movesIndependently": false,
-                        "drawnIndependently": true,
-                        "allowedOutsideImage": true,
-                        "hasBoundingBox": true,
-                        "index": 1,
-                      }
-                    },
-                  };
-                  standard.handles.start.x = obj.y0;
-                  standard.handles.start.y = obj.x0;
-                  standard.handles.end.x = obj.y1;
-                  standard.handles.end.y = obj.x1;
-                  standard.handles.textBox.index = obj.num;
-                  tempList.push(standard)
-                });
-                picList[key] = tempList;
-                currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
-              })
-            });
-        }
-      } else {
-        $('#diagnosisInfo').fadeOut({
-          done: function () {
-            self.setState({
-              containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth)
-            }, function () {
-              cornerstone.resize(this.state.container, false);
-            });
-          }
-        });
-      }
-    });
-
-
-  }
-
-  /**
    * extract information in data
    */
   extract(data) {
@@ -1064,37 +870,6 @@ export default class Viewer extends Component {
   }
 
   /**
-   * initialize series panel
-   */
-  setSeriesPanelContent() {
-    if (this.state.isSeriesPanelOpened) {
-      if (this.state.seriesList.length === 0) {
-        let foundCase = Cases.findOne({ _id: this.props.location.state.caseId });
-
-        this.setState({
-          seriesList: foundCase.seriesList
-        }, function () {
-          for (let i = 0; i < this.state.seriesList.length; i++) {
-            let element = document.getElementById('thumbnail' + i);
-            cornerstone.enable(element);
-            this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
-          }
-        });
-      } else {
-        for (let i = 0; i < this.state.seriesList.length; i++) {
-          this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
-        }
-      }
-
-
-    } else {
-      for (let i = 0; i < this.state.seriesList.length; i++) {
-        this.disableThumbnailCanvas(document.getElementById('thumbnail' + i));
-      }
-    }
-  }
-
-  /**
    * handler to switch series when clicking thumbnails
    * @param seriesIndex the index of requesting series
    */
@@ -1105,7 +880,6 @@ export default class Viewer extends Component {
       curSeriesIndex: seriesIndex
     }, function () {
       this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
-      this.toggleSeriesPanel();
     });
   }
 
@@ -1115,33 +889,190 @@ export default class Viewer extends Component {
    * @param element the DOM element that holds corresponding thumbnail canvas
    */
   enableThumbnailCanvas(seriesIndex, element) {
-    let enabledElements = cornerstone.getEnabledElements();
-
-    for (let i = 0; i < enabledElements.length; i++) {
-      if (element === enabledElements[i]) {
-        return;
-      }
-    }
-
     let image = this.state.thumbnailArray[seriesIndex];
     let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
     image.getPixelData = function () {
       return pixelData;
     };
 
-    $(element.parentNode).fadeIn(500, function () {
-      cornerstone.displayImage(element, image);
-    });
+    cornerstone.displayImage(element, image);
   }
 
-  /**
-   * handler to switch series when clicking thumbnails
-   * @param element the DOM element that holds corresponding thumbnail canvas
-   */
-  disableThumbnailCanvas(element) {
-    $(element.parentNode).fadeOut(500, function () {
-      // cornerstone.disable(element);
-    });
+  switchPanelState(isDiagnosis) {
+    if ((isDiagnosis && this.state.diagnosisButton === 'primary') || (!isDiagnosis && this.state.thumbnailButton === 'primary')) {
+      return
+    }
+    if (isDiagnosis) {
+      this.setState({
+        isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened,
+        diagnosisButton: 'primary',
+        thumbnailButton: 'default'
+      }, function () {
+        for (let i = 0; i < this.state.seriesList.length; i++) {
+          let element = document.getElementById('thumbnail' + i);
+          cornerstone.enable(element);
+          this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
+        }
+
+      });
+    } else {
+      this.setState({
+        isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened,
+        diagnosisButton: 'default',
+        thumbnailButton: 'primary'
+      }, function () {
+        let foundcase = Cases.findOne({ _id: this.props.location.state.caseId });
+        const start = new Date().getTime();
+        const caseInfo = Cases.findOne({ _id: this.props.location.state.caseId });
+        const algorithmInfo = caseInfo.seriesList[this.state.curSeriesIndex].diagnoseResult;
+        const seriesNumber = caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber;
+        if (algorithmInfo && algorithmInfo.circle) {
+          const end = new Date().getTime();
+          console.log("total time " + (end - start) / 1000);
+          this.setState({ isLoadingPanelFinished: true });
+
+          cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
+          let caseId = this.props.location.state.caseId;
+          let elements = [this.state.container];
+          let currentState = cornerstoneTools.appState.save(elements);
+          let result = JSON.parse(algorithmInfo.circle)
+          if (!this.state.diagnosisResult) {
+            this.extract(result);
+          }
+
+          let picList = {};
+          _.mapObject(result, (val, key) => {
+            val.num = key.split("_")[0];
+            if (picList[key.split("_")[1]] != undefined) {
+              picList[key.split("_")[1]].push(val)
+            } else {
+              picList[key.split("_")[1]] = [val]
+            }
+          });
+          _.mapObject(picList, (val, key) => {
+            if (!currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`]) {
+              currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`] = { ellipticalRoi: { data: [] } }
+            }
+            let tempList = [];
+            _.each(val, (obj) => {
+              const standard = {
+                visible: true,
+                active: false,
+                invalidated: false,
+                handles: {
+                  start: {
+                    "x": 0,
+                    "y": 0,
+                    "highlight": true,
+                    "active": false
+                  },
+                  end: {
+                    "x": 0,
+                    "y": 0,
+                    "highlight": true,
+                    "active": false
+                  },
+                  textBox: {
+                    "active": false,
+                    "hasMoved": false,
+                    "movesIndependently": false,
+                    "drawnIndependently": true,
+                    "allowedOutsideImage": true,
+                    "hasBoundingBox": true,
+                    "index": 1,
+                  }
+                },
+              };
+              standard.handles.start.x = obj.y0;
+              standard.handles.start.y = obj.x0;
+              standard.handles.end.x = obj.y1;
+              standard.handles.end.y = obj.x1;
+              standard.handles.textBox.index = obj.num;
+              tempList.push(standard)
+            });
+            picList[key] = tempList;
+            currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
+          })
+
+        } else {
+          toast.warning('正在进行诊断，请等待');
+          HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
+            foundcase.seriesList[this.state.curSeriesIndex].path,
+            (error, res) => {
+              if (error) {
+                return console.error(error);
+              }
+              toast.success('诊断完成')
+              const end = new Date().getTime();
+              console.log("total time " + (end - start) / 1000);
+              this.setState({ isLoadingPanelFinished: true });
+              cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
+
+              let caseId = this.props.location.state.caseId;
+              let elements = [this.state.container];
+              let currentState = cornerstoneTools.appState.save(elements);
+              let result = JSON.parse(res.content);
+              if (!this.state.diagnosisResult) {
+                this.extract(result);
+              }
+
+              let picList = {};
+              _.mapObject(result, (val, key) => {
+                val.num = key.split("_")[0];
+                if (picList[key.split("_")[1]] != undefined) {
+                  picList[key.split("_")[1]].push(val)
+                } else {
+                  picList[key.split("_")[1]] = [val]
+                }
+              });
+              _.mapObject(picList, (val, key) => {
+                if (!currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`]) {
+                  currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`] = { ellipticalRoi: { data: [] } }
+                }
+                let tempList = [];
+                _.each(val, (obj) => {
+                  const standard = {
+                    visible: true,
+                    active: false,
+                    invalidated: false,
+                    handles: {
+                      start: {
+                        "x": 146.26041666666666,
+                        "y": 91.83333333333331,
+                        "highlight": true,
+                        "active": false
+                      },
+                      end: {
+                        "x": 387.92708333333337,
+                        "y": 275.16666666666663,
+                        "highlight": true,
+                        "active": false
+                      },
+                      textBox: {
+                        "active": false,
+                        "hasMoved": false,
+                        "movesIndependently": false,
+                        "drawnIndependently": true,
+                        "allowedOutsideImage": true,
+                        "hasBoundingBox": true,
+                        "index": 1,
+                      }
+                    },
+                  };
+                  standard.handles.start.x = obj.y0;
+                  standard.handles.start.y = obj.x0;
+                  standard.handles.end.x = obj.y1;
+                  standard.handles.end.y = obj.x1;
+                  standard.handles.textBox.index = obj.num;
+                  tempList.push(standard)
+                });
+                picList[key] = tempList;
+                currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
+              })
+            });
+        }
+      });
+    }
   }
 
   render() {
@@ -1151,10 +1082,10 @@ export default class Viewer extends Component {
       for (let key in this.state.diagnosisResult) {
         results.push(
           <div className="row diagnosisRow" style={style.diagnosisRow} key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
-               onClick={() => this.onClickDiagnosisRow(key)}>
+            onClick={() => this.onClickDiagnosisRow(key)}>
             <div className="col-xs-4">{key}</div>
             <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
-            + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
+              + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
             <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
           </div>
         );
@@ -1231,11 +1162,40 @@ export default class Viewer extends Component {
           {results}
         </div>
       ) : (
-        <ReactSVG
-          path="/img/spinner.svg"
-          style={{ zIndex: 2000, width: '100%', margin: '0 auto' }}
-        />
-      )
+          <ReactSVG
+            path="/img/spinner.svg"
+            style={{ zIndex: 2000, width: '100%', margin: '0 auto' }}
+          />
+        )
+    ) : undefined;
+
+    let thumbnailBox = !this.state.isDiagnosisPanelOpened ? (
+      this.state.seriesList.length > 0 ? (
+        this.state.seriesList.map((series, index) => {
+          return (
+            <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index) }}>
+              <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
+                <div className="thumbnailDiv" id={'thumbnail' + index}></div>
+              </div>
+              <div className="thumbnail-info row">
+                <div className="col-sm-8">
+                  {this.state.seriesList[index].seriesDescription}
+                </div>
+                <div className="col-sm-4" style={{ textAlign: 'center', color: '#91b9cd' }}>
+                  <div><b style={{ color: '#4da2f2' }}>S</b>{' ' + this.state.seriesList[index].seriesNumber}</div>
+                  <div><FontAwesome name='ellipsis-v' size='lg' /></div>
+                  <div><FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}</div>
+                </div>
+              </div>
+            </div>
+          )
+        })
+      ) : (
+          <ReactSVG
+            path="/img/spinner.svg"
+            style={{ zIndex: 2000, width: '100%', margin: '0 auto' }}
+          />
+        )
     ) : undefined;
 
     return (
@@ -1243,11 +1203,6 @@ export default class Viewer extends Component {
         <div id="top" style={style.top}>
           <Navbar inverse collapseOnSelect style={{ marginBottom: '0' }}>
             <Navbar.Collapse style={{ minWidth: '1300px' }}>
-              <Navbar.Text className="button" onClick={() => this.toggleSeriesPanel()}>
-                <FontAwesome name='files-o' size='2x' />
-                <br />
-                <span>序列</span>
-              </Navbar.Text>
               <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
                 <NavItem eventKey={1} href="#">
                   <div style={style.icon}>
@@ -1356,11 +1311,6 @@ export default class Viewer extends Component {
                 <br />
                 <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
               </Navbar.Text>
-              <Navbar.Text className="button" onClick={this.diagnose.bind(this)}>
-                <FontAwesome name='stethoscope' size='2x' />
-                <br />
-                <span>诊断</span>
-              </Navbar.Text>
               <Navbar.Text className="button" onClick={browserHistory.goBack}>
                 <FontAwesome name='reply' size='2x' />
                 <br />
@@ -1371,57 +1321,28 @@ export default class Viewer extends Component {
         </div>
 
         <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
+          <ButtonGroup justified>
+            <Button bsSize="large" onClick={this.switchPanelState.bind(this, 0)} href="#" bsStyle={this.state.thumbnailButton}>结节列表</Button>
+            <Button bsSize="large" onClick={this.switchPanelState.bind(this, 1)} href="#" bsStyle={this.state.diagnosisButton}>序列列表</Button>
+          </ButtonGroup>
           {diagnosisBox}
+          {thumbnailBox}
         </div>
 
-        <Motion style={{ x: spring(this.state.isSeriesPanelOpened ? 300 : 0) }}>
-          {({ x }) =>
-            <div className="seriesPanel"
-                 style={{
-                   height: this.state.containerHeight ? this.state.containerHeight - 10 : 0,
-                   top: document.getElementById('top') ? document.getElementById('top').clientHeight + 5 : 0,
-                   WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
-                 }}
-            >
-              {
-                this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
-                  return (
-                    <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index) }}>
-                      <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
-                        <div className="thumbnailDiv" id={'thumbnail' + index}></div>
-                      </div>
-                      <div className="thumbnail-info row">
-                        <div className="col-sm-8">
-                          {this.state.seriesList[index].seriesDescription}
-                        </div>
-                        <div className="col-sm-4" style={{ textAlign: 'center', color: '#91b9cd' }}>
-                          <div><b style={{ color: '#4da2f2' }}>S</b>{' ' + this.state.seriesList[index].seriesNumber}</div>
-                          <div><FontAwesome name='ellipsis-v' size='lg' /></div>
-                          <div><FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}</div>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })
-              }
-            </div>
-          }
-        </Motion>
-
-        <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: this.state.containerWidth } }} className="container">
+        <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: '80%' } }} className="container">
           <input type={"range"}
-                 id={"scrollbar"}
-                 min={1}
-                 max={this.state.imageNumber}
-                 step={1}
-                 onInput={this.onDragScrollBar}
-                 style={{
-                   ...style.scrollBar, ...{ width: this.state.containerHeight },
-                   ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
-                 }} />
+            id={"scrollbar"}
+            min={1}
+            max={this.state.imageNumber}
+            step={1}
+            onInput={this.onDragScrollBar}
+            style={{
+              ...style.scrollBar, ...{ width: this.state.containerHeight },
+              ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
+            }} />
           <div style={style.viewer} ref="viewerContainer" id="viewer" >
             <div style={style.progressBar} id={"progressBar"}>
-              <Progress percent={this.state.loadingProgress} color={"#87CEFA"} style={{position:"absolute", height:"20px"}}/>
+              <Progress percent={this.state.loadingProgress} trailColor="#87CEFA" style={{ position: "absolute", height: "20px" }} />
             </div>
             <div style={{ ...style.patientInfo, ...style.textInfo, ...style.disableSelection }} id="patientInfo">
               <div>
