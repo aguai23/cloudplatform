@@ -49,7 +49,8 @@ const style = {
   viewer: {
     top: '30px',
     height: '800px',
-    width: '100%',
+    // width: '100%',
+    width: '80%',
     position: 'relative',
     margin: '0 auto'
   },
@@ -119,7 +120,6 @@ const style = {
   diagnosisBox: {
     position: 'relative',
     width: '20%',
-    display: 'none',
     float: 'left',
     border: '1px solid #aaf7f4',
     padding: '10px 20px 10px 20px',
@@ -144,12 +144,12 @@ const style = {
     cursor: 'pointer'
   },
   progressBar: {
-    top:"10px",
-    left:"30%",
-    height:"20px",
-    width:"800px",
+    top: "10px",
+    left: "30%",
+    height: "20px",
+    width: "800px",
     position: "relative",
-    verticalAlign:"center",
+    verticalAlign: "center",
     border: '1px solid #aaf7f4',
     background: "#A9A9A9"
   }
@@ -189,7 +189,7 @@ export default class Viewer extends Component {
       isMagnifyToolOpened: false,
       isRotateMenuOpened: false,
       imageLoaded: false,
-      loadingProgress:0
+      loadingProgress: 0
 
     };
     this.updateInfo = this.updateInfo.bind(this);
@@ -311,14 +311,14 @@ export default class Viewer extends Component {
             cols: result.cols,
             pixelSpacing: result.pixelSpacing,
             thickness: result.thickness,
-            index:1,
-            loadingProgress:0
+            index: 1,
+            loadingProgress: 0
           });
           this.setSlice(seriesIndex, this.state.index);
           //set info here
           let element = $("#viewer");
           element.on("CornerstoneImageRendered", this.updateInfo);
-          for(let i = 1; i <= this.state.imageNumber; i++) {
+          for (let i = 1; i <= this.state.imageNumber; i++) {
             if (!this.state.dicomObj[this.state.curSeriesIndex][i]) {
               let progressBar = document.getElementById("progressBar");
               progressBar.style.visibility = "visible";
@@ -327,7 +327,7 @@ export default class Viewer extends Component {
                   return console.error(err);
                 }
                 this.setState({
-                  loadingProgress: (i * 100)/this.state.imageNumber
+                  loadingProgress: (i * 100) / this.state.imageNumber
                 });
                 if (this.state.loadingProgress === 100) {
                   let progressBar = document.getElementById("progressBar");
@@ -750,15 +750,15 @@ export default class Viewer extends Component {
     }, function () {
       var self = this;
       if (this.state.isDiagnosisPanelOpened) {
-        $('#diagnosisInfo').fadeIn({
-          start: function () {
-            self.setState({
-              containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 6)
-            }, function () {
-              cornerstone.resize(this.state.container, false);
-            });
-          }
-        });
+        // $('#diagnosisInfo').fadeIn({
+        //   start: function () {
+        //     self.setState({
+        //       containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 6)
+        //     }, function () {
+        //       cornerstone.resize(this.state.container, false);
+        //     });
+        //   }
+        // });
 
         if (this.state.isLoadingPanelFinished) {
           return;
@@ -840,6 +840,7 @@ export default class Viewer extends Component {
 
         } else {
           toast.warning('正在进行诊断，请等待');
+          return
           HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
             foundcase.seriesList[this.state.curSeriesIndex].path,
             (error, res) => {
@@ -918,15 +919,18 @@ export default class Viewer extends Component {
             });
         }
       } else {
-        $('#diagnosisInfo').fadeOut({
-          done: function () {
-            self.setState({
-              containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth)
-            }, function () {
-              cornerstone.resize(this.state.container, false);
-            });
-          }
-        });
+        this.setState({
+          isDiagnosisPanelOpened : false
+        })
+        // $('#diagnosisInfo').fadeOut({
+        //   done: function () {
+        //     self.setState({
+        //       containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth)
+        //     }, function () {
+        //       cornerstone.resize(this.state.container, false);
+        //     });
+        //   }
+        // });
       }
     });
 
@@ -1129,9 +1133,9 @@ export default class Viewer extends Component {
       return pixelData;
     };
 
-    $(element.parentNode).fadeIn(500, function () {
-      cornerstone.displayImage(element, image);
-    });
+    // $(element.parentNode).fadeIn(500, function () {
+    cornerstone.displayImage(element, image);
+    // });
   }
 
   /**
@@ -1139,9 +1143,9 @@ export default class Viewer extends Component {
    * @param element the DOM element that holds corresponding thumbnail canvas
    */
   disableThumbnailCanvas(element) {
-    $(element.parentNode).fadeOut(500, function () {
-      // cornerstone.disable(element);
-    });
+    // $(element.parentNode).fadeOut(500, function () {
+    //   // cornerstone.disable(element);
+    // });
   }
 
   render() {
@@ -1151,10 +1155,10 @@ export default class Viewer extends Component {
       for (let key in this.state.diagnosisResult) {
         results.push(
           <div className="row diagnosisRow" style={style.diagnosisRow} key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
-               onClick={() => this.onClickDiagnosisRow(key)}>
+            onClick={() => this.onClickDiagnosisRow(key)}>
             <div className="col-xs-4">{key}</div>
             <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
-            + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
+              + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
             <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
           </div>
         );
@@ -1231,12 +1235,68 @@ export default class Viewer extends Component {
           {results}
         </div>
       ) : (
-        <ReactSVG
-          path="/img/spinner.svg"
-          style={{ zIndex: 2000, width: '100%', margin: '0 auto' }}
-        />
-      )
+          <ReactSVG
+            path="/img/spinner.svg"
+            style={{ zIndex: 2000, width: '100%', margin: '0 auto' }}
+          />
+        )
     ) : undefined;
+
+    let thumbnailBox = !this.state.isDiagnosisPanelOpened ? (
+      // this.state.isLoadingPanelFinished ? (
+        this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
+          return (
+            <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index) }}>
+              <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
+                <div className="thumbnailDiv" id={'thumbnail' + index}></div>
+              </div>
+              <div className="thumbnail-info row">
+                <div className="col-sm-8">
+                  {this.state.seriesList[index].seriesDescription}
+                </div>
+                <div className="col-sm-4" style={{ textAlign: 'center', color: '#91b9cd' }}>
+                  <div><b style={{ color: '#4da2f2' }}>S</b>{' ' + this.state.seriesList[index].seriesNumber}</div>
+                  <div><FontAwesome name='ellipsis-v' size='lg' /></div>
+                  <div><FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}</div>
+                </div>
+              </div>
+            </div>
+          )
+        })
+      // ) : (
+      //     <ReactSVG
+      //       path="/img/spinner.svg"
+      //       style={{ zIndex: 2000, width: '100%', margin: '0 auto' }}
+      //     />
+      //   )
+    ) : undefined;
+    // this.state.isLoadingPanelFinished ? (
+    //   this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
+    //     return (
+    //       <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index) }}>
+    //         <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
+    //           <div className="thumbnailDiv" id={'thumbnail' + index}></div>
+    //         </div>
+    //         <div className="thumbnail-info row">
+    //           <div className="col-sm-8">
+    //             {this.state.seriesList[index].seriesDescription}
+    //           </div>
+    //           <div className="col-sm-4" style={{ textAlign: 'center', color: '#91b9cd' }}>
+    //             <div><b style={{ color: '#4da2f2' }}>S</b>{' ' + this.state.seriesList[index].seriesNumber}</div>
+    //             <div><FontAwesome name='ellipsis-v' size='lg' /></div>
+    //             <div><FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}</div>
+    //           </div>
+    //         </div>
+    //       </div>
+    //     )
+    //   })
+    // ) : (
+    //     <ReactSVG
+    //       path="/img/spinner.svg"
+    //       style={{ zIndex: 2000, width: '100%', margin: '0 auto' }}
+    //     />
+    //   )
+
 
     return (
       <div id="body" style={style.body}>
@@ -1372,16 +1432,17 @@ export default class Viewer extends Component {
 
         <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
           {diagnosisBox}
+          {thumbnailBox}
         </div>
 
-        <Motion style={{ x: spring(this.state.isSeriesPanelOpened ? 300 : 0) }}>
+        {/* <Motion style={{ x: spring(this.state.isSeriesPanelOpened ? 300 : 0) }}>
           {({ x }) =>
             <div className="seriesPanel"
-                 style={{
-                   height: this.state.containerHeight ? this.state.containerHeight - 10 : 0,
-                   top: document.getElementById('top') ? document.getElementById('top').clientHeight + 5 : 0,
-                   WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
-                 }}
+              style={{
+                height: this.state.containerHeight ? this.state.containerHeight - 10 : 0,
+                top: document.getElementById('top') ? document.getElementById('top').clientHeight + 5 : 0,
+                WebkitTransform: `translate3d(${x}px, 0, 0)`, transform: `translate3d(${x}, 0, 0)`
+              }}
             >
               {
                 this.state.seriesList.length > 0 && this.state.seriesList.map((series, index) => {
@@ -1406,22 +1467,22 @@ export default class Viewer extends Component {
               }
             </div>
           }
-        </Motion>
+        </Motion> */}
 
-        <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: this.state.containerWidth } }} className="container">
+        <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: '80%' } }} className="container">
           <input type={"range"}
-                 id={"scrollbar"}
-                 min={1}
-                 max={this.state.imageNumber}
-                 step={1}
-                 onInput={this.onDragScrollBar}
-                 style={{
-                   ...style.scrollBar, ...{ width: this.state.containerHeight },
-                   ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
-                 }} />
+            id={"scrollbar"}
+            min={1}
+            max={this.state.imageNumber}
+            step={1}
+            onInput={this.onDragScrollBar}
+            style={{
+              ...style.scrollBar, ...{ width: this.state.containerHeight },
+              ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
+            }} />
           <div style={style.viewer} ref="viewerContainer" id="viewer" >
             <div style={style.progressBar} id={"progressBar"}>
-              <Progress percent={this.state.loadingProgress} color={"#87CEFA"} style={{position:"absolute", height:"20px"}}/>
+              {/* <Progress percent={this.state.loadingProgress} trailColor="#87CEFA" style={{position:"absolute", height:"20px"}}/> */}
             </div>
             <div style={{ ...style.patientInfo, ...style.textInfo, ...style.disableSelection }} id="patientInfo">
               <div>
