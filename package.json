@@ -2,7 +2,7 @@
   "name": "CloudPlatform",
   "private": true,
   "scripts": {
-    "start": "meteor --settings settings-development.json"
+    "start": "meteor --settings settings-development.json --port 192.168.12.158:3000"
   },
   "dependencies": {
     "archiver": "^2.1.0",
@@ -11,6 +11,8 @@
     "chart.js": "^2.6.0",
     "cornerstone-core": "^0.12.2",
     "cornerstone-tools": "^0.9.1",
+    "css": "^2.2.1",
+    "css-loader": "^0.28.7",
     "dicom-parser": "^1.7.5",
     "express": "^4.16.2",
     "fine-uploader": "^5.15.0",
@@ -35,6 +37,9 @@
     "react-svg": "^2.1.22",
     "react-tap-event-plugin": "^2.0.1",
     "react-toastify": "^2.0.0",
+    "redis": "^2.8.0",
+    "socket.io": "^2.0.3",
+    "style-loader": "^0.19.0",
     "underscore": "^1.8.3"
   }
 }
