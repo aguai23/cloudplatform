@@ -606,13 +606,16 @@ export class AddCase extends Component {
 
   download(caseId, seriesIndex) {
     console.log('task started at', new Date());
-    Meteor.call('downloadZip', caseId, seriesIndex, (err, res) => {
-      if(err) {
-        return console.error(err);
-      }
 
-      console.log('task ended at', new Date());
-    });
+    let file_path = `http://localhost:3000/download?caseId=${caseId}&seriesIndex=${seriesIndex}`;
+    let a = document.createElement('A');
+
+    a.href = file_path;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    // return window.open('http://localhost:3000/zip/100.118.116.2003.1.4.1097151559.675.9.20171017000081.zip');
   }
 
   render() {

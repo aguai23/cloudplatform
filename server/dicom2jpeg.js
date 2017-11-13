@@ -6,51 +6,67 @@ let fs = require('fs'),
     mkdirp = require('mkdirp'),
     archiver = require('archiver');
 
-Meteor.methods({
   /**
    * provides download API for client, which handles download request for both study and series
    *
    */
-  downloadZip(caseId, seriesIndex) {
-    let res = {
-      status: 'FAILURE'
-    }
+  Picker.route('/download', (params, req, res, next) => {
+    let caseId = params.query.caseId,
+        seriesIndex = params.query.seriesIndex,
+        dirPath = '/zip';
 
     if(caseId === undefined) {
-      res.error = 'Param caseId is required';
-      return res;
+      res.writeHead(500, {
+        error: 'Param caseId is required'
+      });
+      res.end();
+      return;
     }
 
     let caseInstance = Cases.findOne({_id: caseId});
 
     if(caseInstance === undefined) {
-      res.error = 'Case not found. Please provide correct caseId';
-      return res;
+      res.writeHead(500, {
+        error: 'Case not found. Please provide correct caseId'
+      });
+      res.end();
+      return;
     }
 
     let seriesList = caseInstance.seriesList;
 
-    if(seriesIndex == undefined) {
+    if(seriesIndex === undefined) {
       // download by study
       // need to do more work here... (set sub dirctory path in zip)
-      let archive = initArchiver('/zip', caseInstance.studyInstanceUID + '.zip');
+      let archive = initArchiver(dirPath, caseInstance.studyInstanceUID + '.zip');
       for(let i = 0; i < seriesList.length; i++) {
         convertDicomFiles(seriesList[i].seriesInstanceUID, seriesList[i].path, archive);
       }
       archive.finalize();
     } else {
       // download by series
-      let archive = initArchiver('/zip', seriesList[seriesIndex].seriesInstanceUID + '.zip');
+      let fileName = seriesList[seriesIndex].seriesInstanceUID + '.zip';
+
+      let header = {
+        'Content-Type': 'application/zip',
+        'Content-Disposition': 'attachment; filename=\"' + fileName + '\"'
+      }
+
+      res.writeHead(200, header);
+
+      let archive = initArchiver(dirPath, fileName, res);
       convertDicomFiles(seriesList[seriesIndex].seriesInstanceUID, seriesList[seriesIndex].path, archive);
       archive.finalize();
     }
 
-    res.status = 'SUCCESS';
+  });
 
-    return res;
-  }
-});
-
+/**
+ * parses dicom file the extract useful information
+ * @param seriesInstanceUID the seriesInstanceUID of requested series
+ * @param dirPath directory path of dicom files
+ * @param archive the archive stream
+ */
 function convertDicomFiles(seriesInstanceUID, dirPath, archive) {
   let fileNames = fs.readdirSync(dirPath);
 
@@ -112,21 +128,34 @@ function convertDicomFiles(seriesInstanceUID, dirPath, archive) {
   }
 }
 
-function dicom2jpeg(rawImageData, fileName) {
+/**
+ * convert dicom image data to jpeg data
+ * @param rawImageData object that contains dicom pixelData
+ * @returns jpeg image data
+ */
+function dicom2jpeg(rawImageData) {
   return jpeg.encode(rawImageData, 100);
 }
+
 
 function compressJpeg(archive, imageData, options) {
   options.name = options.name.split('.dcm')[0] + '.jpeg';
   archive.append(imageData, options);
 }
 
-function initArchiver(targetDirPath, fileName) {
+/**
+ * init archive, setting configuration and event listener
+ * @param targetDirPath the directory path holding the zip file
+ * @param fileName the zip file name
+ * @param output output stream, should be ServerResponse here
+ * @returns the archive object, which is an readableStream
+ */
+function initArchiver(targetDirPath, fileName, output) {
   if(!fs.existsSync(targetDirPath)) {
     mkdirp.sync(targetDirPath);
   }
 
-  let output = fs.createWriteStream(path.join(targetDirPath, fileName));
+  // let output = fs.createWriteStream(path.join(targetDirPath, fileName));
 
   let archive = archiver('zip', {
     zlib: {level: 9}
