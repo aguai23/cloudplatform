@@ -30,6 +30,7 @@
     "react-fine-uploader": "^1.0.7",
     "react-fontawesome": "^1.6.1",
     "react-motion": "^0.5.2",
+    "react-progress": "0.0.12",
     "react-router": "^2.8.1",
     "react-svg": "^2.1.22",
     "react-tap-event-plugin": "^2.0.1",
