@@ -1,22 +1,14 @@
-import { Accounts } from 'meteor/accounts-base';
 import { createContainer } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
-import { Session } from "meteor/session";
-
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
-import { Button, ButtonToolbar, DropdownButton, FormControl, FormGroup, MenuItem, Nav, NavItem, SplitButton } from 'react-bootstrap';
+import { Button, FormControl, FormGroup, Nav, NavItem } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { ToastContainer, toast } from 'react-toastify';
-
-import AccountsWrapper from './AccountsWrapper';
-import AccountState from './AccountState'
-import CaseList from './CaseList';
-import { Cases } from '../api/cases';
 import { DataCollections } from '../api/dataCollections';
 import ModalAddCollection from './ModalAddCollection';
 import SingleCollectionInList from './SingleCollectionInList';
-import { browserHistory, Link } from 'react-router';
+
 
 
 const tempDataCollection = {
@@ -72,7 +64,6 @@ const styles = {
     position: 'relative',
     display: 'inline-block',
     marginLeft: '100px',
-    position: 'relative',
     top: '-15px',
     width: '300px'
   }
@@ -184,7 +175,7 @@ export class Main extends Component {
   render() {
     return (
       <div className="container" style={styles.mainDiv}>
-        <div id="modal-base"></div>
+        <div id="modal-base"/>
         <div>
           <div>
             <Nav bsStyle="tabs" activeKey={this.state.tabActiveKey} onSelect={this.onTabSelectHandler} style={styles.tabHeaders}>
@@ -195,21 +186,14 @@ export class Main extends Component {
 
             <FormGroup bsSize="small" style={styles.searchBar}>
               <FormControl type="text" placeholder="输入名称搜索" style={styles.inputSearch} inputRef={input => { this.textInput = input }} />
-              <Button onClick={this.searchDatabase.bind(this)} bsSize="xsmall" style={styles.btnSearch} className="pull-right"
+              <Button onClick={this.searchDatabase.bind(this)} bsSize="xsmall" style={styles.btnSearch}
                 onMouseEnter={() => this.setSearchButtonHovered(true)}
                 onMouseLeave={() => this.setSearchButtonHovered(false)}
-                className={this.state.searchButtonIsHovered ? 'btnSearchHovered' : null}>
+                className={this.state.searchButtonIsHovered ? 'btnSearchHovered' : null }>
                 <FontAwesome name='search' size='lg' />
               </Button>
             </FormGroup>
 
-            {/* <ButtonToolbar style={styles.btnFeatures}>
-              <DropdownButton bsStyle="default" title="Density: 4" id="dropdown-no-caret">
-                <MenuItem eventKey="1">Density: 2</MenuItem>
-                <MenuItem eventKey="2">Density: 3</MenuItem>
-                <MenuItem eventKey="3">Density: 4</MenuItem>
-              </DropdownButton>
-            </ButtonToolbar> */}
 
             <Button className="pull-right" bsStyle="success" bsSize="small" style={styles.btnAddCollection} onClick={() => this.onClickAddCollection()}>
               新建数据集
@@ -255,13 +239,12 @@ Main.PropTypes = {
 
 Main.contextTypes = {
   router: React.PropTypes.object
-}
+};
 
 export default createContainer(() => {
   Meteor.subscribe('dataCollections');
   Meteor.subscribe('cases');
   Meteor.subscribe('userData');
-  const userId = Meteor.userId();
 
   return {
     dataCollections: DataCollections.find({ $or: [{ type: 'PUBLIC' }, { ownerId: { $in: [Meteor.userId(), null] } }] }, { sort: { name: 1 } }).fetch(),
