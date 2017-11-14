@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { Navbar, FormGroup, FormControl, Table, Button } from 'react-bootstrap';
+import { Navbar, Table, Button } from 'react-bootstrap';
 import { Cases } from '../api/cases';
-import { DataCollections } from '../api/dataCollections';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import { browserHistory, Link } from 'react-router';
@@ -43,7 +42,7 @@ export class CaseList extends Component {
     this.state = {
       cases: Cases.find({ collectionName: this.props.params.collectionName }).fetch(),
       isSearchClicked: false,
-      studyID:"",
+      patientID:"",
       patientName:"",
       patientAge:0,
       patientSex:"M",
@@ -62,16 +61,20 @@ export class CaseList extends Component {
     }
   }
 
+  /**
+   * delete case
+   * @param caseId
+   */
   deleteCase(caseId) {
     let { cases } = this.state;
-    let pathList = new Array()
+    let pathList = [];
     _.each(cases, (obj) => {
       if (obj._id === caseId) {
         _.each(obj.seriesList, (series) => {
           pathList.push(series.path)
         })
       }
-    })
+    });
     Meteor.call('deleteCase', caseId, (error) => {
       if (error) {
         toast.error("somethings wrong at deleteCase" + error.reason, { position: toast.POSITION.BOTTOM_RIGHT });
@@ -85,23 +88,26 @@ export class CaseList extends Component {
               return false
             }
           })
-        })
+        });
         toast.success("病例删除成功", { position: toast.POSITION.BOTTOM_RIGHT });
       }
     });
   }
 
+  /**
+   * search case
+   */
   searchCase() {
-    const studyID = this.state.studyID;
+    const patientID = this.state.patientID;
     const patientName = this.state.patientName;
     const patientAge = this.state.patientAge;
     const patientSex = this.state.patientSex;
     const modality = this.state.modality;
     const startTime = this.state.startTime;
     const endTime = this.state.endTime;
-    query = {};
-    if (studyID.length > 0) {
-      query.studyID = {$regex : ".*" + studyID + ".*"};
+    let query = {};
+    if (patientID.length > 0) {
+      query.patientID = {$regex : ".*" + patientID + ".*"};
     }
     if (patientName.length > 0) {
       query.patientName = {$regex : ".*" + patientName+ ".*"};
@@ -140,10 +146,18 @@ export class CaseList extends Component {
     });
   }
 
-  jumpTo(caseid) {
-    window.location = "/newCase?id=" + caseid;
+  /**
+   * link to new case page
+   * @param caseId
+   */
+  static jumpTo(caseId) {
+    window.location = "/newCase?id=" + caseId;
   }
 
+  /**
+   * store input into state
+   * @param event
+   */
   handleInputChange(event) {
     const value = event.target.value;
     const name = event.target.name;
@@ -190,7 +204,7 @@ export class CaseList extends Component {
         <div className={"searchBar"} style={style.searchBar}>
           <div style={style.formElement}>
             检查号：
-            <input type={"text"} name={"studyID"} value={this.state.studyID} onChange={this.handleInputChange}/>
+            <input type={"text"} name={"patientID"} value={this.state.patientID} onChange={this.handleInputChange}/>
           </div>
           <div style={style.formElement}>
             姓名：
@@ -235,9 +249,9 @@ export class CaseList extends Component {
             {tHead}
             </thead>
             <tbody>
-            {this.state.cases.length > 0 && this.state.cases.map((specificCase, index) => {
+            {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
               return (
-                <tr key={specificCase._id} onDoubleClick = {() => this.jumpTo(specificCase._id)}>
+                <tr key={specificCase._id} onDoubleClick = {() => CaseList.jumpTo(specificCase._id)}>
                   <td>{specificCase.accessionNumber}</td>
                   <td>{specificCase.patientID}</td>
                   <td>{specificCase.patientName}</td>
@@ -281,7 +295,7 @@ export class CaseList extends Component {
 
 CaseList.contextTypes = {
   router: React.PropTypes.object
-}
+};
 
 export default withTracker(props => {
   const handle = Meteor.subscribe('cases');
