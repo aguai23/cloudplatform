@@ -12,7 +12,7 @@ import FontAwesome from 'react-fontawesome';
 import { Cases } from '../api/cases';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
-import Progress from 'rc-progress';
+import Progress from 'react-progress';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
 import "./css/viewer.css";
