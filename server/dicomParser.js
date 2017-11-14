@@ -15,7 +15,7 @@ var fs = require('fs'),
   path = require('path');
 
 var dicomObj = {};
-var thumbnailArray = [];
+var thumbnailArray = {};
 var currentCaseId = undefined;
 
 Meteor.methods({
@@ -137,31 +137,31 @@ Meteor.methods({
     let result = {};
     result.array = [];
     result.status = 'SUCCESS';
-    if (!thumbnailArray) return {
+    if (!thumbnailArray && !thumbnailArray[caseId]) return {
       status: 'FAILURE'
     };
 
-    if (thumbnailArray.length === 0) {
+    if (thumbnailArray[caseId] === undefined || thumbnailArray[caseId].length === 0) {
       let foundCase = Cases.findOne({
         _id: caseId
       });
       for (let i = 0; i < foundCase.seriesList.length; i++) {
-        initThumbnail(i, foundCase.seriesList[i].path);
+        initThumbnail(i, foundCase.seriesList[i].path, caseId);
       }
     }
 
-    for (let i = 0; i < thumbnailArray.length; i++) {
-      let colVal = thumbnailArray[i].uint16('x00280011') ? thumbnailArray[i].uint16('x00280011') : 512,
-        rowVal = thumbnailArray[i].uint16('x00280010') ? thumbnailArray[i].uint16('x00280010') : 512;
+    for (let i = 0; i < thumbnailArray[caseId].length; i++) {
+      let colVal = thumbnailArray[caseId][i].uint16('x00280011') ? thumbnailArray[caseId][i].uint16('x00280011') : 512,
+        rowVal = thumbnailArray[caseId][i].uint16('x00280010') ? thumbnailArray[caseId][i].uint16('x00280010') : 512;
       result.array.push({
-        imageBuf: thumbnailArray[i].byteArray,
-        pixelDataOffset: thumbnailArray[i].elements.x7fe00010.dataOffset,
-        pixelDataLength: thumbnailArray[i].elements.x7fe00010.length,
+        imageBuf: thumbnailArray[caseId][i].byteArray,
+        pixelDataOffset: thumbnailArray[caseId][i].elements.x7fe00010.dataOffset,
+        pixelDataLength: thumbnailArray[caseId][i].elements.x7fe00010.length,
         getPixelData: function () {},
         minPixelValue: 0,
         maxPixelValue: 4096,
-        slope: thumbnailArray[i].string('x00281053') ? parseInt(thumbnailArray[i].string('x00281053')) : 0,
-        intercept: thumbnailArray[i].string('x00281052') ? parseInt(thumbnailArray[i].string('x00281052')) : -1024,
+        slope: thumbnailArray[caseId][i].string('x00281053') ? parseInt(thumbnailArray[caseId][i].string('x00281053')) : 0,
+        intercept: thumbnailArray[caseId][i].string('x00281052') ? parseInt(thumbnailArray[caseId][i].string('x00281052')) : -1024,
         windowCenter: -600,
         windowWidth: 1500,
         columns: colVal,
@@ -182,14 +182,17 @@ Meteor.methods({
  * @param seriesIndex the corresponding series index for the thumbnail
  * @param dirPath the directory path where the dicom stores for this series
  */
-function initThumbnail(seriesIndex, dirPath) {
+function initThumbnail(seriesIndex, dirPath, caseId) {
   let fileNames = fs.readdirSync(dirPath);
   for (let i = 0; i < fileNames.length; i++) {
+    if(!thumbnailArray[caseId]){
+      thumbnailArray[caseId] = []
+    }
     let tokens = fileNames[i].split('_');
 
     if (tokens[tokens.length - 1] === '1.dcm') {
       let data = fs.readFileSync(path.join(dirPath, fileNames[i]));
-      thumbnailArray[seriesIndex] = dicomParser.parseDicom(data);
+      thumbnailArray[caseId][seriesIndex] = dicomParser.parseDicom(data);
       return;
     }
   }
