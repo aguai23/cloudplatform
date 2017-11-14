@@ -21,14 +21,25 @@ export default class SingleCollectionInList extends Component {
   render() {
     return (
       <div>
-        <Link to={{
-            pathname: '/datasets/' + this.props.dataCollection.name,
-            state: this.props.dataCollection.name
-          }}>
-          {this.props.dataCollection.name + (this.props.dataCollection.equip ? " / " + this.props.dataCollection.equip : "")}
-        </Link>
-        <FontAwesome name='trash-o' size='lg' className="pull-right" onClick={this.onClickRemove.bind(this)}/>
-        <FontAwesome name='pencil-square-o' size='lg' className="pull-right" onClick={this.onClickModify.bind(this)} />
+        <div className="col-sm-2">
+          <Link to={{
+              pathname: '/datasets/' + this.props.dataCollection.name,
+              state: this.props.dataCollection.name
+            }}>
+            {this.props.dataCollection.name}
+          </Link>
+        </div>
+        <div className="col-sm-1">
+          {this.props.dataCollection.equip}
+        </div>
+        <div className="col-sm-7">
+        </div>
+        <div className="col-sm-1">
+          <FontAwesome name='trash-o' size='lg' className="pull-right" onClick={this.onClickRemove.bind(this)}/>
+        </div>
+        <div className="col-sm-1">
+          <FontAwesome name='pencil-square-o' size='lg' className="pull-right" onClick={this.onClickModify.bind(this)} />
+        </div>
       </div>
     );
   }

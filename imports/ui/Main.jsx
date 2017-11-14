@@ -9,66 +9,12 @@ import { DataCollections } from '../api/dataCollections';
 import ModalAddCollection from './ModalAddCollection';
 import SingleCollectionInList from './SingleCollectionInList';
 
-
+import './css/main.css';
 
 const tempDataCollection = {
   name: "",
   type: "",
 };
-
-const styles = {
-  btnAddCollection: {
-    position: 'relative',
-    marginTop: '11px'
-  },
-
-  btnFeatures: {
-    position: 'relative',
-    display: 'inline-block',
-    marginLeft: '100px',
-    top: '-3px'
-  },
-
-  btnSearch: {
-    color: 'grey',
-    display: 'inline-block',
-    position: 'absolute',
-    right: '2px',
-    top: '4px',
-    borderRadius: '3px',
-    border: 'none'
-  },
-
-  btnSearchHovered: {
-    color: '#ffffff',
-    backgroundColor: '#8FBE00'
-  },
-
-  inputSearch: {
-    display: 'inline-block',
-    position: 'relative'
-  },
-
-  mainDiv: {
-    position: 'relative',
-    marginTop: '50px'
-  },
-
-  tabHeaders: {
-    position: 'relative',
-    display: 'inline-block',
-    fontSize: '18px'
-  },
-
-  searchBar: {
-    position: 'relative',
-    display: 'inline-block',
-    marginLeft: '100px',
-    top: '-15px',
-    width: '300px'
-  }
-};
-
 
 export class Main extends Component {
 
@@ -108,6 +54,13 @@ export class Main extends Component {
         this.setState({ dataCollections: nextProps.favoriteDataCollections });
       }
     }
+  }
+
+  componentDidMount() {
+    this.setState({
+      containerHeight: window.innerHeight - document.getElementById('header').clientHeight,
+      bottomDivHeight: window.innerHeight - document.getElementById('header').clientHeight - document.getElementById('upper-div').clientHeight - 120
+    });
   }
 
   setSearchButtonHovered(val) {
@@ -196,25 +149,54 @@ export class Main extends Component {
 
   render() {
     return (
-      <div className="container" style={styles.mainDiv}>
+      <div>
         <div id="modal-base"/>
-        <div>
-          <div>
-            <Nav bsStyle="tabs" activeKey={this.state.tabActiveKey} onSelect={this.onTabSelectHandler} style={styles.tabHeaders}>
+        <div className="eight-cols" style={{height: this.state.containerHeight}}>
+          <div className="col-sm-1 nav-container" >
+            <Nav className="nav-custom" bsStyle="pills" stacked activeKey={this.state.tabActiveKey} onSelect={this.onTabSelectHandler}>
               <NavItem eventKey="PUB" href="#">公共数据集</NavItem>
               <NavItem eventKey="PVT" href="#">个人数据集</NavItem>
               <NavItem eventKey="FAV" href="#">收藏数据集</NavItem>
             </Nav>
+          </div>
+          <div className="col-sm-7 content-container">
+            <div id="upper-div" className="upper-div">
+              <div className="col-sm-6" style={{padding: 0}}>
+                <FormGroup bsSize="small" className="searchBar">
+                  <FormControl type="text" placeholder="输入名称搜索" inputRef={input => { this.textInput = input }} />
+                  <a onClick={this.searchDatabase.bind(this)} className='btn-search'>
+                    <FontAwesome name='search' size='lg' />
+                  </a>
+                </FormGroup>
+              </div>
+              <div className="col-sm-6" style={{padding: 0}}>
+                <div className="pull-right btn-create-dataset" onClick={() => this.onClickAddCollection()}>
+                </div>
+              </div>
+            </div>
+            <div className="bottom-div" style={{height: this.state.bottomDivHeight}}>
+              <div className="row">
+                <ul>
+                  {this.state.dataCollections.map((dataCollection) => {
+                    return (
+                      <li key={dataCollection._id} className="data-item">
+                        <SingleCollectionInList dataCollection={dataCollection} onClickModify={this.updateCurrentDataCollection} onClickRemove={this.onClickRemoveCollection} />
+                        <hr />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
 
-            <FormGroup bsSize="small" style={styles.searchBar}>
-              <FormControl type="text" placeholder="输入名称搜索" style={styles.inputSearch} inputRef={input => { this.textInput = input }} />
-              <Button onClick={this.searchDatabase.bind(this)} bsSize="xsmall" style={styles.btnSearch}
-                onMouseEnter={() => this.setSearchButtonHovered(true)}
-                onMouseLeave={() => this.setSearchButtonHovered(false)}
-                className={this.state.searchButtonIsHovered ? 'btnSearchHovered' : null }>
-                <FontAwesome name='search' size='lg' />
-              </Button>
-            </FormGroup>
+        {/*
+        <div>
+          <div>
+
+
+
 
 
             <Button className="pull-right" bsStyle="success" bsSize="small" style={styles.btnAddCollection} onClick={() => this.onClickAddCollection()}>
@@ -223,21 +205,9 @@ export class Main extends Component {
 
           </div>
 
-          <div>
-            <div className="row">
-              <ul>
-                {this.state.dataCollections.map((dataCollection) => {
-                  return (
-                    <li key={dataCollection._id} >
-                      <SingleCollectionInList dataCollection={dataCollection} onClickModify={this.updateCurrentDataCollection} onClickRemove={this.onClickRemoveCollection} />
-                      <hr />
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
+
         </div>
+        */}
 
         <ToastContainer
           position="bottom-right"

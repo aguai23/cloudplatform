@@ -135,7 +135,7 @@ export default class Header extends Component {
       }
     });
     return (
-      <div style={styles.divBreadcrumb}>
+      <div id="header" style={styles.divBreadcrumb}>
         <Breadcrumb style={styles.breadcrumb}>
           <img src={('public/img/PVmed.jpg')}/>
         {breadcrumbs}

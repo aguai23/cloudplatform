@@ -198,7 +198,7 @@ function initArchiver(targetDirPath, fileName, future) {
   });
 
   output.on('close', () => {
-    // console.log(archive.pointer() + ' total bytes');
+    console.log(archive.pointer() + ' total bytes');
     future.return();
   });
 
