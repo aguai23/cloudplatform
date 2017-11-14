@@ -1011,6 +1011,9 @@ export default class Viewer extends Component {
               }
               if (res.content === 'error'){
                 toast.error('服务器异常')
+                this.setState({
+                  isDiagnosing: false
+                })
                 return
               }
               console.log('res',res)

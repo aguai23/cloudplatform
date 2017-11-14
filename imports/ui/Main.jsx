@@ -1,4 +1,4 @@
-import { createContainer } from 'react-meteor-data';
+import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
@@ -263,16 +263,15 @@ Main.contextTypes = {
   router: React.PropTypes.object
 };
 
-export default createContainer(() => {
+export default withTracker(props => {
   Meteor.subscribe('dataCollections');
   Meteor.subscribe('cases');
   Meteor.subscribe('userData');
-
   return {
     dataCollections: DataCollections.find({ $or: [{ type: 'PUBLIC' }, { ownerId: { $in: [Meteor.userId(), null] } }] }, { sort: { name: 1 } }).fetch(),
     publicDataCollections: DataCollections.find({ type: 'PUBLIC' }).fetch(),
     privateDataCollections: DataCollections.find({ $and: [{ type: 'PRIVATE' }, { ownerId: Meteor.userId() }] }).fetch(),
     favoriteDataCollections: DataCollections.find({ $and: [{ type: 'FAVORITES' }, { ownerId: Meteor.userId() }] }).fetch(),
     userData: Meteor.user()
-  };
-}, Main);
+  }
+})(Main);
