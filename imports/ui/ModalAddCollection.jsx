@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor';
 import React, { Component, PropTypes } from 'react';
 import { DataCollections } from '../api/dataCollections';
 import { Button, Checkbox, ControlLabel, Form, FormControl, Modal } from 'react-bootstrap';
-import FontAwesome from 'react-fontawesome';
 import { ToastContainer, toast } from 'react-toastify';
 
 
@@ -13,13 +12,16 @@ export default class ModalAddCollection extends Component {
     this.state = {
       showModal: this.props.showModal,
       isPublic: this.props.dataCollection ? this.props.dataCollection.type === 'PUBLIC' : false
-    }
+    };
     this.onClickSubmit = this.onClickSubmit.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.showModal !== this.state.showModal) {
       this.setState({ showModal: nextProps.showModal });
+    }
+    if (nextProps.dataCollection) {
+      this.setState({isPublic: nextProps.dataCollection.type === 'PUBLIC'});
     }
   }
 
@@ -33,7 +35,7 @@ export default class ModalAddCollection extends Component {
       equip: this.equip.value,
       ownerId: Meteor.userId(),
       type: this.state.isPublic ? 'PUBLIC' : 'PRIVATE'
-    }
+    };
 
     if (!(this.name.value && this.equip.value)) {
       toast.error("请完善数据!");
