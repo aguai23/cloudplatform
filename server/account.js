@@ -1,7 +1,7 @@
 if (Meteor.isServer) {
   Accounts.onCreateUser(function (options, user) {
     user.profile = {
-      isAdmin: options.isAdmin
+      isAdmin: Main.isAdmin
     }
     return user;
   });
