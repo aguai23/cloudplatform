@@ -14,6 +14,7 @@ import {
 var fs = require('fs'),
   path = require('path');
 
+//TODO: put this three object into closures or database
 var dicomObj = {};
 var thumbnailArray = {};
 var currentCaseId = undefined;

@@ -995,17 +995,32 @@ export default class Viewer extends Component {
           })
 
         } else {
+          if (this.state.isDiagnosing) {
+            toast.warning('诊断还未完成，请稍后');
+            return
+          }
           toast.warning('正在进行诊断，请等待');
+          this.setState({
+            isDiagnosing: true
+          })
           HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
             foundcase.seriesList[this.state.curSeriesIndex].path,
             (error, res) => {
               if (error) {
                 return console.error(error);
               }
+              if (res.content === 'error'){
+                toast.error('服务器异常')
+                return
+              }
+              console.log('res',res)
               toast.success('诊断完成')
               const end = new Date().getTime();
               console.log("total time " + (end - start) / 1000);
-              this.setState({ isLoadingPanelFinished: true });
+              this.setState({
+                isLoadingPanelFinished: true,
+                isDiagnosing: false
+              });
               cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
 
               let caseId = this.props.location.state.caseId;
