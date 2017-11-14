@@ -13,25 +13,25 @@ const style = {
     paddingLeft: '20px',
     fontSize: '18px'
   },
-  searchBar:{
+  searchBar: {
     width: "17%",
     height: "50%",
-    marginLeft:"10px",
+    marginLeft: "10px",
     float: "left",
     borderStyle: "solid",
     borderColor: "darkcyan",
     backgroundColor: "aliceblue"
   },
-  caseList:{
+  caseList: {
     marginRight: "10px",
-    width:"80%",
+    width: "80%",
     marginTop: "10px",
     float: "right"
   },
-  formElement:{
+  formElement: {
     marginTop: "20px",
     marginBottom: "30px",
-    marginLeft:"20px"
+    marginLeft: "20px"
   }
 };
 
@@ -42,13 +42,13 @@ export class CaseList extends Component {
     this.state = {
       cases: Cases.find({ collectionName: this.props.params.collectionName }).fetch(),
       isSearchClicked: false,
-      patientID:"",
-      patientName:"",
-      patientAge:0,
-      patientSex:"M",
-      modality:"CT",
-      startTime:"",
-      endTime:""
+      patientID: "",
+      patientName: "",
+      patientAge: 0,
+      patientSex: "M",
+      modality: "CT",
+      startTime: "",
+      endTime: ""
     };
 
     this.searchCase = this.searchCase.bind(this);
@@ -107,12 +107,12 @@ export class CaseList extends Component {
     const endTime = this.state.endTime;
     let query = {};
     if (patientID.length > 0) {
-      query.patientID = {$regex : ".*" + patientID + ".*"};
+      query.patientID = { $regex: ".*" + patientID + ".*" };
     }
     if (patientName.length > 0) {
-      query.patientName = {$regex : ".*" + patientName+ ".*"};
+      query.patientName = { $regex: ".*" + patientName + ".*" };
     }
-    if (patientSex.length > 0){
+    if (patientSex.length > 0) {
       query.patientSex = patientSex;
     }
     if (patientAge > 0) {
@@ -121,14 +121,14 @@ export class CaseList extends Component {
     if (modality.length > 0) {
       query.modality = modality;
     }
-    if (startTime.length > 0 && endTime.length > 0) {
-      let startDate = new Date(startTime);
-      let endDate = new Date(endTime);
+    if (startTime.length > 0 || endTime.length > 0) {
+      let startDate = new Date(startTime ? startTime : Date.now());
+      let endDate = new Date(endTime ? endTime : Date.now());
       query["$where"] = function () {
         let date = undefined;
         if (this.studyDate.length === 8) {
-          date = new Date(this.studyDate.substr(0,4) + "-" +
-            this.studyDate.substr(4,2) + "-" + this.studyDate.substr(6,2));
+          date = new Date(this.studyDate.substr(0, 4) + "-" +
+            this.studyDate.substr(4, 2) + "-" + this.studyDate.substr(6, 2));
         }
         return date <= endDate && date >= startDate;
       }
@@ -181,7 +181,7 @@ export class CaseList extends Component {
         <th>生日</th>
         <th>影像描述</th>
         <th>操作</th>
-      </tr>  :
+      </tr> :
       <tr><th>未找到符合搜索条件的病例</th></tr>;
 
     let searchResult = this.state.isSearchClicked ? ("共计" + this.state.cases.length + "条搜索结果") : undefined;
@@ -191,11 +191,11 @@ export class CaseList extends Component {
         <Navbar>
           <Navbar.Header>
             <Navbar.Brand>
-              <button onClick={browserHistory.goBack} style={{border:"none", background:"transparent"}}>
-                <i className={"fa fa-angle-left"} style={{color:"red", fontSize:"20px"}}>返回</i>
+              <button onClick={browserHistory.goBack} style={{ border: "none", background: "transparent" }}>
+                <i className={"fa fa-angle-left"} style={{ color: "red", fontSize: "20px" }}>返回</i>
               </button>
               <Link to={`/newCase?collection=${this.props.params.collectionName}`}>
-                <i className="fa fa-plus" style={{color: "green", fontSize: "20px", marginLeft: "20px"}}>新建</i>
+                <i className="fa fa-plus" style={{ color: "green", fontSize: "20px", marginLeft: "20px" }}>新建</i>
               </Link>
             </Navbar.Brand>
             <Navbar.Toggle />
@@ -204,15 +204,15 @@ export class CaseList extends Component {
         <div className={"searchBar"} style={style.searchBar}>
           <div style={style.formElement}>
             检查号：
-            <input type={"text"} name={"patientID"} value={this.state.patientID} onChange={this.handleInputChange}/>
+            <input type={"text"} name={"patientID"} value={this.state.patientID} onChange={this.handleInputChange} />
           </div>
           <div style={style.formElement}>
             姓名：
-            <input type={"text"} name={"patientName"} value={this.state.patientName} onChange={this.handleInputChange}/>
+            <input type={"text"} name={"patientName"} value={this.state.patientName} onChange={this.handleInputChange} />
           </div>
           <div style={style.formElement}>
             年龄：
-            <input type={"number"} name={"patientAge"} value={this.state.patientAge} onChange={this.handleInputChange}/>
+            <input type={"number"} name={"patientAge"} value={this.state.patientAge} onChange={this.handleInputChange} />
           </div>
           <div style={style.formElement}>
             性别：
@@ -230,15 +230,15 @@ export class CaseList extends Component {
           </div>
           <div style={style.formElement}>
             起始时间：
-            <input type={"date"} name={"startTime"} value={this.state.startTime} onChange={this.handleInputChange}/>
+            <input type={"date"} name={"startTime"} value={this.state.startTime} onChange={this.handleInputChange} />
           </div>
           <div style={style.formElement}>
             终止时间：
-            <input type={"date"} name={"endTime"} value={this.state.endTime} onChange={this.handleInputChange}/>
+            <input type={"date"} name={"endTime"} value={this.state.endTime} onChange={this.handleInputChange} />
           </div>
           <div style={style.formElement}>
             <Button bsStyle={"primary"} onClick={this.searchCase}>查询</Button>
-            <Button bsStyle={"danger"} onClick={() => this.reset()} style={{marginLeft:"20px"}}>重置</Button>
+            <Button bsStyle={"danger"} onClick={() => this.reset()} style={{ marginLeft: "20px" }}>重置</Button>
           </div>
         </div>
 
@@ -246,36 +246,36 @@ export class CaseList extends Component {
           <div style={style.searchResult}>{searchResult}</div>
           <Table striped bordered condensed hover>
             <thead>
-            {tHead}
+              {tHead}
             </thead>
             <tbody>
-            {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
-              return (
-                <tr key={specificCase._id} onDoubleClick = {() => CaseList.jumpTo(specificCase._id)}>
-                  <td>{specificCase.accessionNumber}</td>
-                  <td>{specificCase.patientID}</td>
-                  <td>{specificCase.patientName}</td>
-                  <td>{specificCase.patientAge}</td>
-                  <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
-                  <td>{specificCase.studyID}</td>
-                  <td>{specificCase.modality}</td>
-                  <td>{specificCase.studyDate}</td>
-                  <td>{specificCase.patientBirthDate}</td>
-                  <td>{specificCase.studyDescription}</td>
-                  <td>
-                    <Link to={{
-                      pathname: '/viewer',
-                      state: {caseId: specificCase._id}
-                    }} className="glyphicon glyphicon-picture"/>
-                    &nbsp;&nbsp;&nbsp;
-                    <Link to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil"/>
-                    &nbsp;&nbsp;&nbsp;
-                    <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, specificCase._id)}/>
-                  </td>
-                </tr>
-              )
-            })
-            }
+              {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
+                return (
+                  <tr key={specificCase._id} onDoubleClick={() => CaseList.jumpTo(specificCase._id)}>
+                    <td>{specificCase.accessionNumber}</td>
+                    <td>{specificCase.patientID}</td>
+                    <td>{specificCase.patientName}</td>
+                    <td>{specificCase.patientAge}</td>
+                    <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
+                    <td>{specificCase.studyID}</td>
+                    <td>{specificCase.modality}</td>
+                    <td>{specificCase.studyDate}</td>
+                    <td>{specificCase.patientBirthDate}</td>
+                    <td>{specificCase.studyDescription}</td>
+                    <td>
+                      <Link to={{
+                        pathname: '/viewer',
+                        state: { caseId: specificCase._id }
+                      }} className="glyphicon glyphicon-picture" />
+                      &nbsp;&nbsp;&nbsp;
+                    <Link to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil" />
+                      &nbsp;&nbsp;&nbsp;
+                    <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, specificCase._id)} />
+                    </td>
+                  </tr>
+                )
+              })
+              }
             </tbody>
           </Table>
         </div>
