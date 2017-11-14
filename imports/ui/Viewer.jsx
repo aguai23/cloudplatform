@@ -715,6 +715,7 @@ export default class Viewer extends Component {
    */
   extract(data) {
     let diagnosisResult = {};
+    let oldResult = this.state.diagnoseResult;
     for (let key in data) {
       let strs = key.split("_");
 
@@ -726,8 +727,9 @@ export default class Viewer extends Component {
         diagnosisResult[strs[0]].prob = parseFloat(data[key].prob).toFixed(3);
       }
     }
-
-    this.setState({ diagnosisResult: diagnosisResult });
+    if(!oldResult) oldResult = {}
+    oldResult[this.state.curSeriesIndex] = diagnosisResult
+    this.setState({ diagnosisResult: oldResult });
   }
 
   /**
@@ -736,7 +738,7 @@ export default class Viewer extends Component {
   onClickDiagnosisRow(key) {
     $('div').removeClass('active-diagnosis-row');
     $('#diagnosis-item-' + key).addClass('active-diagnosis-row');
-    this.setSlice(this.state.curSeriesIndex, Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice));
+    this.setSlice(this.state.curSeriesIndex, Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice));
   }
 
   /**
@@ -907,7 +909,7 @@ export default class Viewer extends Component {
           let elements = [this.state.container];
           let currentState = cornerstoneTools.appState.save(elements);
           let result = JSON.parse(algorithmInfo.circle)
-          if (!this.state.diagnosisResult) {
+          if (!this.state.diagnosisResult || !this.state.diagnosisResult[this.state.curSeriesIndex]) {
             this.extract(result);
           }
 
@@ -1002,7 +1004,7 @@ export default class Viewer extends Component {
               let elements = [this.state.container];
               let currentState = cornerstoneTools.appState.save(elements);
               let result = JSON.parse(res.content);
-              if (!this.state.diagnosisResult) {
+              if (!this.state.diagnosisResult || !this.state.diagnosisResult[this.state.curSeriesIndex]) {
                 this.extract(result);
               }
 
@@ -1068,15 +1070,15 @@ export default class Viewer extends Component {
   render() {
     let results = [];
 
-    if (this.state.diagnosisResult) {
-      for (let key in this.state.diagnosisResult) {
+    if (this.state.diagnosisResult && this.state.diagnosisResult[this.state.curSeriesIndex]) {
+      for (let key in this.state.diagnosisResult[this.state.curSeriesIndex]) {
         results.push(
           <div className="row diagnosisRow" style={style.diagnosisRow} key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
             onClick={() => this.onClickDiagnosisRow(key)}>
             <div className="col-xs-4">{key}</div>
-            <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
-              + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
-            <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
+            <div className="col-xs-4">{Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice)
+              + ' - ' + Math.max(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice)}</div>
+            <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[this.state.curSeriesIndex][key].prob * 100 + '%'}</div>
           </div>
         );
       }
