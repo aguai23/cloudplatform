@@ -90,6 +90,10 @@ export class Main extends Component {
     this.onTabSelectHandler = this.onTabSelectHandler.bind(this);
   }
 
+  /**
+   * update state once props changed
+   * @param nextProps the new props
+   */
   componentWillReceiveProps(nextProps) {
     if (this.state.tabActiveKey === 'PUB') {
       if (nextProps.publicDataCollections !== this.state.dataCollections) {
@@ -110,16 +114,24 @@ export class Main extends Component {
     this.setState({ searchButtonIsHovered: val });
   }
 
-  isAdmin() {
-    if (Meteor.user().profile && Meteor.user().profile.isAdmin) {
+  /**
+   * check whether user is admin
+   * @returns {boolean}
+   */
+  static isAdmin() {
+    if (Meteor.user().profile && Main.isAdmin) {
       return true
     }
     toast.error("暂无操作权限！", { position: toast.POSITION.BOTTOM_RIGHT });
     return false
   }
 
+  /**
+   * remove collection
+   * @param id
+   */
   onClickRemoveCollection(id) {
-    if (this.isAdmin()) {
+    if (Main.isAdmin()) {
       Meteor.call('removeDataCollection', id, (error) => {
         if (error) {
           console.log("Failed to remove DataCollection. " + error.reason);
@@ -131,10 +143,24 @@ export class Main extends Component {
     }
   }
 
+  /**
+   * add collection
+   */
   onClickAddCollection() {
-    if (this.isAdmin()) {
+    if (Main.isAdmin()) {
       this.setState({ showAddCollectionModal: true });
       ReactDOM.render((<ModalAddCollection showModal={true} userInfo={this.props.userData} />), document.getElementById('modal-base'));
+    }
+  }
+
+  /**
+   * update collection
+   * @param dataCollection
+   */
+  updateCurrentDataCollection(dataCollection) {
+    if (Main.isAdmin()) {
+      this.setState({ showAddCollectionModal: true });
+      ReactDOM.render((<ModalAddCollection showModal={true} dataCollection={dataCollection} userInfo={this.props.userData} />), document.getElementById('modal-base'));
     }
   }
 
@@ -154,16 +180,12 @@ export class Main extends Component {
     }
   }
 
-  updateCurrentDataCollection(dataCollection) {
-    if (this.isAdmin()) {
-      this.setState({ showAddCollectionModal: true });
-      ReactDOM.render((<ModalAddCollection showModal={true} dataCollection={dataCollection} userInfo={this.props.userData} />), document.getElementById('modal-base'));
-    }
-  }
-
+  /**
+   * search data collection
+   */
   searchDatabase() {
-    const newValue = DataCollections.find({ name: { $regex: this.textInput.value, $options: "i" } }).fetch()
-    if (newValue.length) {
+    const newValue = DataCollections.find({ name: { $regex: this.textInput.value, $options: "i" } }).fetch();
+    if (newValue.length > 0) {
       this.setState({
         dataCollections: newValue
       })
