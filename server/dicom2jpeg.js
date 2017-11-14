@@ -4,33 +4,65 @@ let fs = require('fs'),
     path = require('path'),
     jpeg = require('jpeg-js'),
     mkdirp = require('mkdirp'),
-    archiver = require('archiver');
+    archiver = require('archiver'),
+    Future = Npm.require('fibers/future');
 
+/**
+ * provides download API for client, which handles download request for both study and series
+ *
+ */
+Picker.route('/download', (params, req, res, next) => {
+  let dirPath = params.query.dirPath,
+      fileName = params.query.fileName;
+
+  let header = {
+    'Content-Type': 'application/zip',
+    'Content-Disposition': 'attachment; filename=\"' + fileName + '\"'
+  }
+
+  res.writeHead(200, header);
+
+  let readStream = fs.createReadStream(path.join(dirPath, fileName));
+
+  readStream.on('error', (err) => {
+    throw err;
+  });
+
+  readStream.on('close', ()=> {
+    fs.unlink(path.join(dirPath, fileName), (err) => {
+      if(err) {
+        return console.error(err);
+      }
+    });
+  });
+
+  readStream.pipe(res);
+});
+
+Meteor.methods({
   /**
-   * provides download API for client, which handles download request for both study and series
-   *
+   * meteor method to create packed zip file for dicom filess
+   * @param caseId requested case id
+   * @param seriesIndex index of requested series (optional). If provided, returns packed zip file for the series, otherwise returns pakced zip file for the whole study
    */
-  Picker.route('/download', (params, req, res, next) => {
-    let caseId = params.query.caseId,
-        seriesIndex = params.query.seriesIndex,
-        dirPath = '/zip';
+  generateZipFile(caseId, seriesIndex) {
+    // let caseId = params.query.caseId,
+    //     seriesIndex = params.query.seriesIndex,
+    let dirPath = '/zip',
+        res = {
+          status: 'FAILURE'
+        }
 
     if(caseId === undefined) {
-      res.writeHead(500, {
-        error: 'Param caseId is required'
-      });
-      res.end();
-      return;
+      res.error = 'Param caseId is required';
+      return res;
     }
 
     let caseInstance = Cases.findOne({_id: caseId});
 
     if(caseInstance === undefined) {
-      res.writeHead(500, {
-        error: 'Case not found. Please provide correct caseId'
-      });
-      res.end();
-      return;
+      res.error = 'Case not found. Please provide correct caseId';
+      return res;
     }
 
     let seriesList = caseInstance.seriesList;
@@ -47,19 +79,23 @@ let fs = require('fs'),
       // download by series
       let fileName = seriesList[seriesIndex].seriesInstanceUID + '.zip';
 
-      let header = {
-        'Content-Type': 'application/zip',
-        'Content-Disposition': 'attachment; filename=\"' + fileName + '\"'
-      }
-
-      res.writeHead(200, header);
-
-      let archive = initArchiver(dirPath, fileName, res);
+      let future = new Future();
+      let archive = initArchiver(dirPath, fileName, future);
       convertDicomFiles(seriesList[seriesIndex].seriesInstanceUID, seriesList[seriesIndex].path, archive);
       archive.finalize();
+
+      res.dirPath = dirPath;
+      res.fileName = fileName;
+
+      future.wait();
     }
 
-  });
+    res.status = 'SUCCESS';
+
+
+    return res;
+  }
+});
 
 /**
  * parses dicom file the extract useful information
@@ -150,12 +186,12 @@ function compressJpeg(archive, imageData, options) {
  * @param output output stream, should be ServerResponse here
  * @returns the archive object, which is an readableStream
  */
-function initArchiver(targetDirPath, fileName, output) {
+function initArchiver(targetDirPath, fileName, future) {
   if(!fs.existsSync(targetDirPath)) {
     mkdirp.sync(targetDirPath);
   }
 
-  // let output = fs.createWriteStream(path.join(targetDirPath, fileName));
+  let output = fs.createWriteStream(path.join(targetDirPath, fileName));
 
   let archive = archiver('zip', {
     zlib: {level: 9}
@@ -163,6 +199,7 @@ function initArchiver(targetDirPath, fileName, output) {
 
   output.on('close', () => {
     // console.log(archive.pointer() + ' total bytes');
+    future.return();
   });
 
   output.on('end', () => {

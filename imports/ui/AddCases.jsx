@@ -17,7 +17,8 @@ import dicomParser from 'dicom-parser';
 
 import 'react-toastify/dist/ReactToastify.min.css';
 
-import 'react-fine-uploader/gallery/gallery.css';
+import "./css/common/spinner.css";
+import "./css/addCase.css";
 
 var isUploadFinished = true,
   imageArray = [];
@@ -114,6 +115,7 @@ export class AddCase extends Component {
       showSeriesList: false,
       seriesInstanceUIDList,
       selectedFiles: [],
+      showDownloadModal: false,
 
       uploadProgress: -1
     };
@@ -605,17 +607,27 @@ export class AddCase extends Component {
   }
 
   download(caseId, seriesIndex) {
-    console.log('task started at', new Date());
+    console.log('conversion started at', new Date());
 
-    let file_path = `http://localhost:3000/download?caseId=${caseId}&seriesIndex=${seriesIndex}`;
-    let a = document.createElement('A');
+    this.setState({showDownloadModal: true});
 
-    a.href = file_path;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    Meteor.call('generateZipFile', caseId, seriesIndex, (err, res) => {
+      if(err) {
+        return console.error(err);
+      }
 
-    // return window.open('http://localhost:3000/zip/100.118.116.2003.1.4.1097151559.675.9.20171017000081.zip');
+      console.log('conversion ended at', new Date());
+
+      this.setState({showDownloadModal: false});
+
+      let file_path = `http://localhost:3000/download?dirPath=${res.dirPath}&fileName=${res.fileName}`;
+      let a = document.createElement('A');
+
+      a.href = file_path;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
   }
 
   render() {
@@ -859,23 +871,30 @@ export class AddCase extends Component {
           style={{ zIndex: 1999 }}
         />
 
-        {/* <Modal show={this.state.showFilesList} onHide={this.changeFilesModalState}>
-          <Modal.Header closeButton>
-            <Modal.Title>文件列表</Modal.Title>
+        <Modal show={this.state.showDownloadModal} className="modal">
+          <Modal.Header>
+            <Modal.Title style={{textAlign: 'center'}}>文件准备中</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {filesList &&
-              filesList.map((file, index) => {
-                return (
-                  <p key={file}>{file}<a onClick={this.deleteFile.bind(this, file)}>删除</a></p>
-                )
-              })
-            }
+            <div id="load-spinner" >
+              <div className="lds-microsoft" style={{height: '100%'}}>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+            <div className="waiting-text">
+              <span>正在准备文件，请稍候...</span>
+              <br/><br/>
+              <span>文件准备完成后会自动开始下载并关闭本窗口</span>
+            </div>
           </Modal.Body>
-          <Modal.Footer>
-            <Button onClick={this.changeFilesModalState}>Close</Button>
-          </Modal.Footer>
-        </Modal> */}
+        </Modal>
 
         <Modal bsSize="small" show={this.state.showSeriesList} onHide={this.changeSeriesModalState.bind(this)}>
           <Modal.Header closeButton>
