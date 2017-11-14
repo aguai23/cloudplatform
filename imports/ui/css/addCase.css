@@ -1,0 +1,21 @@
+.modal {
+  height: auto;
+  position: absolute;
+  top: 300px;
+}
+
+#load-spinner {
+  position: relative;
+  top: -35px;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  transform: scale(0.35);
+}
+
+.waiting-text {
+  color: darkgray;
+  position: relative;
+  top: -35px;
+  text-align: center;
+}
