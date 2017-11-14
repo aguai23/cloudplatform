@@ -1,18 +1,14 @@
 import { HTTP } from 'meteor/http';
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
-import { Button, Navbar, NavItem, Nav, Overlay, OverlayTrigger, Popover, Row, MenuItem, ButtonGroup } from 'react-bootstrap';
-import { Motion, spring } from 'react-motion';
+import { Button, Navbar, NavItem, Nav, OverlayTrigger, Popover, ButtonGroup } from 'react-bootstrap';
 import { Meteor } from 'meteor/meteor';
-import dicomParse from 'dicom-parser';
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../library/cornerstoneTools';
 import FontAwesome from 'react-fontawesome';
 import { Cases } from '../api/cases';
 import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
-import Progress from 'react-progress';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
 import "./css/viewer.css";
@@ -141,16 +137,6 @@ const style = {
   },
   diagnosisLink: {
     cursor: 'pointer'
-  },
-  progressBar: {
-    top: "10px",
-    left: "30%",
-    height: "20px",
-    width: "800px",
-    position: "relative",
-    verticalAlign: "center",
-    border: '1px solid #aaf7f4',
-    background: "#A9A9A9"
   }
 
 };
@@ -181,7 +167,6 @@ export default class Viewer extends Component {
       lastY: 0,
       startY: 0,
       curSeriesIndex: this.props.location.state.index ? this.props.location.state.index : 0,
-
       isDiagnosisPanelOpened: false,
       isLoadingPanelFinished: false,
       isMagnifyToolOpened: false,
@@ -258,7 +243,7 @@ export default class Viewer extends Component {
     /**
      * default configuration for magnify tool
      */
-    var config = {
+    let config = {
       magnifySize: 250,
       magnificationLevel: 4
     };
@@ -282,6 +267,10 @@ export default class Viewer extends Component {
     window.removeEventListener("resize", () => this.updateDimensions());
   }
 
+  /**
+   * download thumbnail information
+   * @param caseId
+   */
   getThumbnails(caseId) {
     Meteor.call('getThumbnailDicoms', caseId, (err, result) => {
       if (err) {
@@ -305,6 +294,11 @@ export default class Viewer extends Component {
     });
   }
 
+  /**
+   * initialize main canvas
+   * @param caseId
+   * @param seriesIndex
+   */
   initMainCanvas(caseId, seriesIndex) {
     Meteor.call('prepareDicoms', caseId, seriesIndex, (error, result) => {
       if (error) {
@@ -332,32 +326,6 @@ export default class Viewer extends Component {
           //set info here
           let element = $("#viewer");
           element.on("CornerstoneImageRendered", this.updateInfo);
-          for (let i = 1; i <= this.state.imageNumber; i++) {
-            if (!this.state.dicomObj[this.state.curSeriesIndex][i]) {
-              let progressBar = document.getElementById("progressBar");
-              progressBar.style.visibility = "visible";
-              Meteor.call('getDicom', this.state.curSeriesIndex, i, (err, result) => {
-                if (err) {
-                  return console.error(err);
-                }
-                this.setState({
-                  loadingProgress: (i * 100) / this.state.imageNumber
-                });
-                if (this.state.loadingProgress === 100) {
-                  let progressBar = document.getElementById("progressBar");
-                  progressBar.style.visibility = "hidden";
-                }
-
-
-                let image = result;
-                let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-                image.getPixelData = function () {
-                  return pixelData
-                };
-                this.state.dicomObj[this.state.curSeriesIndex][i] = image;
-              });
-            }
-          }
         }
 
       }
@@ -412,6 +380,7 @@ export default class Viewer extends Component {
 
   /**
    * set image slice
+   * @param curSeriesIndex
    * @param index image index
    */
   setSlice(curSeriesIndex, index) {
@@ -746,7 +715,8 @@ export default class Viewer extends Component {
    */
   extract(data) {
     let diagnosisResult = {};
-    for (key in data) {
+    let oldResult = this.state.diagnoseResult;
+    for (let key in data) {
       let strs = key.split("_");
 
       if (diagnosisResult[strs[0]]) {
@@ -757,8 +727,9 @@ export default class Viewer extends Component {
         diagnosisResult[strs[0]].prob = parseFloat(data[key].prob).toFixed(3);
       }
     }
-
-    this.setState({ diagnosisResult: diagnosisResult });
+    if(!oldResult) oldResult = {}
+    oldResult[this.state.curSeriesIndex] = diagnosisResult
+    this.setState({ diagnosisResult: oldResult });
   }
 
   /**
@@ -767,7 +738,7 @@ export default class Viewer extends Component {
   onClickDiagnosisRow(key) {
     $('div').removeClass('active-diagnosis-row');
     $('#diagnosis-item-' + key).addClass('active-diagnosis-row');
-    this.setSlice(this.state.curSeriesIndex, Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice));
+    this.setSlice(this.state.curSeriesIndex, Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice));
   }
 
   /**
@@ -938,14 +909,14 @@ export default class Viewer extends Component {
           let elements = [this.state.container];
           let currentState = cornerstoneTools.appState.save(elements);
           let result = JSON.parse(algorithmInfo.circle)
-          if (!this.state.diagnosisResult) {
+          if (!this.state.diagnosisResult || !this.state.diagnosisResult[this.state.curSeriesIndex]) {
             this.extract(result);
           }
 
           let picList = {};
           _.mapObject(result, (val, key) => {
             val.num = key.split("_")[0];
-            if (picList[key.split("_")[1]] != undefined) {
+            if (picList[key.split("_")[1]] !== undefined) {
               picList[key.split("_")[1]].push(val)
             } else {
               picList[key.split("_")[1]] = [val]
@@ -1003,8 +974,9 @@ export default class Viewer extends Component {
           }
           toast.warning('正在进行诊断，请等待');
           this.setState({
-            isDiagnosing: true
-          })
+            isDiagnosing: true,
+            isLoadingPanelFinished: false
+          });
           HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
             foundcase.seriesList[this.state.curSeriesIndex].path,
             (error, res) => {
@@ -1015,7 +987,7 @@ export default class Viewer extends Component {
                 toast.error('服务器异常')
                 this.setState({
                   isDiagnosing: false
-                })
+                });
                 return
               }
               console.log('res',res)
@@ -1032,7 +1004,7 @@ export default class Viewer extends Component {
               let elements = [this.state.container];
               let currentState = cornerstoneTools.appState.save(elements);
               let result = JSON.parse(res.content);
-              if (!this.state.diagnosisResult) {
+              if (!this.state.diagnosisResult || !this.state.diagnosisResult[this.state.curSeriesIndex]) {
                 this.extract(result);
               }
 
@@ -1098,15 +1070,15 @@ export default class Viewer extends Component {
   render() {
     let results = [];
 
-    if (this.state.diagnosisResult) {
-      for (let key in this.state.diagnosisResult) {
+    if (this.state.diagnosisResult && this.state.diagnosisResult[this.state.curSeriesIndex]) {
+      for (let key in this.state.diagnosisResult[this.state.curSeriesIndex]) {
         results.push(
           <div className="row diagnosisRow" style={style.diagnosisRow} key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
             onClick={() => this.onClickDiagnosisRow(key)}>
             <div className="col-xs-4">{key}</div>
-            <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
-              + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
-            <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
+            <div className="col-xs-4">{Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice)
+              + ' - ' + Math.max(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice)}</div>
+            <div className="col-xs-4" style={style.diagnosisProb}>{this.state.diagnosisResult[this.state.curSeriesIndex][key].prob * 100 + '%'}</div>
           </div>
         );
       }
@@ -1195,7 +1167,7 @@ export default class Viewer extends Component {
           return (
             <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index) }}>
               <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
-                <div className="thumbnailDiv" id={'thumbnail' + index}></div>
+                <div className="thumbnailDiv" id={'thumbnail' + index}/>
               </div>
               <div className="thumbnail-info row">
                 <div className="col-sm-8">
@@ -1342,8 +1314,8 @@ export default class Viewer extends Component {
 
         <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
           <ButtonGroup justified>
-            <Button bsSize="large" onClick={this.switchPanelState.bind(this, 0)} href="#" bsStyle={this.state.thumbnailButton}>结节列表</Button>
-            <Button bsSize="large" onClick={this.switchPanelState.bind(this, 1)} href="#" bsStyle={this.state.diagnosisButton}>序列列表</Button>
+            <Button active={this.state.diagnosisButton === 'default'} bsSize="large" onClick={this.switchPanelState.bind(this, 0)} href="#" >结节列表</Button>
+            <Button active={this.state.thumbnailButton === 'default'} bsSize="large" onClick={this.switchPanelState.bind(this, 1)} href="#" >序列列表</Button>
           </ButtonGroup>
           {diagnosisBox}
           {thumbnailBox}
@@ -1361,9 +1333,6 @@ export default class Viewer extends Component {
               ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
             }} />
           <div style={style.viewer} ref="viewerContainer" id="viewer" >
-            <div style={style.progressBar} id={"progressBar"}>
-              <Progress percent={this.state.loadingProgress} trailColor="#87CEFA" style={{ position: "absolute", height: "20px" }} />
-            </div>
             <div style={{ ...style.patientInfo, ...style.textInfo, ...style.disableSelection }} id="patientInfo">
               <div>
                 <span>病人姓名: {this.state.patientName}</span>
