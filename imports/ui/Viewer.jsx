@@ -311,9 +311,11 @@ export default class Viewer extends Component {
         console.error(error)
       } else {
         if (result.status === "SUCCESS") {
-
-          let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
-          let dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
+          let dateTime = ''
+          if(result.seriesTime && result.seriesDate){
+            let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
+            dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
+          }
           this.setState({
             imageNumber: result.imageNumber,
             patientId: result.patientId,
