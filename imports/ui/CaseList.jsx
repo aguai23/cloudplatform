@@ -225,7 +225,13 @@ export class CaseList extends Component {
             设备：
             <select name={"modality"} value={this.state.modality} onChange={this.handleInputChange}>
               <option value={"CT"}>CT</option>
-              <option value={"MR"}>MR</option>
+              <option value={"MRI"}>MRI</option>
+              <option value={"DSA"}>DSA</option>
+              <option value={"DR"}>DR</option>
+              <option value={"CR"}>CR</option>
+              <option value={"RF"}>RF</option>
+              <option value={"MG"}>MG</option>
+              <option value={"US"}>US</option>
             </select>
           </div>
           <div style={style.formElement}>
