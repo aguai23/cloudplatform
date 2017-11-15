@@ -10,6 +10,7 @@ import ModalAddCollection from './ModalAddCollection';
 import SingleCollectionInList from './SingleCollectionInList';
 import DatasetMenu from './DatasetMenu.jsx';
 
+import './css/common/eightCols.css';
 import './css/main.css';
 
 const tempDataCollection = {

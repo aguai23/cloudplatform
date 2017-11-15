@@ -1,0 +1,44 @@
+@media (min-width: 768px){
+  .eight-cols>.col-md-1,
+  .eight-cols>.col-sm-1,
+  .eight-cols>.col-lg-1  {
+    width: 100%;
+    *width: 100%;
+  }
+}
+
+@media (min-width: 992px) {
+  .eight-cols>.col-md-1,
+  .eight-cols>.col-sm-1,
+  .eight-cols>.col-lg-1 {
+    width: 12.5%;
+    *width: 12.5%;
+  }
+
+  .eight-cols>.col-md-7,
+  .eight-cols>.col-sm-7,
+  .eight-cols>.col-lg-7 {
+    width: 87.5%;
+    *width: 87.5%;
+  }
+}
+
+/**
+ *  The following is not really needed in this case
+ *  Only to demonstrate the usage of @media for large screens
+ */
+@media (min-width: 1200px) {
+  .eight-cols>.col-md-1,
+  .eight-cols>.col-sm-1,
+  .eight-cols>.col-lg-1 {
+    width: 12.5%;
+    *width: 12.5%;
+  }
+
+  .eight-cols>.col-md-7,
+  .eight-cols>.col-sm-7,
+  .eight-cols>.col-lg-7 {
+    width: 87.5%;
+    *width: 87.5%;
+  }
+}
