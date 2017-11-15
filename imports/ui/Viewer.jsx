@@ -1313,7 +1313,7 @@ export default class Viewer extends Component {
         </div>
 
         <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
-          <ButtonGroup justified>
+          <ButtonGroup className="btn-panel-controller" justified>
             <Button active={this.state.diagnosisButton === 'default'} bsSize="large" onClick={this.switchPanelState.bind(this, 0)} href="#" >结节列表</Button>
             <Button active={this.state.thumbnailButton === 'default'} bsSize="large" onClick={this.switchPanelState.bind(this, 1)} href="#" >序列列表</Button>
           </ButtonGroup>
