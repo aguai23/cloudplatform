@@ -13,8 +13,12 @@ import FontAwesome from 'react-fontawesome';
 
 import dicomParser from 'dicom-parser';
 
+import DatasetMenu from './DatasetMenu';
+
 import 'react-toastify/dist/ReactToastify.min.css';
 
+import './css/app.css';
+import './css/common/eightCols.css';
 import "./css/common/spinner.css";
 import "./css/addCase.css";
 
@@ -126,10 +130,15 @@ export class AddCase extends Component {
     // this.changeSeriesModalState = this.changeSeriesModalState.bind(this);
     // this.onUploadComplete = this.onUploadComplete.bind(this)
   }
+
   componentDidMount() {
     let fileInput = ReactDOM.findDOMNode(this.refs.customAttributes);
     fileInput.setAttribute('webkitdirectory', '');
     fileInput.setAttribute('directory', '');
+
+    this.setState({
+      containerHeight: window.innerHeight - document.getElementById('header').clientHeight
+    });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -147,8 +156,22 @@ export class AddCase extends Component {
     if (nextProps.dataCollection) {
       this.setState({
         collection: nextProps.dataCollection
+      }, () => {
+        let map = {
+          PUBLIC: 'PUB',
+          PRIVATE: 'PVT',
+          FAVORITES: 'FAV'
+        };
+
+        this.setState({
+          tabActiveKey: this.state.collection ? map[this.state.collection.type] : 'PUB'
+        });
       });
     }
+  }
+
+  onTabSelectHandler(eventKey) {
+    browserHistory.push(`/datasets?key=${eventKey}`);
   }
 
   onCaseChange(input) {
@@ -639,6 +662,13 @@ export class AddCase extends Component {
     const oldCase = this.state.oldCase;
     const Case = this.state.Case;
     return (
+      <div>
+        <div id="modal-base"/>
+        <div className="eight-cols" style={{height: this.state.containerHeight}}>
+          <div className="col-sm-1 nav-container">
+            <DatasetMenu activeKey={this.state.tabActiveKey} selectHandler={this.onTabSelectHandler}/>
+          </div>
+          <div className="col-sm-7 content-container">
       <div id={"addcase-container"} style={{ padding: '20px' }}>
         <div style={{ textAlign: 'left' , fontWeight: "bold", color: "grey"}}>
           {this.state.collection ? this.state.collection.type === "PUBLIC" ? "公共数据集": "个人数据集" : "个人数据集"}
@@ -954,6 +984,9 @@ export class AddCase extends Component {
           </Modal.Footer>
         </Modal>
       </div>
+    </div>
+  </div>
+</div>
     )
   }
 }

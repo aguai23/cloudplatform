@@ -31,7 +31,8 @@ export class Main extends Component {
       tabActiveKey: "PUB",
       showCases: false,
       showAddCollectionModal: false,
-      dataCollections: this.props.publicDataCollections
+      dataCollections: this.props.publicDataCollections,
+      tabActiveKey: this.props.location.query.key ? this.props.location.query.key : 'PUB'
     };
     this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
     this.onClickRemoveCollection = this.onClickRemoveCollection.bind(this);
