@@ -1,6 +1,18 @@
+/* select {
+  background: #9ccef9;
+  width: 100px;
+} */
 
+.searchResult {
+  margin-top: 10px;
+  margin-bottom: 20p;
+  padding-left: 20px;
+  font-size: 18px
+}
 
-select {
-    background: #9ccef9;
-    width:100px;
+.caseList {
+  margin-right: 10px;
+  width: 100%;
+  margin-top: 10px;
+  float: right;
 }
