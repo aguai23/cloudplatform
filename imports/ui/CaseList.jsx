@@ -29,6 +29,7 @@ export class CaseList extends Component {
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleModalitySelect = this.handleModalitySelect.bind(this);
     this.handleSexSelect = this.handleSexSelect.bind(this);
+    this.onTabSelectHandler = this.onTabSelectHandler.bind(this)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -149,35 +150,21 @@ export class CaseList extends Component {
     });
   }
 
-  handleSexSelect(eventKey){
+  handleSexSelect(eventKey) {
     this.setState({
       patientSex: eventKey
     })
   }
 
-  handleModalitySelect(eventKey){
+  handleModalitySelect(eventKey) {
     this.setState({
       modality: eventKey
     })
   }
 
   onTabSelectHandler(eventKey) {
-      event.preventDefault();
-      console.log(eventKey)
-      return
-
-      if (this.state.tabActiveKey === eventKey) return;
-
-      this.setState({ tabActiveKey: eventKey });
-
-      if (eventKey === 'PUB') {
-        browserHistory.replace('')
-      } else if (eventKey === 'PVT') {
-        this.setState({ dataCollections: this.props.privateDataCollections });
-      } else if (eventKey === 'FAV') {
-        this.setState({ dataCollections: this.props.favoriteDataCollections });
-      }
-
+    event.preventDefault();
+    browserHistory.replace(`/datasets?key=${eventKey}`)
   }
 
   render() {
@@ -202,14 +189,19 @@ export class CaseList extends Component {
 
     return (
       <div>
-        <div id="modal-base"/>
+        <div id="modal-base" />
         <div className="eight-cols" style={{ height: this.state.containerHeight }}>
           <div className="col-sm-1 nav-container">
             <DatasetMenu activeKey={this.state.tabActiveKey} selectHandler={this.onTabSelectHandler} />
           </div>
           <div className="col-sm-7 content-container">
             <div className="row" style={{ marginTop: '30px' }}>
-              <div className="col-md-2 col-md-offset-10">
+              <div>
+                <div className="col-md-2" style={{ textAlign: 'left', fontWeight: "bold", color: "grey" }}>
+                  aaaa
+                </div>
+              </div>
+              <div className="col-md-2 col-md-offset-8">
                 <button onClick={browserHistory.goBack} style={{ border: "none", background: "transparent" }}>
                   <i className={"fa fa-angle-left"} style={{ color: '#255BA8', fontSize: "15px" }}>返回</i>
                 </button>
@@ -302,11 +294,11 @@ export class CaseList extends Component {
                           <td>{specificCase.patientBirthDate}</td>
                           <td>{specificCase.studyDescription}</td>
                           <td>
-                          <Link to={{
-                            pathname: '/viewer',
-                            state: { caseId: specificCase._id }
-                          }} className="glyphicon glyphicon-picture" />
-                          &nbsp;&nbsp;&nbsp;
+                            <Link to={{
+                              pathname: '/viewer',
+                              state: { caseId: specificCase._id }
+                            }} className="glyphicon glyphicon-picture" />
+                            &nbsp;&nbsp;&nbsp;
                         <Link to={`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`} className="glyphicon glyphicon-pencil" />
                           &nbsp;&nbsp;&nbsp;
                         <span className="glyphicon glyphicon-trash" onClick={self.deleteCase.bind(this, specificCase._id)} />
