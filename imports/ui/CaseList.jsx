@@ -196,7 +196,12 @@ export class CaseList extends Component {
           </div>
           <div className="col-sm-7 content-container">
             <div className="row" style={{ marginTop: '30px' }}>
-              <div className="col-md-2 col-md-offset-10">
+              <div>
+                <div className="col-md-2" style={{ textAlign: 'left', fontWeight: "bold", color: "grey" }}>
+                  aaaa
+                </div>
+              </div>
+              <div className="col-md-2 col-md-offset-8">
                 <button onClick={browserHistory.goBack} style={{ border: "none", background: "transparent" }}>
                   <i className={"fa fa-angle-left"} style={{ color: '#255BA8', fontSize: "15px" }}>返回</i>
                 </button>
