@@ -20,7 +20,6 @@ export default class SingleCollectionInList extends Component {
     this.props.onClickModify(this.props.dataCollection);
   }
   render() {
-    console.log(this.props)
     return (
       <div className="data-item">
         <div className="col-sm-2">

@@ -269,7 +269,7 @@ export class CaseList extends Component {
                     <MenuItem eventKey="MG">MG</MenuItem>
                     <MenuItem eventKey="US">US</MenuItem>
                   </DropdownButton>
-                  <Button bsStyle="info" style={{ marginLeft: '6px' }} onClick={this.searchCase}>查询</Button>
+                  <Button style={{ marginLeft: '6px', color:'#FFFFFF', backgroundColor: '#2659AD' }} onClick={this.searchCase}>查询</Button>
                   <Button bsStyle="default" style={{ marginLeft: '3px' }} onClick={() => this.reset()}>重置</Button>
                 </div>
               </div>

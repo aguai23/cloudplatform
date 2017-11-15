@@ -980,7 +980,7 @@ export class AddCase extends Component {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.removeSeries.bind(this)} bsStyle="warning">删除</Button>
+            <Button onClick={this.removeSeries.bind(this)} style={{color:'#FFFFFF', backgroundColor: '#2659AD'}}>删除</Button>
           </Modal.Footer>
         </Modal>
       </div>
