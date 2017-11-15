@@ -86,7 +86,7 @@ export default class ModalAddCollection extends Component {
                 <FormControl defaultValue={oldData ? oldData.equip : ''} type="text" placeholder="设备" inputRef={(ref) => this.equip = ref} />
                 <Checkbox checked={this.state.isPublic} onChange={(evt) => { this.setState({ isPublic: evt.target.checked }); }}>设为公有</Checkbox>
                 <br />
-                <Button className="btn btn-success" onClick={this.onClickSubmit}>提交</Button>
+                <Button className="btn btn-primary" onClick={this.onClickSubmit}>提交</Button>
               </Form>
             </div>
           </Modal.Body>
