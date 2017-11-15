@@ -274,7 +274,7 @@ export class CaseList extends Component {
                         state: { caseId: specificCase._id }
                       }} className="glyphicon glyphicon-picture" />
                       &nbsp;&nbsp;&nbsp;
-                    <Link to={`/newCase?id=${specificCase._id}`} className="glyphicon glyphicon-pencil" />
+                    <Link to={`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`} className="glyphicon glyphicon-pencil" />
                       &nbsp;&nbsp;&nbsp;
                     <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, specificCase._id)} />
                     </td>

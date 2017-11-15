@@ -3,6 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
 import { browserHistory, Link } from 'react-router';
 import { Cases } from '../api/cases';
+import {DataCollections} from "../api/dataCollections";
 import {  Row, Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Modal, Table } from 'react-bootstrap';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
@@ -25,6 +26,7 @@ export class AddCase extends Component {
     super(props);
     let that = this;
     const oldCase = Cases.findOne({ _id: props.location.query.id });
+    const dataCollection = DataCollections.findOne({name: props.location.query.collection});
     this.uploader = new FineUploaderTraditional({
       options: {
         chunking: {
@@ -113,7 +115,7 @@ export class AddCase extends Component {
       seriesInstanceUIDList,
       selectedFiles: [],
       showDownloadModal: false,
-
+      collection: dataCollection,
       uploadProgress: -1
     };
 
@@ -140,6 +142,11 @@ export class AddCase extends Component {
         oldCase: nextProps.case,
         oldFileList: nextProps.case.files,
         seriesInstanceUIDList
+      });
+    }
+    if (nextProps.dataCollection) {
+      this.setState({
+        collection: nextProps.dataCollection
       });
     }
   }
@@ -631,10 +638,13 @@ export class AddCase extends Component {
     const filesList = this.state.oldFileList;
     const oldCase = this.state.oldCase;
     const Case = this.state.Case;
-
     return (
       <div id={"addcase-container"} style={{ padding: '20px' }}>
-        <div style={{ textAlign: 'left' , fontWeight: "bold"}}>{oldCase ? `修改病例` : '添加新病例'}</div>
+        <div style={{ textAlign: 'left' , fontWeight: "bold", color: "grey"}}>
+          {this.state.collection ? this.state.collection.type === "PUBLIC" ? "公共数据集": "个人数据集" : "个人数据集"}
+          > {this.state.collectionName}
+          > {oldCase ? `修改病例` : '添加新病例'}
+        </div>
 
         <form id="form1" encType="multipart/form-data" method="post">
           <div style={{textAlign: 'right'}}>
@@ -953,8 +963,10 @@ AddCase.contextTypes = {
 }
 
 export default withTracker(props => {
-  const handle = Meteor.subscribe('cases');
+  Meteor.subscribe('cases');
+  Meteor.subscribe('dataCollections');
   return {
     case: Cases.findOne({ _id: props.location.query.id }),
+    dataCollection: DataCollections.findOne({name: props.location.query.collection})
   }
 })(AddCase);
