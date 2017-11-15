@@ -1,0 +1,13 @@
+.nav-container {
+  background-color: #353a44;
+  overflow: hidden;
+  padding: 0;
+  height: inherit;
+}
+
+.content-container {
+  height: inherit;
+  background-color: #e7edf6;
+  padding-left: 30px;
+  padding-right: 30px;
+}

@@ -302,17 +302,15 @@ export class CaseList extends Component {
                           <td>{specificCase.patientBirthDate}</td>
                           <td>{specificCase.studyDescription}</td>
                           <td>
-                            <Link to={{
-                              pathname: '/viewer',
-                              state: { caseId: specificCase._id }
-                            }} className="glyphicon glyphicon-picture" />
-                            &nbsp;&nbsp;&nbsp;
-                            <Link to={`/newCase?id=${specificCase._id}`}
-                             className="glyphicon glyphicon-pencil" />
-                            &nbsp;&nbsp;&nbsp;
-                            <span className="glyphicon glyphicon-trash" 
-                            onClick={that.deleteCase.bind(this, specificCase._id)} />
-                          </td>
+                          <Link to={{
+                            pathname: '/viewer',
+                            state: { caseId: specificCase._id }
+                          }} className="glyphicon glyphicon-picture" />
+                          &nbsp;&nbsp;&nbsp;
+                        <Link to={`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`} className="glyphicon glyphicon-pencil" />
+                          &nbsp;&nbsp;&nbsp;
+                        <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, specificCase._id)} />
+                        </td>
                         </tr>
                       )
                     })

@@ -42,7 +42,7 @@
 }
 
 .well-title {
-  color: royalblue;
+  color: #2659ad;
   margin-bottom: 20px;
   font-weight: bold;
 }
@@ -51,7 +51,6 @@
   border: none;
   background: white;
 }
-
 
 .series-head tr {
   border:none
@@ -69,6 +68,5 @@
 #addcase-container {
   background: #e7edf6;
   height: 100%;
-  width: 80%;
-  margin-left:20%;
+  width: 100%;
 }
