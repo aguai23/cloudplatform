@@ -5,13 +5,15 @@
 .logo-div {
   background-color: #D7D8DA;
   height: inherit;
-  padding: 10px 10px 10px 8px;
+  padding: 10px;
+  border-bottom: 3px solid #353a44;
 }
 
 .main-div {
   background-color: #FAFBFD;
-  height: inherit;
+  height: 77px;
   padding: 10px;
+  box-shadow: 0 2px 3px 0 #888888;
 }
 
 .btn-account {
