@@ -3,10 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
 import { browserHistory, Link } from 'react-router';
 import { Cases } from '../api/cases';
-import { Session } from "meteor/session";
-import { HTTP } from 'meteor/http';
-import { Grid, Row, Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Nav, Modal, Table } from 'react-bootstrap';
-import Gallery from 'react-fine-uploader';
+import {  Row, Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Modal, Table } from 'react-bootstrap';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
 import { withTracker } from 'meteor/react-meteor-data';
@@ -20,13 +17,13 @@ import 'react-toastify/dist/ReactToastify.min.css';
 import "./css/common/spinner.css";
 import "./css/addCase.css";
 
-var isUploadFinished = true,
+let isUploadFinished = true,
   imageArray = [];
 
 export class AddCase extends Component {
   constructor(props) {
     super(props);
-    var that = this;
+    let that = this;
     const oldCase = Cases.findOne({ _id: props.location.query.id });
     this.uploader = new FineUploaderTraditional({
       options: {
@@ -83,7 +80,7 @@ export class AddCase extends Component {
       }
     });
 
-    let seriesInstanceUIDList = new Array();
+    let seriesInstanceUIDList = [];
     if (oldCase) {
       _.each(oldCase.seriesList, (obj) => {
         seriesInstanceUIDList.push(obj.seriesInstanceUID)
@@ -135,7 +132,7 @@ export class AddCase extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.case !== this.state.oldCase) {
-      let seriesInstanceUIDList = new Array();
+      let seriesInstanceUIDList = [];
       _.each(nextProps.case.seriesList, (obj) => {
         seriesInstanceUIDList.push(obj.seriesInstanceUID)
       })
@@ -208,7 +205,6 @@ export class AddCase extends Component {
 
     if (!flag) {
       toast.error("请检验并完善信息", { position: toast.POSITION.BOTTOM_RIGHT });
-      return;
     } else {
       const oldCase = Cases.findOne({ studyInstanceUID: Case.studyInstanceUID });
       const oldSeriesUIDList = [];
@@ -620,7 +616,7 @@ export class AddCase extends Component {
 
       this.setState({showDownloadModal: false});
 
-      let file_path = `http://localhost:3000/download?dirPath=${res.dirPath}&fileName=${res.fileName}`;
+      let file_path = Meteor.settings.public.server + `/download?dirPath=${res.dirPath}&fileName=${res.fileName}`;
       let a = document.createElement('A');
 
       a.href = file_path;
@@ -637,13 +633,13 @@ export class AddCase extends Component {
     const Case = this.state.Case;
 
     return (
-      <div className="container" style={{ padding: '20px' }}>
-        <div style={{ textAlign: 'center' }}><h2>{oldCase ? `修改病例` : '添加新病例'}</h2></div>
+      <div id={"addcase-container"} style={{ padding: '20px' }}>
+        <div style={{ textAlign: 'left' , fontWeight: "bold"}}>{oldCase ? `修改病例` : '添加新病例'}</div>
 
         <form id="form1" encType="multipart/form-data" method="post">
-          <div>
-            <input type="file" id="customUploader" ref="customAttributes" multiple onChange={() => this.selectFile()}></input>
-            <label htmlFor="customUploader" className="btn btn-success"><FontAwesome name='upload' size='lg' style={{ marginRight: '20px' }} />批量上传DICOM文件</label>
+          <div style={{textAlign: 'right'}}>
+            <input type="file" id="customUploader" ref="customAttributes" multiple onChange={() => this.selectFile()}/>
+            <label id = "uploader-label" className="btn btn-primary" ><FontAwesome name='upload' size={"lg"} style={{ marginRight: '20px' }} />批量上传DICOM文件</label>
           </div>
         </form>
 
@@ -651,15 +647,15 @@ export class AddCase extends Component {
           <h4>{this.state.uploadProgress + '%'}</h4>
           <Line percent={this.state.uploadProgress} strokeWidth="1" strokeColor="#2db7f5" />
         </div>
-        <Form horizontal>
+        <Form horizontal className = "case-form">
           <div className="well" style={wellStyles}>
-
+            <div className = "well-title">患者基本信息</div>
             <Row className="show-grid">
               <Col md={6} mdPush={6}>
                 <FormGroup controlId="patientBirthDate">
                   <Col componentClass={ControlLabel} sm={2}>
                     出生日期
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.patientBirthDate : Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -669,7 +665,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="patientName">
                   <Col componentClass={ControlLabel} sm={2}>
                     患者姓名
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.patientName : Case.patientName} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -681,7 +677,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="patientSex">
                   <Col componentClass={ControlLabel} sm={2}>
                     患者性别
-                    </Col>
+                  </Col>
                   <Col sm={6}>
                     <Radio checked={oldCase ? oldCase.patientSex === 'M' : Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M" inline>男</Radio>{' '}
                     <Radio checked={oldCase ? oldCase.patientSex === 'F' : Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F" inline>女</Radio>{' '}
@@ -692,7 +688,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="patientAge">
                   <Col componentClass={ControlLabel} sm={2}>
                     患者年龄
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.patientAge : Case.patientAge} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -708,7 +704,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="patientID">
                   <Col componentClass={ControlLabel} sm={2}>
                     患者编号
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.patientID : Case.patientID} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -719,13 +715,13 @@ export class AddCase extends Component {
           </div>
 
           <div className="well" style={wellStyles}>
-
+            <div className = "well-title">检查信息</div>
             <Row className="show-grid">
               <Col md={6} mdPush={6}>
                 <FormGroup controlId="studyID">
                   <Col componentClass={ControlLabel} sm={2}>
                     检查号
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.studyID : Case.studyID} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -736,7 +732,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="accessionNumber">
                   <Col componentClass={ControlLabel} sm={2}>
                     检查流水
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.accessionNumber : Case.accessionNumber} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -750,7 +746,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="studyTime">
                   <Col componentClass={ControlLabel} sm={2}>
                     检查时间
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.studyTime : Case.studyTime} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -761,7 +757,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="studyDate">
                   <Col componentClass={ControlLabel} sm={2}>
                     检查日期
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.studyDate : Case.studyDate} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -774,7 +770,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="bodyPart">
                   <Col componentClass={ControlLabel} sm={2}>
                     身体部位
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.bodyPart : Case.bodyPart} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -786,7 +782,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="modality">
                   <Col componentClass={ControlLabel} sm={2}>
                     设备类型
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.modality : Case.modality} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -798,7 +794,7 @@ export class AddCase extends Component {
                 <FormGroup controlId="studyDescription">
                   <Col componentClass={ControlLabel} sm={1}>
                     描述
-                      </Col>
+                  </Col>
                   <Col sm={6}>
                     <FormControl value={oldCase ? oldCase.studyDescription : Case.studyDescription} onChange={this.onCaseChange} type="text" />
                   </Col>
@@ -808,56 +804,55 @@ export class AddCase extends Component {
 
           </div>
 
-          <div className="well" style={wellStyles}>
-            <Table striped bordered condensed hover>
-              <thead>
-                <tr>
-                  <th>序列流水号</th>
-                  <th>序列编号</th>
-                  <th>序列描述</th>
-                  <th>日期</th>
-                  <th>时间</th>
-                  <th>图像数</th>
-                  <th>选项</th>
-                </tr>
+          <div className="series-well" style={wellStyles}>
+            <Table bordered condensed hover>
+              <thead className = "series-head">
+              <tr>
+                <th>序列流水号</th>
+                <th>序列编号</th>
+                <th>序列描述</th>
+                <th>日期</th>
+                <th>时间</th>
+                <th>图像数</th>
+                <th>选项</th>
+              </tr>
               </thead>
               <tbody>
-                {(oldCase ? oldCase.seriesList : Case.seriesList) && (oldCase ? oldCase.seriesList : Case.seriesList).map((obj, index) => {
-                  return (
-                    <tr key={index}>
-                      <td>{obj.seriesNumber}</td>
-                      <td>{obj.seriesInstanceUID}</td>
-                      <td>{obj.seriesDescription}</td>
-                      <td>{obj.seriesDate}</td>
-                      <td>{obj.seriesTime}</td>
-                      <td>{obj.total}</td>
-                      <td>
-                        <Button onClick={this.changeSeriesModalState.bind(this, index)} style={{marginLeft: '5px'}}>详情</Button>
-                        <Link to={{
-                          pathname: '/viewer',
-                          state: { caseId: oldCase && oldCase._id, index: index }
-                        }} className="btn btn-default" style={{marginLeft: '5px'}}>浏览</Link>
-                        <Button onClick={() => this.download(oldCase._id, index)} style={{marginLeft: '5px'}}>
-                          <FontAwesome name='download' size='lg' />
-                        </Button>
-                      </td>
-                    </tr>)
-                })
-                }
+              {(oldCase ? oldCase.seriesList : Case.seriesList) && (oldCase ? oldCase.seriesList : Case.seriesList).map((obj, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{obj.seriesNumber}</td>
+                    <td>{obj.seriesInstanceUID}</td>
+                    <td>{obj.seriesDescription}</td>
+                    <td>{obj.seriesDate}</td>
+                    <td>{obj.seriesTime}</td>
+                    <td>{obj.total}</td>
+                    <td>
+                      <Button onClick={this.changeSeriesModalState.bind(this, index)} style={{marginLeft: '5px'}}>详情</Button>
+                      <Link to={{
+                        pathname: '/viewer',
+                        state: { caseId: oldCase && oldCase._id, index: index }
+                      }} className="btn btn-default" style={{marginLeft: '5px'}}>浏览</Link>
+                      <Button onClick={() => this.download(oldCase._id, index)} style={{marginLeft: '5px'}}>
+                        <FontAwesome name='download' size='lg' />
+                      </Button>
+                    </td>
+                  </tr>)
+              })
+              }
 
               </tbody>
             </Table>
 
           </div>
 
-          <FormGroup>
-            <div className="col-sm-4"></div>
-            <div className="col-sm-4">
-              <Button className="btn-large" onClick={oldCase ? this.modifyCase : this.submitCases} bsStyle="success" disabled={!this.state.isUploadFinished}>{oldCase ? '修改' : '新建'}</Button>
-              <Button className="pull-right btn-large" onClick={browserHistory.goBack} bsStyle="warning">返回</Button>
-            </div>
-            <div className="col-sm-4"></div>
-          </FormGroup>
+
+
+          <div className="bottom-button">
+            <Button className="pull-right" onClick={browserHistory.goBack}>返回</Button>
+            <Button className="pull-right" onClick={oldCase ? this.modifyCase : this.submitCases} disabled={!this.state.isUploadFinished}>{oldCase ? '修改' : '新建'}</Button>
+          </div>
+
         </Form>
 
         <ToastContainer
