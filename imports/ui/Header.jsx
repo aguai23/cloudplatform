@@ -8,6 +8,10 @@ import { browserHistory } from 'react-router';
 import Login from './Login';
 import { DataCollections } from '../api/dataCollections';
 
+import FontAwesome from 'react-fontawesome';
+
+import './css/header.css';
+
 const styles = {
   divBreadcrumb: {
     position: 'relative',
@@ -20,12 +24,6 @@ const styles = {
     marginLeft: '100px',
     backgroundColor: '#efefef',
     display: 'inline-block'
-  },
-
-  btnAccount: {
-    position: 'relative',
-    marginTop: '20px',
-    marginRight: '100px'
   }
 }
 
@@ -42,26 +40,36 @@ export default class Header extends Component {
     var userInfo = localStorage.getItem('userInfo');
 
     this.state = {
-      userInfo: (userInfo ? JSON.parse(userInfo) : null)
+      userInfo: (userInfo ? JSON.parse(userInfo) : null),
+      isDropdownOpen: false
     }
+  }
+
+  toggleDropdown(evt) {
+    this.setState({
+      isDropdownOpen: !this.state.isDropdownOpen
+    });
   }
 
   addBtnAccount() {
     if(this.state.userInfo !== null) {
       return (
-        <ButtonToolbar className="pull-right" style={styles.btnAccount}>
-          <DropdownButton bsStyle="default" title={this.state.userInfo.emails[0].address} noCaret id="dropdown-no-caret" onSelect={(eventKey) => {this.onDropdownSelectHandler(eventKey)}}>
-            <MenuItem eventKey="CHANGE_PWD">修改密码</MenuItem>
-            <MenuItem eventKey="EDIT_PROFILE">编辑资料</MenuItem>
-            <MenuItem eventKey="MANAGE_DATASETS">管理数据集</MenuItem>
+        <ButtonToolbar className="pull-right btn-account">
+          <div className="dropdown-toggle dropdown-label" data-toggle="dropdown" onSelect={(key) => this.onDropdownSelectHandler(key)}>
+            <FontAwesome name="user" />{' ' + this.state.userInfo.emails[0].address}
+          </div>
+          <ul className="dropdown-menu">
+            <MenuItem onClick={() => this.onDropdownSelectHandler("CHANGE_PWD")}>修改密码</MenuItem>
+            <MenuItem onClick={() => this.onDropdownSelectHandler("EDIT_PROFILE")}>编辑资料</MenuItem>
+            <MenuItem onClick={() => this.onDropdownSelectHandler("MANAGE_DATASETS")}>管理数据集</MenuItem>
             <MenuItem divider />
-            <MenuItem eventKey="LOGOUT">退出</MenuItem>
-          </DropdownButton>
+            <MenuItem onClick={() => this.onDropdownSelectHandler("LOGOUT")}>退出</MenuItem>
+          </ul>
         </ButtonToolbar>
       );
     } else {
       return (
-        <ButtonToolbar className="pull-right" style={styles.btnAccount}>
+        <ButtonToolbar className="pull-right btn-account">
           <a className="btn btn-success" href="/login">登录</a>
           <a className="btn btn-warning" href="registration">注册</a>
         </ButtonToolbar>
@@ -70,7 +78,6 @@ export default class Header extends Component {
   }
 
   onDropdownSelectHandler(eventKey) {
-
     switch(eventKey) {
       case 'CHANGE_PWD':
       break;
@@ -84,7 +91,7 @@ export default class Header extends Component {
       case 'LOGOUT':
         Meteor.logout(function(error) {
           if(error) {
-            return console.log("Logout failed. " + error);
+            return console.error("Logout failed. " + error);
           }
 
           localStorage.removeItem('userInfo');
@@ -96,7 +103,7 @@ export default class Header extends Component {
       break;
 
       default:
-      console.log('No matched event found');
+      console.error('No matched event found');
     }
   }
 
@@ -134,16 +141,28 @@ export default class Header extends Component {
         );
       }
     });
+    /*
+    <div id="header" style={styles.divBreadcrumb}>
+      <Breadcrumb style={styles.breadcrumb}>
+      {breadcrumbs}
+      </Breadcrumb>
+    </div>
+    */
     return (
-      <div id="header" style={styles.divBreadcrumb}>
-        <Breadcrumb style={styles.breadcrumb}>
-          <img src={('public/img/PVmed.jpg')}/>
-        {breadcrumbs}
-        </Breadcrumb>
-
-        {
-          this.addBtnAccount()
-        }
+      <div id="header" className="eight-cols" >
+        <div className="col-sm-1 logo-div">
+          <img src="/img/logo.png" />
+        </div>
+        <div className="col-sm-7 main-div">
+          <div className="col-sm-10">
+            <img src="/img/header_title.png" />
+          </div>
+          <div className="col-sm-2">
+            {
+              this.addBtnAccount()
+            }
+          </div>
+        </div>
 
       </div>
 
