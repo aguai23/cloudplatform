@@ -63,7 +63,7 @@ export default class Registration extends Component {
     Accounts.createUser({
       email: this.emailInput.value,
       password: this.passwordInput.value,
-      isAdmin: this.adminInput.value === 'on' ? true : false ,
+      isAdmin: this.adminInput.value === 'on' ,
     }, function(error) {
       if(error) {
         return console.log("Registration Failed. " + error);
