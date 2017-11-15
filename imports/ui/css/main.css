@@ -52,7 +52,7 @@
 .bottom-div {
   background-color: white;
   width: 100%;
-  /*border: 3px solid #cddcf2;*/
+  border: 1px solid #cddcf2;
   border-radius: 5px;
   box-shadow: 2px 2px 2px #aaaaaa;
 }

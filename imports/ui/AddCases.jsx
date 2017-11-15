@@ -649,7 +649,7 @@ export class AddCase extends Component {
         <form id="form1" encType="multipart/form-data" method="post">
           <div style={{textAlign: 'right'}}>
             <input type="file" id="customUploader" ref="customAttributes" multiple onChange={() => this.selectFile()}/>
-            <label id = "uploader-label" className="btn btn-primary" ><FontAwesome name='upload' size={"lg"} style={{ marginRight: '20px' }} />批量上传DICOM文件</label>
+            <label id = "uploader-label" className="btn btn-primary" htmlFor="customUploader"><FontAwesome name='upload' size={"lg"} style={{ marginRight: '20px' }} />批量上传DICOM文件</label>
           </div>
         </form>
 
