@@ -8,6 +8,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { DataCollections } from '../api/dataCollections';
 import ModalAddCollection from './ModalAddCollection';
 import SingleCollectionInList from './SingleCollectionInList';
+import DatasetMenu from './DatasetMenu.jsx';
 
 import './css/main.css';
 
@@ -152,12 +153,8 @@ export class Main extends Component {
       <div>
         <div id="modal-base"/>
         <div className="eight-cols" style={{height: this.state.containerHeight}}>
-          <div className="col-sm-1 nav-container" >
-            <Nav className="nav-custom" bsStyle="pills" stacked activeKey={this.state.tabActiveKey} onSelect={this.onTabSelectHandler}>
-              <NavItem eventKey="PUB" href="#">公共数据集</NavItem>
-              <NavItem eventKey="PVT" href="#">个人数据集</NavItem>
-              <NavItem eventKey="FAV" href="#">收藏数据集</NavItem>
-            </Nav>
+          <div className="col-sm-1 nav-container">
+            <DatasetMenu activeKey={this.state.tabActiveKey} selectHandler={this.onTabSelectHandler}/>
           </div>
           <div className="col-sm-7 content-container">
             <div id="upper-div" className="upper-div">
@@ -175,13 +172,12 @@ export class Main extends Component {
               </div>
             </div>
             <div className="bottom-div" style={{height: this.state.bottomDivHeight}}>
-              <div className="row">
-                <ul>
+              <div>
+                <ul style={{padding: '0 15px 0 15px'}}>
                   {this.state.dataCollections.map((dataCollection) => {
                     return (
-                      <li key={dataCollection._id} className="data-item">
+                      <li key={dataCollection._id}>
                         <SingleCollectionInList dataCollection={dataCollection} onClickModify={this.updateCurrentDataCollection} onClickRemove={this.onClickRemoveCollection} />
-                        <hr />
                       </li>
                     );
                   })}
@@ -190,24 +186,6 @@ export class Main extends Component {
             </div>
           </div>
         </div>
-
-        {/*
-        <div>
-          <div>
-
-
-
-
-
-            <Button className="pull-right" bsStyle="success" bsSize="small" style={styles.btnAddCollection} onClick={() => this.onClickAddCollection()}>
-              新建数据集
-            </Button>
-
-          </div>
-
-
-        </div>
-        */}
 
         <ToastContainer
           position="bottom-right"

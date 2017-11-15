@@ -1,0 +1,25 @@
+.nav-custom {
+  padding-top: 30px;
+  text-align: center;
+  position: relative;
+  display: inline-block;
+  font-size: 16px;
+  width: 100%;
+}
+
+.nav-custom li a {
+  border-radius: 0;
+  color: darkgrey;
+  padding-top: 17px;
+  padding-bottom: 17px;
+  margin-bottom: -2px;
+
+}
+
+.nav-custom .active a {
+  background-color: #2659ad!important;
+}
+
+.nav-custom li a:hover {
+  background-color: #337ab7;
+}

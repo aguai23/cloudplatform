@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 
-import { Col } from 'react-bootstrap';
+import { Button, Col } from 'react-bootstrap';
 import FontAwesome from 'react-fontawesome';
 import { Link } from 'react-router';
+
+import './css/main.css';
 
 
 export default class SingleCollectionInList extends Component {
@@ -20,7 +22,7 @@ export default class SingleCollectionInList extends Component {
 
   render() {
     return (
-      <div>
+      <div className="data-item">
         <div className="col-sm-2">
           <Link to={{
               pathname: '/datasets/' + this.props.dataCollection.name,
@@ -34,11 +36,11 @@ export default class SingleCollectionInList extends Component {
         </div>
         <div className="col-sm-7">
         </div>
-        <div className="col-sm-1">
-          <FontAwesome name='trash-o' size='lg' className="pull-right" onClick={this.onClickRemove.bind(this)}/>
+        <div className="col-sm-1" style={{padding: 0}}>
+          <Button className="btn-tool pull-right" bsSize='small' onClick={() => this.onClickModify()} style={{marginRight: '-30px'}}>编辑</Button>
         </div>
-        <div className="col-sm-1">
-          <FontAwesome name='pencil-square-o' size='lg' className="pull-right" onClick={this.onClickModify.bind(this)} />
+        <div className="col-sm-1"  style={{padding: 0}}>
+          <Button className="btn-tool pull-right" bsSize='small' onClick={() => this.onClickRemove()}>删除</Button>
         </div>
       </div>
     );
