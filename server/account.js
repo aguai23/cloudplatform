@@ -1,9 +1,8 @@
-import {Main} from "../imports/ui/Main";
 
 if (Meteor.isServer) {
   Accounts.onCreateUser(function (options, user) {
     user.profile = {
-      isAdmin: Main.isAdmin
+      isAdmin: options.isAdmin
     }
     return user;
   });
