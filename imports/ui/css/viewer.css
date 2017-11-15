@@ -34,7 +34,25 @@ input[type=range]::-webkit-slider-thumb:active {
   color: #91b9cd;
 }
 
+.btn-panel-controller a {
+  background-color: black;
+  color: #91b9cd;
+  border-color: #91b9cd;
+}
 
+.btn-panel-controller a:hover {
+  background-color: #b7e0ed;
+  opacity: 0.9;
+}
+
+.btn-panel-controller .active {
+  background-color: #91b9cd !important;
+}
+
+.btn-panel-controller .active:hover {
+  background-color: #b7e0ed !important;
+  opacity: 0.9 !important;
+}
 
 .diagnosisRow:hover {
   cursor: pointer;

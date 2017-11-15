@@ -134,8 +134,8 @@ export class CaseList extends Component {
    * link to new case page
    * @param caseId
    */
-  static jumpTo(caseId) {
-    window.location = "/newCase?id=" + caseId;
+  jumpTo(caseId) {
+    browserHistory.push(`/newCase?id=${caseId}&collection=${this.props.params.collectionName}`);
   }
 
   /**
@@ -168,7 +168,7 @@ export class CaseList extends Component {
   }
 
   render() {
-    const that = this;
+    const self = this;
     let tHead = this.state.cases.length > 0 ?
       <tr>
         <th>流水号</th>
@@ -282,7 +282,7 @@ export class CaseList extends Component {
                   <tbody>
                     {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
                       return (
-                        <tr style={{ backgroundColor: "#F5F5F5" }} key={specificCase._id} onDoubleClick={() => CaseList.jumpTo(specificCase._id)}>
+                        <tr style={{ backgroundColor: "#F5F5F5" }} key={specificCase._id} onDoubleClick={() => self.jumpTo(specificCase._id)}>
                           <td>{specificCase.accessionNumber}</td>
                           <td>{specificCase.patientID}</td>
                           <td>{specificCase.patientName}</td>
@@ -300,9 +300,9 @@ export class CaseList extends Component {
                             }} className="glyphicon glyphicon-picture" />
                             &nbsp;&nbsp;&nbsp;
                         <Link to={`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`} className="glyphicon glyphicon-pencil" />
-                            &nbsp;&nbsp;&nbsp;
-                        <span className="glyphicon glyphicon-trash" onClick={that.deleteCase.bind(this, specificCase._id)} />
-                          </td>
+                          &nbsp;&nbsp;&nbsp;
+                        <span className="glyphicon glyphicon-trash" onClick={self.deleteCase.bind(this, specificCase._id)} />
+                        </td>
                         </tr>
                       )
                     })
