@@ -19,14 +19,14 @@ export default class SingleCollectionInList extends Component {
   onClickModify() {
     this.props.onClickModify(this.props.dataCollection);
   }
-
   render() {
+    console.log(this.props)
     return (
       <div className="data-item">
         <div className="col-sm-2">
           <Link to={{
               pathname: '/datasets/' + this.props.dataCollection.name,
-              state: this.props.dataCollection.name
+              state: this.props.dataCollection.type
             }}>
             {this.props.dataCollection.name}
           </Link>

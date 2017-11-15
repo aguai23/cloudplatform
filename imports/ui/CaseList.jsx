@@ -12,7 +12,6 @@ import './css/common/eightCols.css';
 export class CaseList extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       cases: Cases.find({ collectionName: this.props.params.collectionName }).fetch(),
       isSearchClicked: false,
@@ -192,13 +191,14 @@ export class CaseList extends Component {
         <div id="modal-base" />
         <div className="eight-cols" style={{ height: this.state.containerHeight }}>
           <div className="col-sm-1 nav-container">
-            <DatasetMenu activeKey={this.state.tabActiveKey} selectHandler={this.onTabSelectHandler} />
+            <DatasetMenu activeKey={this.props.location.state === 'PUBLIC' ? 'PUB' : 'PVT'} selectHandler={this.onTabSelectHandler} />
           </div>
           <div className="col-sm-7 content-container">
             <div className="row" style={{ marginTop: '30px' }}>
               <div>
                 <div className="col-md-2" style={{ textAlign: 'left', fontWeight: "bold", color: "grey" }}>
-                  aaaa
+                  {this.props.location.state === 'PUBLIC' ? '公共数据集' : '个人数据集'}
+                  > {this.props.params.collectionName}
                 </div>
               </div>
               <div className="col-md-2 col-md-offset-8">
@@ -300,9 +300,9 @@ export class CaseList extends Component {
                             }} className="glyphicon glyphicon-picture" />
                             &nbsp;&nbsp;&nbsp;
                         <Link to={`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`} className="glyphicon glyphicon-pencil" />
-                          &nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;
                         <span className="glyphicon glyphicon-trash" onClick={self.deleteCase.bind(this, specificCase._id)} />
-                        </td>
+                          </td>
                         </tr>
                       )
                     })
