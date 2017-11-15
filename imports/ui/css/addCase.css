@@ -19,3 +19,56 @@
   top: -35px;
   text-align: center;
 }
+
+#customUploader {
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+#customUploader + label {
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  display: inline-block;
+  padding: 8px;
+}
+
+.well {
+  background: white;
+}
+
+.well-title {
+  color: royalblue;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.series-well {
+  border: none;
+  background: white;
+}
+
+
+.series-head tr {
+  border:none
+}
+
+.bottom-button {
+  text-align: right;
+  width: 100%;
+}
+
+.case-form {
+  width: 100%;
+}
+
+#addcase-container {
+  background: #e7edf6;
+  height: 100%;
+  width: 80%;
+  margin-left:20%;
+}
