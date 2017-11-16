@@ -10,6 +10,8 @@ import ModalAddCollection from './ModalAddCollection';
 import SingleCollectionInList from './SingleCollectionInList';
 import DatasetMenu from './DatasetMenu.jsx';
 
+import CustomEventEmitter from '../library/CustomEventEmitter';
+
 import './css/common/eightCols.css';
 import './css/main.css';
 
@@ -23,20 +25,32 @@ export class Main extends Component {
   constructor(props) {
     super(props);
 
+    let tempCollection = this.props.publicDataCollections,
+        tempActiveKey = 'PUB';
+
+    if(this.props.location.state && this.props.location.state.tabActiveKey) {
+      let key = this.props.location.state.tabActiveKey;
+
+      if(key === 'PVT') {
+        tempCollection = this.props.privateDataCollections;
+      } else if(key == 'FAV'){
+        tempCollection = this.props.favoriteDataCollections;
+      }
+      tempActiveKey = key;
+    }
+
     //setting up State
     this.state = {
       currentDataCollection: tempDataCollection,
       searchButtonIsHovered: false,
       showEditDataCollection: false,
-      tabActiveKey: "PUB",
       showCases: false,
       showAddCollectionModal: false,
-      dataCollections: this.props.publicDataCollections,
-      tabActiveKey: this.props.location.query.key ? this.props.location.query.key : 'PUB'
+      dataCollections: tempCollection,
+      tabActiveKey: tempActiveKey
     };
     this.updateCurrentDataCollection = this.updateCurrentDataCollection.bind(this);
     this.onClickRemoveCollection = this.onClickRemoveCollection.bind(this);
-    this.onTabSelectHandler = this.onTabSelectHandler.bind(this);
   }
 
   /**
@@ -64,6 +78,30 @@ export class Main extends Component {
       containerHeight: window.innerHeight - document.getElementById('header').clientHeight,
       bottomDivHeight: window.innerHeight - document.getElementById('header').clientHeight - document.getElementById('upper-div').clientHeight - 120
     });
+
+    let eventEmitter = new CustomEventEmitter();
+    eventEmitter.subscribe('tabKeyChanged', this.switchDataset.bind(this));
+  }
+
+  componentWillUnmount() {
+    let eventEmitter = new CustomEventEmitter();
+    eventEmitter.unsubscribe('tabKeyChanged');
+  }
+
+  switchDataset(data) {
+    let eventKey = data.tabActiveKey;
+
+    if (this.state.tabActiveKey === eventKey) return;
+
+    if (eventKey === 'PUB') {
+      this.setState({ dataCollections: this.props.publicDataCollections });
+    } else if (eventKey === 'PVT') {
+      this.setState({ dataCollections: this.props.privateDataCollections });
+    } else if (eventKey === 'FAV') {
+      this.setState({ dataCollections: this.props.favoriteDataCollections });
+    }
+
+    this.setState({ tabActiveKey: eventKey });
   }
 
   setSearchButtonHovered(val) {
@@ -90,7 +128,7 @@ export class Main extends Component {
     if (Main.isAdmin()) {
       Meteor.call('removeDataCollection', id, (error) => {
         if (error) {
-          console.log("Failed to remove DataCollection. " + error.reason);
+          console.error("Failed to remove DataCollection. " + error.reason);
           toast.error("数据集删除失败！", { position: toast.POSITION.BOTTOM_RIGHT });
         } else {
           toast.success("数据集已成功删除！", { position: toast.POSITION.BOTTOM_RIGHT });
@@ -120,22 +158,6 @@ export class Main extends Component {
     }
   }
 
-  onTabSelectHandler(eventKey) {
-    event.preventDefault();
-
-    if (this.state.tabActiveKey === eventKey) return;
-
-    this.setState({ tabActiveKey: eventKey });
-
-    if (eventKey === 'PUB') {
-      this.setState({ dataCollections: this.props.publicDataCollections });
-    } else if (eventKey === 'PVT') {
-      this.setState({ dataCollections: this.props.privateDataCollections });
-    } else if (eventKey === 'FAV') {
-      this.setState({ dataCollections: this.props.favoriteDataCollections });
-    }
-  }
-
   /**
    * search data collection
    */
@@ -154,11 +176,6 @@ export class Main extends Component {
     return (
       <div>
         <div id="modal-base"/>
-        <div className="eight-cols" style={{height: this.state.containerHeight}}>
-          <div className="col-sm-1 nav-container">
-            <DatasetMenu activeKey={this.state.tabActiveKey} selectHandler={this.onTabSelectHandler}/>
-          </div>
-          <div className="col-sm-7 content-container">
             <div id="upper-div" className="upper-div">
               <div className="col-sm-6" style={{padding: 0}}>
                 <FormGroup bsSize="small" className="searchBar">
@@ -186,8 +203,6 @@ export class Main extends Component {
                 </ul>
               </div>
             </div>
-          </div>
-        </div>
 
         <ToastContainer
           position="bottom-right"

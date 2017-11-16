@@ -6,6 +6,8 @@ import { withTracker } from 'meteor/react-meteor-data';
 import { browserHistory, Link } from 'react-router';
 import { toast, ToastContainer } from 'react-toastify';
 import DatasetMenu from './DatasetMenu.jsx';
+import CustomEventEmitter from '../library/CustomEventEmitter';
+
 import "./css/caseList.css";
 import './css/common/eightCols.css';
 
@@ -39,9 +41,23 @@ export class CaseList extends Component {
 
   componentDidMount() {
     this.setState({
-      containerHeight: window.innerHeight - document.getElementById('header').clientHeight,
-      // bottomDivHeight: window.innerHeight - document.getElementById('header').clientHeight - document.getElementById('searchBar').clientHeight - 120
+      containerHeight: window.innerHeight - document.getElementById('header').clientHeight
     });
+
+    let eventEmitter = new CustomEventEmitter();
+    eventEmitter.subscribe('tabKeyChanged', (data) => {
+      browserHistory.push({
+        pathname: '/datasets',
+        state: {
+          tabActiveKey: data.tabActiveKey
+        }
+      });
+    });
+  }
+
+  componentWillUnmount() {
+    let eventEmitter = new CustomEventEmitter();
+    eventEmitter.unsubscribe('tabKeyChanged');
   }
 
   /**
@@ -189,11 +205,6 @@ export class CaseList extends Component {
     return (
       <div>
         <div id="modal-base" />
-        <div className="eight-cols" style={{ height: this.state.containerHeight }}>
-          <div className="col-sm-1 nav-container">
-            <DatasetMenu activeKey={this.props.location.state === 'PUBLIC' ? 'PUB' : 'PVT'} selectHandler={this.onTabSelectHandler} />
-          </div>
-          <div className="col-sm-7 content-container">
             <div className="row" style={{ marginTop: '30px' }}>
               <div>
                 <div className="col-md-2" style={{ textAlign: 'left', fontWeight: "bold", color: "grey" }}>
@@ -321,8 +332,6 @@ export class CaseList extends Component {
               />
             </div>
 
-          </div>
-        </div>
       </div>
     )
   }
