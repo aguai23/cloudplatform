@@ -20,8 +20,8 @@ export class CaseList extends Component {
       patientID: "",
       patientName: "",
       patientAge: 0,
-      patientSex: 'M',
-      modality: "CT",
+      patientSex: "性别",
+      modality: "设备",
       startTime: "",
       endTime: ""
     };
@@ -111,13 +111,13 @@ export class CaseList extends Component {
     if (patientName.length > 0) {
       query.patientName = { $regex: ".*" + patientName + ".*" };
     }
-    if (patientSex.length > 0) {
-      query.patientSex = patientSex;
+    if (['不限', '性别'].indexOf(patientSex) < 0) {
+      query.patientSex = patientSex
     }
     if (patientAge > 0) {
       query.patientAge = "0" + patientAge + "Y";
     }
-    if (modality.length > 0) {
+    if (['不限', '设备'].indexOf(modality) < 0) {
       query.modality = modality;
     }
     if (startTime.length > 0 || endTime.length > 0) {
@@ -207,18 +207,20 @@ export class CaseList extends Component {
         <div id="modal-base" />
             <div className="row" style={{ marginTop: '30px' }}>
               <div>
-                <div className="col-md-2" style={{ textAlign: 'left', fontWeight: "bold", color: "grey" }}>
+                <div className="col-md-4" style={{ textAlign: 'left', fontWeight: "bold", color: "grey" }}>
                   {this.props.location.state === 'PUBLIC' ? '公共数据集' : '个人数据集'}
                   > {this.props.params.collectionName}
                 </div>
               </div>
-              <div className="col-md-2 col-md-offset-8">
-                <button onClick={browserHistory.goBack} style={{ border: "none", background: "transparent" }}>
-                  <i className={"fa fa-angle-left"} style={{ color: '#255BA8', fontSize: "15px" }}>返回</i>
-                </button>
-                <Link to={`/newCase?collection=${this.props.params.collectionName}`}>
-                  <i className="fa fa-plus" style={{ color: '#255BA8', fontSize: "15px", marginLeft: "20px" }}>新建</i>
-                </Link>
+              <div className="col-md-3 col-md-offset-5">
+                <div className="col-md-6 col-md-offset-6" style={{ padding: 0 }}>
+                  <button onClick={browserHistory.goBack} style={{ border: "none", background: "transparent" }}>
+                    <i className={"fa fa-angle-left"} style={{ color: '#255BA8', fontSize: "15px", marginRight: "8px" }}>返回</i>
+                  </button>
+                  <Link to={`/newCase?collection=${this.props.params.collectionName}`}>
+                    <i className="fa fa-plus" style={{ color: '#255BA8', fontSize: "15px" }}>新建</i>
+                  </Link>
+                </div>
               </div>
             </div>
             <div id="searchBar" style={{ height: '80px', marginTop: '5px' }}>
@@ -266,27 +268,35 @@ export class CaseList extends Component {
                   </div>
                 </div>
                 <div className="col-md-3" style={{ paddingLeft: 0 }}>
-                  <DropdownButton id="patientSex" onSelect={this.handleSexSelect} title={this.state.patientSex ? this.state.patientSex === 'M' ? '男' : '女' : "性别"}>
-                    <MenuItem eventKey="M">男</MenuItem>
-                    <MenuItem eventKey="F">女</MenuItem>
-                  </DropdownButton>
-                  <DropdownButton id="modality" onSelect={this.handleModalitySelect} title={this.state.modality} style={{ marginLeft: '3px' }}>
-                    <MenuItem eventKey="CT">CT</MenuItem>
-                    <MenuItem eventKey="MRI">MRI</MenuItem>
-                    <MenuItem eventKey="DSA">DSA</MenuItem>
-                    <MenuItem eventKey="DR">DR</MenuItem>
-                    <MenuItem eventKey="CR">CR</MenuItem>
-                    <MenuItem eventKey="RF">RF</MenuItem>
-                    <MenuItem eventKey="MG">MG</MenuItem>
-                    <MenuItem eventKey="US">US</MenuItem>
-                  </DropdownButton>
-                  <Button style={{ marginLeft: '6px', color:'#FFFFFF', backgroundColor: '#2659AD' }} onClick={this.searchCase}>查询</Button>
-                  <Button bsStyle="default" style={{ marginLeft: '3px' }} onClick={() => this.reset()}>重置</Button>
+                  <div className="col-md-3" style={{ padding: 0 }}>
+                    <DropdownButton id="patientSex" onSelect={this.handleSexSelect} title={this.state.patientSex === 'M' ? '男' : this.state.patientSex === 'F' ? '女' : this.state.patientSex}>
+                      <MenuItem eventKey="M">男</MenuItem>
+                      <MenuItem eventKey="F">女</MenuItem>
+                      <MenuItem eventKey="不限" >不限</MenuItem>
+                    </DropdownButton>
+                  </div>
+                  <div className="col-md-3" style={{ padding: 0 }}>
+                    <DropdownButton id="modality" onSelect={this.handleModalitySelect} title={this.state.modality} style={{ marginLeft: '3px' }}>
+                      <MenuItem eventKey="CT">CT</MenuItem>
+                      <MenuItem eventKey="MRI">MRI</MenuItem>
+                      <MenuItem eventKey="DSA">DSA</MenuItem>
+                      <MenuItem eventKey="DR">DR</MenuItem>
+                      <MenuItem eventKey="CR">CR</MenuItem>
+                      <MenuItem eventKey="RF">RF</MenuItem>
+                      <MenuItem eventKey="MG">MG</MenuItem>
+                      <MenuItem eventKey="US">US</MenuItem>
+                      <MenuItem eventKey="不限">不限</MenuItem>
+                    </DropdownButton>
+                  </div>
+                  <div className="col-md-6" style={{ padding: 0 }}>
+                    <Button style={{ marginLeft: '6px', color: '#FFFFFF', backgroundColor: '#2659AD' }} onClick={this.searchCase}>查询</Button>
+                    <Button bsStyle="default" style={{ marginLeft: '3px' }} onClick={() => this.reset()}>重置</Button>
+                  </div>
                 </div>
               </div>
               <div className="container caseList">
                 <div className="searchResult">{searchResult}</div>
-                <Table striped bordered condensed hover>
+                <Table striped condensed hover responsive>
                   <thead>
                     {tHead}
                   </thead>
@@ -295,15 +305,15 @@ export class CaseList extends Component {
                       return (
                         <tr style={{ backgroundColor: "#F5F5F5" }} key={specificCase._id} onDoubleClick={() => self.jumpTo(specificCase._id)}>
                           <td>{specificCase.accessionNumber}</td>
-                          <td>{specificCase.patientID}</td>
-                          <td>{specificCase.patientName}</td>
+                          <td style={{ maxWidth: '170px', overflow: 'hidden' }}>{specificCase.patientID}</td>
+                          <td style={{ maxWidth: '150px', overflow: 'hidden' }}>{specificCase.patientName}</td>
                           <td>{specificCase.patientAge}</td>
                           <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
                           <td>{specificCase.studyID}</td>
                           <td>{specificCase.modality}</td>
                           <td>{specificCase.studyDate}</td>
                           <td>{specificCase.patientBirthDate}</td>
-                          <td>{specificCase.studyDescription}</td>
+                          <td style={{ maxWidth: '300px' }}>{specificCase.studyDescription}</td>
                           <td>
                             <Link to={{
                               pathname: '/viewer',
