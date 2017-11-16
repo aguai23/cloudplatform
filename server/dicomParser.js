@@ -99,7 +99,7 @@ Meteor.methods({
     let seriesNumber = dicomObj[userId][seriesIndex][index - 1].string('x00200011') ? dicomObj[userId][seriesIndex][index - 1].string('x00200011') : 0
     result.imageId = currentCaseId + "#" + seriesNumber + '#' + index;
     result.status = 'SUCCESS';
-
+    
     result.imageBuf = dicomObj[userId][seriesIndex][index - 1].byteArray;
     result.pixelDataOffset = dicomObj[userId][seriesIndex][index - 1].elements.x7fe00010.dataOffset;
     result.pixelDataLength = dicomObj[userId][seriesIndex][index - 1].elements.x7fe00010.length;
@@ -111,8 +111,8 @@ Meteor.methods({
     result.intercept = dicomObj[userId][seriesIndex][index - 1].string('x00281052') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281052')) : -1024;
     result.windowCenter = -600;
     result.windowWidth = 1500;
-    result.columns = dicomObj[userId][seriesIndex][index - 1].string('x00280011') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00280011')) : 512;
-    result.rows = dicomObj[userId][seriesIndex][index - 1].string('x00280010') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00280010')) : 512;
+    result.columns = dicomObj[userId][seriesIndex][index - 1].uint16('x00280011') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280011')) : 512;
+    result.rows = dicomObj[userId][seriesIndex][index - 1].uint16('x00280010') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280010')) : 512;
     result.width = result.columns;
     result.height = result.rows;
     result.sizeInBytes = result.rows * result.columns * 2;
@@ -152,6 +152,8 @@ Meteor.methods({
     }
 
     for (let i = 0; i < thumbnailArray[caseId].length; i++) {
+      console.log('aaa',thumbnailArray[caseId][i].uint16('x00280011'))
+      console.log('bbb',thumbnailArray[caseId][i].uint16('x00280010') )
       let colVal = thumbnailArray[caseId][i].uint16('x00280011') ? thumbnailArray[caseId][i].uint16('x00280011') : 512,
         rowVal = thumbnailArray[caseId][i].uint16('x00280010') ? thumbnailArray[caseId][i].uint16('x00280010') : 512;
       result.array.push({
