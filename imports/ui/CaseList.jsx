@@ -204,7 +204,7 @@ export class CaseList extends Component {
               <div className="col-md-3 col-md-offset-5">
                 <div className="col-md-6 col-md-offset-6" style={{ padding: 0 }}>
                   <button onClick={browserHistory.goBack} style={{ border: "none", background: "transparent" }}>
-                    <i className={"fa fa-angle-left"} style={{ color: '#255BA8', fontSize: "15px", marginRight:"8px" }}>返回</i>
+                    <i className={"fa fa-angle-left"} style={{ color: '#255BA8', fontSize: "15px", marginRight: "8px" }}>返回</i>
                   </button>
                   <Link to={`/newCase?collection=${this.props.params.collectionName}`}>
                     <i className="fa fa-plus" style={{ color: '#255BA8', fontSize: "15px" }}>新建</i>
@@ -285,7 +285,7 @@ export class CaseList extends Component {
               </div>
               <div className="container caseList">
                 <div className="searchResult">{searchResult}</div>
-                <Table striped bordered condensed hover>
+                <Table striped condensed hover responsive>
                   <thead>
                     {tHead}
                   </thead>
@@ -294,15 +294,15 @@ export class CaseList extends Component {
                       return (
                         <tr style={{ backgroundColor: "#F5F5F5" }} key={specificCase._id} onDoubleClick={() => self.jumpTo(specificCase._id)}>
                           <td>{specificCase.accessionNumber}</td>
-                          <td>{specificCase.patientID}</td>
-                          <td>{specificCase.patientName}</td>
+                          <td style={{ maxWidth: '170px', overflow: 'hidden' }}>{specificCase.patientID}</td>
+                          <td style={{ maxWidth: '150px', overflow: 'hidden' }}>{specificCase.patientName}</td>
                           <td>{specificCase.patientAge}</td>
                           <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
                           <td>{specificCase.studyID}</td>
                           <td>{specificCase.modality}</td>
                           <td>{specificCase.studyDate}</td>
                           <td>{specificCase.patientBirthDate}</td>
-                          <td>{specificCase.studyDescription}</td>
+                          <td style={{ maxWidth: '300px' }}>{specificCase.studyDescription}</td>
                           <td>
                             <Link to={{
                               pathname: '/viewer',
