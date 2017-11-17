@@ -28,6 +28,8 @@ Meteor.methods({
    @returns {{status: string}}
    */
   prepareDicoms(caseId, seriesIndex) {
+    console.log('caseId', caseId);
+    console.log('seriesIndex', seriesIndex);
     let result = {
         status: 'FAILURE'
       },
@@ -99,7 +101,7 @@ Meteor.methods({
     let seriesNumber = dicomObj[userId][seriesIndex][index - 1].string('x00200011') ? dicomObj[userId][seriesIndex][index - 1].string('x00200011') : 0
     result.imageId = currentCaseId + "#" + seriesNumber + '#' + index;
     result.status = 'SUCCESS';
-    
+
     result.imageBuf = dicomObj[userId][seriesIndex][index - 1].byteArray;
     result.pixelDataOffset = dicomObj[userId][seriesIndex][index - 1].elements.x7fe00010.dataOffset;
     result.pixelDataLength = dicomObj[userId][seriesIndex][index - 1].elements.x7fe00010.length;

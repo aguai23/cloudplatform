@@ -46,72 +46,6 @@ const style = {
     float: 'left',
     overflow: 'hidden'
   },
-  viewer: {
-    top: '10px',
-    height: '100%',
-    width: '80%',
-    position: 'relative',
-    margin: '0 auto'
-  },
-  textInfo: {
-    color: '#9ccef9',
-    fontSize: '14px',
-    fontWeight: '300',
-    zIndex: '1'
-  },
-  patientInfo: {
-    position: 'absolute',
-    top: '0px',
-    left: '15px',
-    height: '100px',
-    width: '250px',
-    color: 'white'
-  },
-  dicomInfo: {
-    position: 'absolute',
-    bottom: '0px',
-    right: '25px',
-    height: '50px',
-    width: '200px',
-    color: 'white',
-    marginBottom: '20px'
-  },
-  sliceInfo: {
-    position: 'absolute',
-    bottom: '0px',
-    left: '15px',
-    height: '50px',
-    width: '400px',
-    color: 'white',
-    marginBottom: '20px'
-  },
-  timeInfo: {
-    position: 'absolute',
-    top: '0px',
-    right: '10px',
-    height: '100px',
-    width: '200px',
-    color: 'white'
-  },
-  scrollBar: {
-    height: '10px',
-    backgroundColor: 'black',
-    position: 'absolute',
-    borderRadius: '4px',
-    opacity: '0.5',
-    WebkitAppearance: "none",
-    WebkitTransform: "rotate(90deg)",
-    border: "none",
-    outline: "none",
-  },
-  disableSelection: {
-    userSelect: 'none',
-    MozUserSelect: 'none',
-    KhtmlUserSelect: 'none',
-    WebkitUserSelect: 'none',
-    OUserSelect: 'none',
-    cursor: 'default'
-  },
   icon: {
     textAlign: "center",
     verticalAlign: "center",
@@ -154,16 +88,9 @@ export default class Viewer extends Component {
     super(props);
     this.state = {
       container: {},
-      dicomObj: {},
       seriesList: [],
       circleVisible: true,
-      index: 1,
-      imageNumber: 0,
       zoomScale: 0,
-      voi: {
-        windowCenter: 0,
-        windowWidth: 0
-      },
       isScrollBarHovered: false,
       isScrollBarClicked: false,
       scrollBarStyle: style.scrollBar,
@@ -182,7 +109,6 @@ export default class Viewer extends Component {
 
     };
     this.updateInfo = this.updateInfo.bind(this);
-    this.setSlice = this.setSlice.bind(this);
     this.onDragScrollBar = this.onDragScrollBar.bind(this);
   }
 
@@ -228,43 +154,7 @@ export default class Viewer extends Component {
       rightValue: -((window.innerHeight - document.getElementById('top').clientHeight) / 2 - 10) + 'px'
     });
 
-    /**
-     * enable cornerstone and setup cornerstoneTools
-     */
-    // this.setState({
-    //   container: document.getElementById("viewer")
-    // }, (err) => {
-    //   if (err) {
-    //     return console.error(err);
-    //   }
-    //
-    //   cornerstone.enable(this.state.container);
-    //   cornerstoneTools.addStackStateManager(this.state.container, 'stack');
-    //   cornerstoneTools.toolColors.setToolColor("#ffcc33");
-    //
-    // });
-
-    /**
-     * default configuration for magnify tool
-     */
-    // let config = {
-    //   magnifySize: 250,
-    //   magnificationLevel: 4
-    // };
-    // cornerstoneTools.magnify.setConfiguration(config);
-
-    /**
-     * send a request to require server load all cases first
-     */
-    // this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
-
-    /**
-     * set scroll tool for default mousewheel operation
-     */
-    // this.setScrollTool();
-    //
     // this.getThumbnails(this.props.location.state.caseId);
-
   }
 
   componentWillUnmount() {
@@ -295,44 +185,6 @@ export default class Viewer extends Component {
           }
         });
       });
-    });
-  }
-
-  /**
-   * initialize main canvas
-   * @param caseId
-   * @param seriesIndex
-   */
-  initMainCanvas(caseId, seriesIndex) {
-    Meteor.call('prepareDicoms', caseId, seriesIndex, (error, result) => {
-      if (error) {
-        console.error(error)
-      } else {
-        if (result.status === "SUCCESS") {
-          let dateTime = ''
-          if(result.seriesTime && result.seriesDate){
-            let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
-            dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
-          }
-          this.setState({
-            imageNumber: result.imageNumber,
-            patientId: result.patientId,
-            patientName: result.patientName,
-            dateTime: dateTime,
-            rows: result.rows,
-            cols: result.cols,
-            pixelSpacing: result.pixelSpacing,
-            thickness: result.thickness,
-            index: 1,
-            loadingProgress: 0
-          });
-          this.setSlice(seriesIndex, this.state.index);
-          //set info here
-          let element = $("#viewer");
-          element.on("CornerstoneImageRendered", this.updateInfo);
-        }
-
-      }
     });
   }
 
@@ -382,59 +234,6 @@ export default class Viewer extends Component {
     }
   }
 
-  /**
-   * set image slice
-   * @param curSeriesIndex
-   * @param index image index
-   */
-  setSlice(curSeriesIndex, index) {
-    if (!this.state.dicomObj[curSeriesIndex]) {
-      let tempObj = Object.assign({}, this.state.dicomObj);
-      tempObj[curSeriesIndex] = {};
-      this.setState({
-        dicomObj: tempObj
-      });
-    }
-
-    if (!this.state.dicomObj[curSeriesIndex][index]) {
-      Meteor.call('getDicom', curSeriesIndex, index, (err, result) => {
-        if (err) {
-          return console.error(err);
-        }
-
-        let image = result;
-        let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-        image.getPixelData = function () {
-          return pixelData
-        };
-        this.state.dicomObj[curSeriesIndex][index] = image;
-
-        var viewport = {};
-        if (index === 1) {
-          viewport.scale = 1.2;
-        }
-        cornerstone.displayImage(this.state.container, this.state.dicomObj[curSeriesIndex][index], viewport);
-
-        let measurementData = {
-          currentImageIdIndex: this.state.index,
-          imageIds: image.imageId
-        };
-
-        cornerstoneTools.addToolState(this.state.container, 'stack', measurementData);
-        if (!this.state.imageLoaded) {
-          this.disableAllTools();
-          this.state.imageLoaded = true;
-        }
-      });
-    } else {
-      cornerstone.displayImage(this.state.container, this.state.dicomObj[curSeriesIndex][index])
-    }
-    let scrollbar = document.getElementById("scrollbar");
-    scrollbar.value = index;
-    this.setState({
-      index: index
-    });
-  }
 
   /**
    * handle tool selection
@@ -485,22 +284,6 @@ export default class Viewer extends Component {
       default:
         console.error(error);
     }
-  }
-
-  /**
-   * activate scroll tool, enable both mousewheel and mouse select
-   */
-  setScrollTool() {
-    let self = this;
-    $("#viewer").bind("mousewheel", function (e) {
-      let event = window.event || e;
-      let down = event.wheelDelta < 0;
-      if (down) {
-        self.increaseSlice();
-      } else {
-        self.decreaseSlice();
-      }
-    });
   }
 
   /**
@@ -764,42 +547,6 @@ export default class Viewer extends Component {
     }
 
     cornerstone.updateImage(this.state.container);
-  }
-
-  /**
-   * disable tools
-   */
-  disableAllTools(tag) {
-    let element = $("#viewer");
-
-    element.off("mousewheel");
-
-    if (tag !== 'ZOOM') {
-      this.setScrollTool();
-    }
-
-    element.off("mousemove");
-    cornerstoneTools.mouseInput.enable(this.state.container);
-    cornerstoneTools.mouseWheelInput.enable(this.state.container);
-    cornerstoneTools.rectangleRoi.deactivate(this.state.container, 1);
-    cornerstoneTools.wwwc.deactivate(this.state.container, 1);
-    cornerstoneTools.pan.deactivate(this.state.container, 1);
-    cornerstoneTools.zoom.deactivate(this.state.container, 1);
-    cornerstoneTools.zoomWheel.deactivate(this.state.container);
-    cornerstoneTools.length.deactivate(this.state.container, 1);
-    cornerstoneTools.probe.deactivate(this.state.container, 1);
-    cornerstoneTools.angle.deactivate(this.state.container, 1);
-    cornerstoneTools.highlight.disable(this.state.container, 1);
-    cornerstoneTools.magnify.deactivate(this.state.container, 1);
-    cornerstoneTools.arrowAnnotate.deactivate(this.state.container, 1);
-  }
-
-  toggleMagnifyPopover() {
-    this.setState({ isMagnifyToolOpened: !this.state.isMagnifyToolOpened });
-  }
-
-  toggleRotatePopover() {
-    this.setState({ isRotateMenuOpened: !this.state.isRotateMenuOpened });
   }
 
   /**
@@ -1321,7 +1068,7 @@ export default class Viewer extends Component {
         </div>
 
         <div className="main-canvas">
-          <MainCanvas />
+          <MainCanvas caseId={this.props.location.state.caseId} curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0} />
         </div>
 
 

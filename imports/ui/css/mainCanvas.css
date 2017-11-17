@@ -1,0 +1,82 @@
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 30px;
+    width: 10px;
+    border-radius: 30%;
+    background: cornflowerblue;
+    margin-top: -4px;
+}
+
+input[type=range]::-webkit-slider-thumb:active {
+    background-color: aqua;
+}
+
+#scrollbar {
+  height: 100%;
+  width: 5px;
+  right: 10px;
+  background-color: black;
+  position: absolute;
+  border-radius: 4px;
+  opacity: 0.5;
+  -webkit-appearance: none;
+  border: none;
+  outline: none;
+}
+
+#viewer {
+  height: 100%;
+  position: relative;
+  margin: 0 auto;
+}
+
+.text-info {
+  color: #9ccef9;
+  font-size: 14px;
+  font-weight: 300;
+  z-index: 1;
+}
+
+.patient-info {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  height: 100px;
+  width: 250px;
+}
+
+.dicom-info {
+  position: absolute;
+  bottom: 0px;
+  right: 25px;
+  height: 50px;
+  width: 200px;
+  margin-bottom: 20px;
+}
+
+.slice-info {
+  position: absolute;
+  bottom: 0px;
+  left: 15px;
+  height: 70px;
+  width: 400px;
+  margin-bottom: 20px;
+}
+
+.time-info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  height: 100px;
+  width: 200px;
+}
+
+.disable-selection {
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+  cursor: default;
+}

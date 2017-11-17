@@ -4,20 +4,6 @@
   font-size: 18px;
 }
 
-input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    border: none;
-    height: 10px;
-    width: 30px;
-    border-radius: 30%;
-    background: cornflowerblue;
-    margin-top: -4px;
-}
-
-input[type=range]::-webkit-slider-thumb:active {
-    background-color: aqua;
-}
-
 .active-nav-item {
   color: white!important;
 }
@@ -161,7 +147,8 @@ input[type=range]::-webkit-slider-thumb:active {
   position: absolute;
   top: 80px;
   bottom: 0;
-  border: 1px solid yellow;
+  border: 1px solid #9ccef9;
+  border-right: 0;
 }
 
 .main-canvas {
@@ -170,5 +157,5 @@ input[type=range]::-webkit-slider-thumb:active {
   top: 80px;
   left: 20%;
   bottom: 0;
-  border: 1px solid yellow;
+  border: 1px solid #9ccef9;
 }
