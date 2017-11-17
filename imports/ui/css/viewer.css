@@ -155,3 +155,20 @@ input[type=range]::-webkit-slider-thumb:active {
   margin-left: 5px;
   text-align: left!important;
 }
+
+.left-panel {
+  width: 20%;
+  position: absolute;
+  top: 80px;
+  bottom: 0;
+  border: 1px solid yellow;
+}
+
+.main-canvas {
+  width: 80%;
+  position: absolute;
+  top: 80px;
+  left: 20%;
+  bottom: 0;
+  border: 1px solid yellow;
+}

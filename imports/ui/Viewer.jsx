@@ -11,6 +11,10 @@ import { Marks } from '../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
+
+import LeftPanel from './LeftPanel';
+import MainCanvas from './MainCanvas';
+
 import "./css/viewer.css";
 
 
@@ -21,7 +25,7 @@ const style = {
     maxHeight: '100%'
   },
   top: {
-    height: 'auto',
+    height: '80px',
     backgroundColor: '#7f7f7f',
     width: '100%',
     position: 'relative',
@@ -207,19 +211,19 @@ export default class Viewer extends Component {
     /**
      * disable right click in canvas and diagnosisBox
      */
-    document.getElementById('outerContainer').oncontextmenu = function (e) {
-      e.preventDefault();
-    };
-    document.getElementById('diagnosisInfo').oncontextmenu = function (e) {
-      e.preventDefault();
-    };
+    // document.getElementById('outerContainer').oncontextmenu = function (e) {
+    //   e.preventDefault();
+    // };
+    // document.getElementById('diagnosisInfo').oncontextmenu = function (e) {
+    //   e.preventDefault();
+    // };
 
     /**
      * set the dynamic height for container
      */
     this.setState({
       containerHeight: (window.innerHeight - document.getElementById('top').clientHeight),
-      containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth),
+      // containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth),
       topValue: (window.innerHeight - document.getElementById('top').clientHeight) / 2 - 8 + "px",
       rightValue: -((window.innerHeight - document.getElementById('top').clientHeight) / 2 - 10) + 'px'
     });
@@ -227,44 +231,44 @@ export default class Viewer extends Component {
     /**
      * enable cornerstone and setup cornerstoneTools
      */
-    this.setState({
-      container: document.getElementById("viewer")
-    }, (err) => {
-      if (err) {
-        return console.error(err);
-      }
-
-      cornerstone.enable(this.state.container);
-      cornerstoneTools.addStackStateManager(this.state.container, 'stack');
-      cornerstoneTools.toolColors.setToolColor("#ffcc33");
-
-    });
+    // this.setState({
+    //   container: document.getElementById("viewer")
+    // }, (err) => {
+    //   if (err) {
+    //     return console.error(err);
+    //   }
+    //
+    //   cornerstone.enable(this.state.container);
+    //   cornerstoneTools.addStackStateManager(this.state.container, 'stack');
+    //   cornerstoneTools.toolColors.setToolColor("#ffcc33");
+    //
+    // });
 
     /**
      * default configuration for magnify tool
      */
-    let config = {
-      magnifySize: 250,
-      magnificationLevel: 4
-    };
-    cornerstoneTools.magnify.setConfiguration(config);
+    // let config = {
+    //   magnifySize: 250,
+    //   magnificationLevel: 4
+    // };
+    // cornerstoneTools.magnify.setConfiguration(config);
 
     /**
      * send a request to require server load all cases first
      */
-    this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
+    // this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
 
     /**
      * set scroll tool for default mousewheel operation
      */
-    this.setScrollTool();
-
-    this.getThumbnails(this.props.location.state.caseId);
+    // this.setScrollTool();
+    //
+    // this.getThumbnails(this.props.location.state.caseId);
 
   }
 
   componentWillUnmount() {
-    window.removeEventListener("resize", () => this.updateDimensions());
+    window.removeEventListener("resize");
   }
 
   /**
@@ -1312,6 +1316,16 @@ export default class Viewer extends Component {
           </Navbar>
         </div>
 
+        <div className="left-panel">
+          <LeftPanel />
+        </div>
+
+        <div className="main-canvas">
+          <MainCanvas />
+        </div>
+
+
+        {/*
         <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
           <ButtonGroup className="btn-panel-controller" justified>
             <Button active={this.state.diagnosisButton === 'default'} bsSize="large" onClick={this.switchPanelState.bind(this, 0)} href="#" >结节列表</Button>
@@ -1360,6 +1374,8 @@ export default class Viewer extends Component {
             </div>
           </div>
         </div>
+        */
+        }
 
         <div style={style.bottom}></div>
         <ToastContainer
