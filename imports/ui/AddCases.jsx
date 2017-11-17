@@ -633,16 +633,23 @@ export class AddCase extends Component {
 
     this.setState({showDownloadModal: true});
 
-    Meteor.call('generateZipFile', caseId, seriesIndex, (err, res) => {
+    HTTP.call('GET', '/generateZipFile', {
+      params: {
+        caseId: caseId,
+        seriesIndex: seriesIndex
+      }
+    }, (err, res) => {
       if(err) {
         return console.error(err);
       }
 
       console.log('conversion ended at', new Date());
 
+      let result = JSON.parse(res.content);
+
       this.setState({showDownloadModal: false});
 
-      let file_path = Meteor.settings.public.server + `/download?dirPath=${res.dirPath}&fileName=${res.fileName}`;
+      let file_path = Meteor.settings.public.server + `/download?dirPath=${result.dirPath}&fileName=${result.fileName}`;
       let a = document.createElement('A');
 
       a.href = file_path;

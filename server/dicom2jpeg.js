@@ -4,8 +4,7 @@ let fs = require('fs'),
     path = require('path'),
     jpeg = require('jpeg-js'),
     mkdirp = require('mkdirp'),
-    archiver = require('archiver'),
-    Future = Npm.require('fibers/future');
+    archiver = require('archiver');
 
 /**
  * provides download API for client, which handles download request for both study and series
@@ -39,30 +38,30 @@ Picker.route('/download', (params, req, res, next) => {
   readStream.pipe(res);
 });
 
-Meteor.methods({
   /**
    * meteor method to create packed zip file for dicom filess
    * @param caseId requested case id
    * @param seriesIndex index of requested series (optional). If provided, returns packed zip file for the series, otherwise returns pakced zip file for the whole study
    */
-  generateZipFile(caseId, seriesIndex) {
-    // let caseId = params.query.caseId,
-    //     seriesIndex = params.query.seriesIndex,
+  Picker.route('/generateZipFile', (params, req, res, next) => {
+    let caseId = params.query.caseId,
+        seriesIndex = params.query.seriesIndex;
+
     let dirPath = '/zip',
-        res = {
+        result = {
           status: 'FAILURE'
-        }
+        };
 
     if(caseId === undefined) {
-      res.error = 'Param caseId is required';
-      return res;
+      result.error = 'Param caseId is required';
+      return res.end(result);
     }
 
     let caseInstance = Cases.findOne({_id: caseId});
 
     if(caseInstance === undefined) {
-      res.error = 'Case not found. Please provide correct caseId';
-      return res;
+      result.error = 'Case not found. Please provide correct caseId';
+      return res.end(result);
     }
 
     let seriesList = caseInstance.seriesList;
@@ -79,23 +78,18 @@ Meteor.methods({
       // download by series
       let fileName = seriesList[seriesIndex].seriesInstanceUID + '.zip';
 
-      let future = new Future();
-      let archive = initArchiver(dirPath, fileName, future);
+      let archive = initArchiver(dirPath, fileName, () => {
+        result.dirPath = dirPath;
+        result.fileName = fileName;
+        result.status = 'SUCCESS';
+
+        res.end(JSON.stringify(result));
+      });
       convertDicomFiles(seriesList[seriesIndex].seriesInstanceUID, seriesList[seriesIndex].path, archive);
       archive.finalize();
-
-      res.dirPath = dirPath;
-      res.fileName = fileName;
-
-      future.wait();
     }
 
-    res.status = 'SUCCESS';
-
-
-    return res;
-  }
-});
+  });
 
 /**
  * parses dicom file the extract useful information
@@ -186,7 +180,7 @@ function compressJpeg(archive, imageData, options) {
  * @param output output stream, should be ServerResponse here
  * @returns the archive object, which is an readableStream
  */
-function initArchiver(targetDirPath, fileName, future) {
+function initArchiver(targetDirPath, fileName, cb) {
   if(!fs.existsSync(targetDirPath)) {
     mkdirp.sync(targetDirPath);
   }
@@ -198,8 +192,8 @@ function initArchiver(targetDirPath, fileName, future) {
   });
 
   output.on('close', () => {
-    console.log(archive.pointer() + ' total bytes');
-    future.return();
+    // console.log(archive.pointer() + ' total bytes');
+    cb();
   });
 
   output.on('end', () => {
