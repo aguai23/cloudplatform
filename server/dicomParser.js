@@ -99,18 +99,17 @@ Meteor.methods({
     let seriesNumber = dicomObj[userId][seriesIndex][index - 1].string('x00200011') ? dicomObj[userId][seriesIndex][index - 1].string('x00200011') : 0
     result.imageId = currentCaseId + "#" + seriesNumber + '#' + index;
     result.status = 'SUCCESS';
-    
+
     result.imageBuf = dicomObj[userId][seriesIndex][index - 1].byteArray;
     result.pixelDataOffset = dicomObj[userId][seriesIndex][index - 1].elements.x7fe00010.dataOffset;
     result.pixelDataLength = dicomObj[userId][seriesIndex][index - 1].elements.x7fe00010.length;
 
     result.getPixelData = function () {};
-    result.minPixelValue = 0;
-    result.maxPixelValue = 4096;
     result.slope = dicomObj[userId][seriesIndex][index - 1].string('x00281053') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281053')) : 0;
     result.intercept = dicomObj[userId][seriesIndex][index - 1].string('x00281052') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281052')) : -1024;
-    result.windowCenter = -600;
-    result.windowWidth = 1500;
+    result.modality = dicomObj[userId][seriesIndex][index - 1].string('x00080060')
+    result.windowCenter = dicomObj[userId][seriesIndex][index - 1].string('x00281050') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281050')) : 0;
+    result.windowWidth = dicomObj[userId][seriesIndex][index - 1].string('x00281051') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281051')) : 0;
     result.columns = dicomObj[userId][seriesIndex][index - 1].uint16('x00280011') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280011')) : 512;
     result.rows = dicomObj[userId][seriesIndex][index - 1].uint16('x00280010') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280010')) : 512;
     result.width = result.columns;
@@ -118,7 +117,6 @@ Meteor.methods({
     result.sizeInBytes = result.rows * result.columns * 2;
 
     var pixelspacing = dicomObj[userId][seriesIndex][index - 1].string('x00280030');
-
     if (pixelspacing) {
       let spacings = pixelspacing.split("\\");
       if (spacings.length === 2) {
@@ -127,6 +125,25 @@ Meteor.methods({
       }
     }
 
+    if (dicomObj[userId][seriesIndex][index - 1].uint16('x00280107')) {
+      result.minPixelValue = dicomObj[userId][seriesIndex][index - 1].uint16('x00280106')
+      result.maxPixelValue = dicomObj[userId][seriesIndex][index - 1].uint16('x00280107')
+    } else {
+      switch (result.modality) {
+        case 'CT':
+          {
+            result.minPixelValue = 0
+            result.maxPixelValue = 4096
+            break;
+          }
+        case 'DX':
+          {
+            result.minPixelValue = 0
+            result.maxPixelValue = 65536
+            break;
+          }
+      }
+    }
     return result;
   },
 
@@ -152,8 +169,6 @@ Meteor.methods({
     }
 
     for (let i = 0; i < thumbnailArray[caseId].length; i++) {
-      console.log('aaa',thumbnailArray[caseId][i].uint16('x00280011'))
-      console.log('bbb',thumbnailArray[caseId][i].uint16('x00280010') )
       let colVal = thumbnailArray[caseId][i].uint16('x00280011') ? thumbnailArray[caseId][i].uint16('x00280011') : 512,
         rowVal = thumbnailArray[caseId][i].uint16('x00280010') ? thumbnailArray[caseId][i].uint16('x00280010') : 512;
       result.array.push({
@@ -188,7 +203,7 @@ Meteor.methods({
 function initThumbnail(seriesIndex, dirPath, caseId) {
   let fileNames = fs.readdirSync(dirPath);
   for (let i = 0; i < fileNames.length; i++) {
-    if(!thumbnailArray[caseId]){
+    if (!thumbnailArray[caseId]) {
       thumbnailArray[caseId] = []
     }
     let tokens = fileNames[i].split('_');
