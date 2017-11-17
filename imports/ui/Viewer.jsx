@@ -310,7 +310,7 @@ export default class Viewer extends Component {
       } else {
         if (result.status === "SUCCESS") {
           let dateTime = ''
-          if(result.seriesTime && result.seriesDate){
+          if (result.seriesTime && result.seriesDate) {
             let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
             dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
           }
@@ -411,7 +411,16 @@ export default class Viewer extends Component {
 
         var viewport = {};
         if (index === 1) {
-          viewport.scale = 1.2;
+          switch (result.modality) {
+            case 'CT': {
+              viewport.scale = 1.2;
+              break;
+            }
+            case 'DX': {
+              viewport.scale = 0.23
+              break;
+            }
+          }
         }
         cornerstone.displayImage(this.state.container, this.state.dicomObj[curSeriesIndex][index], viewport);
 
@@ -731,7 +740,7 @@ export default class Viewer extends Component {
         diagnosisResult[strs[0]].prob = parseFloat(data[key].prob).toFixed(3);
       }
     }
-    if(!oldResult) oldResult = {}
+    if (!oldResult) oldResult = {}
     oldResult[this.state.curSeriesIndex] = diagnosisResult
     this.setState({ diagnosisResult: oldResult });
   }
@@ -987,14 +996,14 @@ export default class Viewer extends Component {
               if (error) {
                 return console.error(error);
               }
-              if (res.content === 'error'){
+              if (res.content === 'error') {
                 toast.error('服务器异常')
                 this.setState({
                   isDiagnosing: false
                 });
                 return
               }
-              console.log('res',res)
+              console.log('res', res)
               toast.success('诊断完成')
               const end = new Date().getTime();
               console.log("total time " + (end - start) / 1000);
@@ -1171,7 +1180,7 @@ export default class Viewer extends Component {
           return (
             <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index) }}>
               <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
-                <div className="thumbnailDiv" id={'thumbnail' + index}/>
+                <div className="thumbnailDiv" id={'thumbnail' + index} />
               </div>
               <div className="thumbnail-info row">
                 <div className="col-sm-8">
