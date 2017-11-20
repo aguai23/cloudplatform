@@ -26,14 +26,14 @@ export class Main extends Component {
     super(props);
 
     let tempCollection = this.props.publicDataCollections,
-        tempActiveKey = 'PUB';
+        tempActiveKey = 'PUBLIC';
 
     if(this.props.location.state && this.props.location.state.tabActiveKey) {
       let key = this.props.location.state.tabActiveKey;
 
-      if(key === 'PVT') {
+      if(key === 'PRIVATE') {
         tempCollection = this.props.privateDataCollections;
-      } else if(key == 'FAV'){
+      } else if(key == 'FAVORITE'){
         tempCollection = this.props.favoriteDataCollections;
       }
       tempActiveKey = key;
@@ -58,15 +58,15 @@ export class Main extends Component {
    * @param nextProps the new props
    */
   componentWillReceiveProps(nextProps) {
-    if (this.state.tabActiveKey === 'PUB') {
+    if (this.state.tabActiveKey === 'PUBLIC') {
       if (nextProps.publicDataCollections !== this.state.dataCollections) {
         this.setState({ dataCollections: nextProps.publicDataCollections });
       }
-    } else if (this.state.tabActiveKey === 'PVT') {
+    } else if (this.state.tabActiveKey === 'PRIVATE') {
       if (nextProps.privateDataCollections !== this.state.dataCollections) {
         this.setState({ dataCollections: nextProps.privateDataCollections });
       }
-    } else if (this.state.tabActiveKey === 'FAV') {
+    } else if (this.state.tabActiveKey === 'FAVORITE') {
       if (nextProps.favoriteDataCollections !== this.state.dataCollections) {
         this.setState({ dataCollections: nextProps.favoriteDataCollections });
       }
@@ -93,11 +93,11 @@ export class Main extends Component {
 
     if (this.state.tabActiveKey === eventKey) return;
 
-    if (eventKey === 'PUB') {
+    if (eventKey === 'PUBLIC') {
       this.setState({ dataCollections: this.props.publicDataCollections });
-    } else if (eventKey === 'PVT') {
+    } else if (eventKey === 'PRIVATE') {
       this.setState({ dataCollections: this.props.privateDataCollections });
-    } else if (eventKey === 'FAV') {
+    } else if (eventKey === 'FAVORITE') {
       this.setState({ dataCollections: this.props.favoriteDataCollections });
     }
 
@@ -236,7 +236,7 @@ export default withTracker(props => {
     dataCollections: DataCollections.find({ $or: [{ type: 'PUBLIC' }, { ownerId: { $in: [Meteor.userId(), null] } }] }, { sort: { name: 1 } }).fetch(),
     publicDataCollections: DataCollections.find({ type: 'PUBLIC' }).fetch(),
     privateDataCollections: DataCollections.find({ $and: [{ type: 'PRIVATE' }, { ownerId: Meteor.userId() }] }).fetch(),
-    favoriteDataCollections: DataCollections.find({ $and: [{ type: 'FAVORITES' }, { ownerId: Meteor.userId() }] }).fetch(),
+    favoriteDataCollections: DataCollections.find({ $and: [{ type: 'FAVORITE' }, { ownerId: Meteor.userId() }] }).fetch(),
     userData: Meteor.user()
   }
 })(Main);

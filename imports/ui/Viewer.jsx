@@ -108,8 +108,6 @@ export default class Viewer extends Component {
       loadingProgress: 0
 
     };
-    this.updateInfo = this.updateInfo.bind(this);
-    this.onDragScrollBar = this.onDragScrollBar.bind(this);
   }
 
   /**
@@ -130,16 +128,8 @@ export default class Viewer extends Component {
     });
 
     /**
-     * re-render when window resized
-     */
-    window.addEventListener('resize', () => this.updateDimensions());
-
-    /**
      * disable right click in canvas and diagnosisBox
      */
-    // document.getElementById('outerContainer').oncontextmenu = function (e) {
-    //   e.preventDefault();
-    // };
     // document.getElementById('diagnosisInfo').oncontextmenu = function (e) {
     //   e.preventDefault();
     // };
@@ -155,10 +145,6 @@ export default class Viewer extends Component {
     });
 
     // this.getThumbnails(this.props.location.state.caseId);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener("resize");
   }
 
   /**
@@ -189,312 +175,19 @@ export default class Viewer extends Component {
   // }
 
   /**
-   * update info dynamically
-   * @param e
-   */
-  updateInfo(e) {
-    let viewport = cornerstone.getViewport(e.target);
-    this.setState({
-      voi: {
-        windowWidth: viewport.voi.windowWidth,
-        windowCenter: viewport.voi.windowCenter
-      },
-      zoomScale: viewport.scale.toFixed(2)
-    });
-  }
-
-  /**
-   * updates window dimensions
-   */
-  updateDimensions() {
-    this.setState({
-      windowWidth: window.innerWidth,
-      windowHeight: window.innerHeight,
-      containerWidth: (window.innerWidth - document.getElementById('diagnosisInfo').clientWidth - 3)
-    }, function () {
-      cornerstone.resize(this.state.container, false);
-    });
-  }
-
-  /**
-   * increase slice number
-   */
-  increaseSlice() {
-    if (this.state.index < this.state.imageNumber) {
-      this.setSlice(this.state.curSeriesIndex, this.state.index + 1);
-    }
-  }
-
-  /**
-   * decrease slice number
-   */
-  decreaseSlice() {
-    if (this.state.index > 1) {
-      this.setSlice(this.state.curSeriesIndex, this.state.index - 1);
-    }
-  }
-
-
-  /**
    * handle tool selection
    * @param selectedKey the key of selected MenuItem
    */
-  navSelectHandler(selectedKey) {
-    switch (selectedKey) {
-      case 1:
-        this.setWindowTool();
-        break;
-
-      case 2:
-        this.setZoomTool();
-        break;
-
-      case 3:
-        this.setPanTool();
-        break;
-
-      case 4:
-        this.setLengthTool();
-        break;
-
-      case 5:
-        this.setDrawTool();
-        break;
-
-      case 6:
-        this.setProbeTool();
-        break;
-
-      case 7:
-        this.setAngleTool();
-        break;
-
-      case 8:
-        this.setHighlightTool();
-        break;
-
-      case 9:
-        this.setMagnifyTool();
-        break;
-
-      case 10:
-        this.setAnnotationTool();
-        break;
-
-      default:
-        console.error(error);
-    }
+  onNavSelected(selectedKey) {
+    this.setState({btnClicked: selectedKey});
   }
 
-  /**
-   * activate window width and window level function
-   */
-  setWindowTool() {
-    this.disableAllTools();
-    cornerstoneTools.wwwc.activate(this.state.container, 1);
+  toggleMagnifyPopover() {
+    this.setState({ isMagnifyToolOpened: !this.state.isMagnifyToolOpened });
   }
 
-  /**
-   * activate zoom and pan function
-   */
-  setZoomTool() {
-    this.disableAllTools('ZOOM');
-
-    var config = {
-      // invert: true,
-      minScale: 0.25,
-      maxScale: 20.0,
-      preventZoomOutsideImage: true
-    };
-    cornerstoneTools.zoom.setConfiguration(config);
-
-    let element = this.state.container;
-    cornerstoneTools.zoom.activate(element, 1);
-    cornerstoneTools.zoomWheel.activate(element);
-  }
-
-  /**
-   * activate pan function
-   */
-  setPanTool() {
-    this.disableAllTools();
-    cornerstoneTools.pan.activate(this.state.container, 1);
-  }
-
-  /**
-   * activate rectangle draw function
-   */
-  setDrawTool() {
-    this.disableAllTools();
-    cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
-  }
-
-  /**
-   * active annotation tool
-   */
-  setAnnotationTool() {
-    this.disableAllTools();
-    cornerstoneTools.arrowAnnotate.activate(this.state.container, 1);
-  }
-
-  /**
-   * activate length tool
-   */
-  setLengthTool() {
-    this.disableAllTools();
-    cornerstoneTools.length.activate(this.state.container, 1);
-  }
-
-  /**
-   * activate probe tool
-   */
-  setProbeTool() {
-    this.disableAllTools();
-    cornerstoneTools.probe.activate(this.state.container, 1);
-  }
-
-  /**
-   * activate angle tool
-   */
-  setAngleTool() {
-    this.disableAllTools();
-    cornerstoneTools.angle.activate(this.state.container, 1);
-  }
-
-  /**
-   * activate hightlight tool
-   */
-  setHighlightTool() {
-    this.disableAllTools();
-    cornerstoneTools.highlight.activate(this.state.container, 1);
-  }
-
-  setMagnifyTool() {
-    this.disableAllTools();
-    cornerstoneTools.magnify.activate(this.state.container, 1);
-  }
-
-  /**
-   * invert viewport
-   */
-  invertViewport() {
-    let viewport = cornerstone.getViewport(this.state.container);
-    viewport.invert = !viewport.invert;
-    cornerstone.setViewport(this.state.container, viewport);
-  }
-
-  /**
-   * save mark to database
-   */
-  saveState() {
-    let elements = [this.state.container];
-    let currentState = cornerstoneTools.appState.save(elements);
-    let appState = JSON.parse(JSON.stringify(currentState));
-
-    _.mapObject(appState.imageIdToolState, (val, imageId) => {
-      _.mapObject(val, (data, toolName) => {
-        if (toolName === 'ellipticalRoi') {
-          appState.imageIdToolState[imageId].ellipticalRoi.data = []
-        }
-      })
-    });
-
-    let caseInfo = Cases.findOne({ _id: this.props.location.state.caseId });
-    let seriesInstanceUID = caseInfo.seriesList[this.state.curSeriesIndex].seriesInstanceUID
-
-    let mark = {
-      imageIdToolState: appState.imageIdToolState,
-      elementToolState: appState.elementToolState,
-      elementViewport: appState.elementViewport,
-      source: 'USER',
-      createAt: new Date(),
-      caseId: this.props.location.state.caseId,
-      seriesInstanceUID: seriesInstanceUID,
-      ownerId: Meteor.userId(),
-    };
-
-    let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
-    if (oldState) {
-      mark._id = oldState._id;
-      Meteor.call('modifyMark', mark, (error) => {
-        if (error) {
-          toast.error(`标注保存失败,${error.reason}`);
-          return console.error(error);
-        } else {
-          toast.success("标注保存成功!");
-        }
-      })
-    } else {
-      Meteor.call('insertMark', mark, (error) => {
-        if (error) {
-          toast.error(`标注保存失败,${error.reason}`);
-          return console.error(error);
-        } else {
-          toast.success("标注保存成功!");
-        }
-      })
-    }
-  }
-
-  /**
-   * reload mark from database
-   */
-  restoreState() {
-    let elements = [this.state.container];
-    let currentState = cornerstoneTools.appState.save(elements);
-    let caseInfo = Cases.findOne({ _id: this.props.location.state.caseId });
-    let seriesInstanceUID = caseInfo.seriesList[this.state.curSeriesIndex].seriesInstanceUID
-    let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
-    /**
-     * save system mark to old mark
-     */
-    if (oldState) {
-      _.mapObject(currentState.imageIdToolState, (currentVal, currentImageId) => {
-        _.mapObject(oldState.imageIdToolState, (oldVal, oldImageId) => {
-          if (currentImageId === oldImageId) {
-            _.mapObject(currentVal, (data, type) => {
-              if (type === 'ellipticalRoi') {
-                oldState.imageIdToolState[oldImageId]['ellipticalRoi'] = {};
-                oldState.imageIdToolState[oldImageId]['ellipticalRoi']['data'] = data.data
-              }
-            })
-          }
-        })
-      });
-
-      cornerstoneTools.appState.restore(oldState)
-    } else {
-      toast.warning('无历史标注!')
-    }
-
-  }
-
-  /**
-   * reset viewport to default state
-   */
-  resetViewport() {
-    let canvas = $('#viewer canvas').get(0);
-    let enabledElement = cornerstone.getEnabledElement(this.state.container);
-    let viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image);
-    viewport.scale = 1.2;
-    cornerstone.setViewport(this.state.container, viewport);
-  }
-
-  /**
-   * switch circle visible state
-   */
-  switchState() {
-    if (this.state.circleVisible) {
-      cornerstoneTools.ellipticalRoi.disable(this.state.container, 1);
-      this.setState({
-        circleVisible: false
-      })
-    } else {
-      cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-      this.setState({
-        circleVisible: true
-      })
-    }
+  toggleRotatePopover() {
+    this.setState({ isRotateMenuOpened: !this.state.isRotateMenuOpened });
   }
 
   /**
@@ -526,66 +219,6 @@ export default class Viewer extends Component {
     $('div').removeClass('active-diagnosis-row');
     $('#diagnosis-item-' + key).addClass('active-diagnosis-row');
     this.setSlice(this.state.curSeriesIndex, Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice));
-  }
-
-  /**
-   * clear all tool data, e.g. rec, probe and angle
-   */
-  clearToolData() {
-    let elements = [this.state.container];
-    let currentState = cornerstoneTools.appState.save(elements);
-    let element = cornerstone.getEnabledElement(this.state.container);
-    let toolState = currentState.imageIdToolState;
-    if (!toolState.hasOwnProperty(element.image.imageId)) {
-      return;
-    }
-
-    for (let toolName in toolState[element.image.imageId]) {
-      if (toolName !== 'ellipticalRoi') {
-        delete toolState[element.image.imageId][toolName];
-      }
-    }
-
-    cornerstone.updateImage(this.state.container);
-  }
-
-  /**
-   * flip viewport
-   */
-  flipViewport(orientation) {
-    let viewport = cornerstone.getViewport(this.state.container);
-
-    if (orientation === 'HORIZONTAL') {
-      viewport.hflip = !viewport.hflip;
-    } else if (orientation === 'VERTICAL') {
-      viewport.vflip = !viewport.vflip;
-    }
-
-    cornerstone.setViewport(this.state.container, viewport);
-  }
-
-  /**
-   * rotate viewport
-   */
-  rotateViewport(orientation) {
-    let viewport = cornerstone.getViewport(this.state.container);
-
-    if (orientation === 'CLOCKWISE') {
-      viewport.rotation += 90;
-    } else if (orientation === 'COUNTERCLOCKWISE') {
-      viewport.rotation -= 90;
-    }
-
-    cornerstone.setViewport(this.state.container, viewport);
-  }
-
-  /**
-   * handler for draging the scroll bar, moves scrollbar position and changes image
-   * @param evt mousemove event
-   */
-  onDragScrollBar() {
-    let scrollbar = document.getElementById("scrollbar");
-    this.setSlice(this.state.curSeriesIndex, parseInt(scrollbar.value));
   }
 
   getCaret(isOpened) {
@@ -839,25 +472,25 @@ export default class Viewer extends Component {
 
     let rotatePopover = (
       <Popover id="rotate-popover" className="popover-positioned-bottom">
-        <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.flipViewport('HORIZONTAL')}>
+        <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.onNavSelected('FLIP_H')}>
           <div style={{ paddingBottom: '5px' }}>
             <FontAwesome name='arrows-h' size='2x' />
           </div>
           <span>水平翻转</span>
         </div>
-        <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.flipViewport('VERTICAL')}>
+        <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.onNavSelected('FLIP_V')}>
           <div style={{ paddingBottom: '5px' }}>
             <FontAwesome name='arrows-v' size='2x' />
           </div>
           <span>垂直翻转</span>
         </div>
-        <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.rotateViewport('COUNTERCLOCKWISE')}>
+        <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.onNavSelected('ROTATE_COUNTERCLOCKWISE')}>
           <div style={{ paddingBottom: '5px' }}>
             <FontAwesome name='rotate-left' size='2x' />
           </div>
           <span>向左旋转</span>
         </div>
-        <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.rotateViewport('CLOCKWISE')}>
+        <div className="col-sm-3 rotate-menu-item" style={style.icon} onClick={() => this.onNavSelected('ROTATE_CLOCKWISE')}>
           <div style={{ paddingBottom: '5px' }}>
             <FontAwesome name='rotate-right' size='2x' />
           </div>
@@ -945,33 +578,36 @@ export default class Viewer extends Component {
         <div id="top" style={style.top}>
           <Navbar inverse collapseOnSelect style={{ marginBottom: '0' }}>
             <Navbar.Collapse style={{ minWidth: '1300px' }}>
-              <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                <NavItem eventKey={1} href="#">
+              <Nav onSelect={(selectedKey) => this.onNavSelected(selectedKey)}>
+                <NavItem eventKey="WINDOW" href="#">
                   <div style={style.icon}>
                     <FontAwesome name='adjust' size='2x' />
                   </div>
                   <span>窗宽窗位</span>
                 </NavItem>
-                <NavItem eventKey={2} href="#">
+                <NavItem eventKey="ZOOM" href="#">
                   <div style={style.icon}>
                     <FontAwesome name='search' size='2x' />
                   </div>
                   <span>缩放</span>
                 </NavItem>
-                <NavItem eventKey={3} href="#">
+                <NavItem eventKey="PAN" href="#">
                   <div style={style.icon}>
                     <FontAwesome name='hand-paper-o' size='2x' />
                   </div>
                   <span>拖动</span>
                 </NavItem>
               </Nav>
-              <Navbar.Text className="button" onClick={() => this.invertViewport()}>
+              <Navbar.Text className="button" onClick={() => this.onNavSelected('INVERT')}>
                 <FontAwesome name='square' size='2x' />
                 <br />
                 <span>反色</span>
               </Navbar.Text>
               <Navbar.Text className="button">
-                <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={rotatePopover} onClick={() => this.toggleRotatePopover()} onExited={() => this.toggleRotatePopover()}>
+                <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={rotatePopover}
+                  onClick={() => { this.toggleRotatePopover(); this.onNavSelected(); }}
+                  onExited={() => { this.toggleRotatePopover(); this.onNavSelected(); }}
+                >
                   <span>
                     <FontAwesome name='cog' size='2x' />
                     <br />
@@ -979,49 +615,49 @@ export default class Viewer extends Component {
                   </span>
                 </OverlayTrigger>
               </Navbar.Text>
-              <Navbar.Text className="button" onClick={this.resetViewport.bind(this)}>
+              <Navbar.Text className="button" onClick={() => this.onNavSelected('RESET')}>
                 <FontAwesome name='refresh' size='2x' /><br />
                 <span>重置</span>
               </Navbar.Text>
               <Navbar.Text style={{ borderLeft: '2px solid #9ccef9', height: '50px' }}></Navbar.Text>
-              <Nav onSelect={(selectedKey) => this.navSelectHandler(selectedKey)}>
-                <NavItem eventKey={10} href="#">
+              <Nav onSelect={(selectedKey) => this.onNavSelected(selectedKey)}>
+                <NavItem eventKey="ANNOTATION" href="#">
                   <div style={style.icon}>
                     <FontAwesome name='arrow-up' size='2x' />
                   </div>
                   <span>标注</span>
                 </NavItem>
-                <NavItem eventKey={4} href="#">
+                <NavItem eventKey="LENGTH" href="#">
                   <div style={style.icon}>
                     <FontAwesome name='arrows-h' size='2x' />
                   </div>
                   <span>测量</span>
                 </NavItem>
-                <NavItem eventKey={5} href="#">
+                <NavItem eventKey="RECTANGLE" href="#">
                   <div style={style.icon}>
                     <FontAwesome name='square-o' size='2x' />
                   </div>
                   <span>矩形</span>
                 </NavItem>
-                <NavItem eventKey={6} href="#">
+                <NavItem eventKey="PROBE" href="#">
                   <div style={style.icon}>
                     <FontAwesome name='circle-o' size='2x' />
                   </div>
                   <span>圆点</span>
                 </NavItem>
-                <NavItem eventKey={7} href="#">
+                <NavItem eventKey="ANGLE" href="#">
                   <div style={style.icon}>
                     <FontAwesome name='chevron-down' size='2x' />
                   </div>
                   <span>角度</span>
                 </NavItem>
-                <NavItem eventKey={8} href="#">
+                <NavItem eventKey="HIGHLIGHT" href="#">
                   <div style={style.icon}>
                     <FontAwesome name='sun-o' size='2x' />
                   </div>
                   <span>高亮</span>
                 </NavItem>
-                <NavItem eventKey={9} href="#">
+                <NavItem eventKey="MAGNIFY" href="#">
                   <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={magnifyPopover} onClick={() => this.toggleMagnifyPopover()} onExited={() => this.toggleMagnifyPopover()}>
                     <div>
                       <div style={style.icon}>
@@ -1032,23 +668,23 @@ export default class Viewer extends Component {
                   </OverlayTrigger>
                 </NavItem>
               </Nav>
-              <Navbar.Text className="button" onClick={() => this.clearToolData()}>
+              <Navbar.Text className="button" onClick={() => this.onNavSelected('CLEAR')}>
                 <FontAwesome name='trash' size='2x' />
                 <br />
                 <span>清除</span>
               </Navbar.Text>
               <Navbar.Text style={{ borderLeft: '2px solid #9ccef9', height: '50px' }}></Navbar.Text>
-              <Navbar.Text className="button" onClick={this.saveState.bind(this)}>
+              <Navbar.Text className="button" onClick={() => this.onNavSelected('SAVE')}>
                 <FontAwesome name='save' size='2x' />
                 <br />
                 <span>保存</span>
               </Navbar.Text>
-              <Navbar.Text className="button" onClick={this.restoreState.bind(this)}>
+              <Navbar.Text className="button" onClick={() => this.onNavSelected('RESTORE')}>
                 <FontAwesome name='paste' size='2x' />
                 <br />
                 <span>载入</span>
               </Navbar.Text>
-              <Navbar.Text className="button" onClick={this.switchState.bind(this)}>
+              <Navbar.Text className="button" onClick={() => this.onNavSelected('SWITCH')}>
                 <FontAwesome name={this.state.circleVisible ? 'eye-slash' : 'eye'} size='2x' />
                 <br />
                 <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
@@ -1072,61 +708,8 @@ export default class Viewer extends Component {
         </div>
 
         <div className="main-canvas">
-          <MainCanvas caseId={this.props.location.state.caseId} curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0} />
+          <MainCanvas caseId={this.props.location.state.caseId} curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0} controllerBtnClicked={this.state.btnClicked}/>
         </div>
-
-
-        {/*
-        <div id="diagnosisInfo" style={{ ...style.diagnosisBox, ...{ height: this.state.containerHeight } }}>
-          <ButtonGroup className="btn-panel-controller" justified>
-            <Button active={this.state.diagnosisButton === 'default'} bsSize="large" onClick={this.switchPanelState.bind(this, 0)} href="#" >结节列表</Button>
-            <Button active={this.state.thumbnailButton === 'default'} bsSize="large" onClick={this.switchPanelState.bind(this, 1)} href="#" >序列列表</Button>
-          </ButtonGroup>
-          {diagnosisBox}
-          {thumbnailBox}
-        </div>
-
-        <div id="outerContainer" style={{ ...style.container, ...{ height: this.state.containerHeight, width: '80%' } }} className="container">
-          <input type={"range"}
-            id={"scrollbar"}
-            min={1}
-            max={this.state.imageNumber}
-            step={1}
-            onInput={this.onDragScrollBar}
-            style={{
-              ...style.scrollBar, ...{ width: this.state.containerHeight },
-              ...{ top: this.state.topValue }, ...{ right: this.state.rightValue }
-            }} />
-          <div style={style.viewer} ref="viewerContainer" id="viewer" >
-            <div style={{ ...style.patientInfo, ...style.textInfo, ...style.disableSelection }} id="patientInfo">
-              <div>
-                <span>病人姓名: {this.state.patientName}</span>
-                <br />
-                <span>检查号: {this.state.patientId}</span>
-              </div>
-            </div>
-            <div style={{ ...style.dicomInfo, ...style.textInfo, ...style.disableSelection }} id="dicomInfo">
-              <span className="pull-right">窗宽/窗位: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
-              <br />
-              <span className="pull-right">缩放: {this.state.zoomScale}</span>
-            </div>
-            <div style={{ ...style.sliceInfo, ...style.textInfo, ...style.disableSelection }} id="sliceInfo">
-              <span className="pull-left">图像大小: {this.state.rows}*{this.state.cols}</span>
-              <br />
-              <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
-              <br />
-              <span className="pull-left">层厚: {this.state.thickness} mm</span>
-              <br />
-              <span className="pull-left">像素间距: {this.state.pixelSpacing} </span>
-
-            </div>
-            <div style={{ ...style.timeInfo, ...style.textInfo, ...style.disableSelection }} id="timeInfo">
-              <span className="pull-right">{this.state.dateTime}</span>
-            </div>
-          </div>
-        </div>
-        */
-        }
 
         <div style={style.bottom}></div>
         <ToastContainer
