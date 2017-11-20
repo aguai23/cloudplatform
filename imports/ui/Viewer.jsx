@@ -158,7 +158,7 @@ export default class Viewer extends Component {
   }
 
   componentWillUnmount() {
-    window.removeEventListener("resize");
+    window.removeEventListener("resize", () => this.updateDimensions());
   }
 
   /**
