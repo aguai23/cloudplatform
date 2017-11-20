@@ -165,28 +165,28 @@ export default class Viewer extends Component {
    * download thumbnail information
    * @param caseId
    */
-  getThumbnails(caseId) {
-    Meteor.call('getThumbnailDicoms', caseId, (err, result) => {
-      if (err) {
-        return console.error(err);
-      }
-      this.setState({
-        thumbnailArray: result.array
-      }, function () {
-        let foundCase = Cases.findOne({ _id: this.props.location.state.caseId });
+  // getThumbnails(caseId) {
+  //   Meteor.call('getThumbnailDicoms', caseId, (err, result) => {
+  //     if (err) {
+  //       return console.error(err);
+  //     }
+  //     this.setState({
+  //       thumbnailArray: result.array
+  //     }, function () {
+  //       let foundCase = Cases.findOne({ _id: this.props.location.state.caseId });
 
-        this.setState({
-          seriesList: foundCase.seriesList,
-        }, function () {
-          for (let i = 0; i < this.state.seriesList.length; i++) {
-            let element = document.getElementById('thumbnail' + i);
-            cornerstone.enable(element);
-            this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
-          }
-        });
-      });
-    });
-  }
+  //       this.setState({
+  //         seriesList: foundCase.seriesList,
+  //       }, function () {
+  //         for (let i = 0; i < this.state.seriesList.length; i++) {
+  //           let element = document.getElementById('thumbnail' + i);
+  //           cornerstone.enable(element);
+  //           this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
+  //         }
+  //       });
+  //     });
+  //   });
+  // }
 
   /**
    * update info dynamically
@@ -612,15 +612,15 @@ export default class Viewer extends Component {
    * @param seriesIndex the index of requesting series
    * @param element the DOM element that holds corresponding thumbnail canvas
    */
-  enableThumbnailCanvas(seriesIndex, element) {
-    let image = this.state.thumbnailArray[seriesIndex];
-    let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-    image.getPixelData = function () {
-      return pixelData;
-    };
+  // enableThumbnailCanvas(seriesIndex, element) {
+  //   let image = this.state.thumbnailArray[seriesIndex];
+  //   let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+  //   image.getPixelData = function () {
+  //     return pixelData;
+  //   };
 
-    cornerstone.displayImage(element, image);
-  }
+  //   cornerstone.displayImage(element, image);
+  // }
 
   switchPanelState(isDiagnosis) {
     if ((isDiagnosis && this.state.diagnosisButton === 'primary') || (!isDiagnosis && this.state.thumbnailButton === 'primary')) {
@@ -645,7 +645,6 @@ export default class Viewer extends Component {
         diagnosisButton: 'default',
         thumbnailButton: 'primary'
       }, function () {
-        let foundcase = Cases.findOne({ _id: this.props.location.state.caseId });
         const start = new Date().getTime();
         const caseInfo = Cases.findOne({ _id: this.props.location.state.caseId });
         const algorithmInfo = caseInfo.seriesList[this.state.curSeriesIndex].diagnoseResult;
@@ -1064,7 +1063,12 @@ export default class Viewer extends Component {
         </div>
 
         <div className="left-panel">
-          <LeftPanel />
+          <LeftPanel
+            style={style.diagnosisBox}
+            curSeriesIndex={this.state.curSeriesIndex}
+            caseList={this.state.seriesList}
+            caseId={this.props.location.state.caseId}
+            containerHeight={this.state.containerHeight} />
         </div>
 
         <div className="main-canvas">
