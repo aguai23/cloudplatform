@@ -117,8 +117,7 @@ export default class MainCanvas extends Component {
             cols: result.cols,
             pixelSpacing: result.pixelSpacing,
             thickness: result.thickness,
-            index: 1,
-            loadingProgress: 0
+            index: 1
           };
 
           this.setSlice(seriesIndex, this.index);
@@ -163,13 +162,23 @@ export default class MainCanvas extends Component {
     }
 
     if (!this.dicomObj[curSeriesIndex][index]) {
-      Meteor.call('getDicom', curSeriesIndex, index, (err, result) => {
+      Meteor.call('getDicom', curSeriesIndex, index, (err, image) => {
         if (err) {
           return console.error(err);
         }
 
-        let image = result;
-        let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+        let pixelData = undefined;
+
+        if(image.bitsAllocated === 8) {
+          pixelData = new Uint16Array(image.pixelDataLength);
+
+          for(let i = 0; i < image.pixelDataLength; i++) {
+            pixelData[i] = image.imageBuf[image.pixelDataOffset + i];
+          }
+        } else if(image.bitsAllocated === 16) {
+          pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+        }
+
         image.getPixelData = function() {
           return pixelData
         };
@@ -177,7 +186,7 @@ export default class MainCanvas extends Component {
 
         var viewport = {};
         if (index === 1) {
-          switch (result.modality) {
+          switch (image.modality) {
             case 'CT':
               {
                 viewport.scale = 1.2;

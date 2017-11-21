@@ -114,6 +114,7 @@ Meteor.methods({
     result.windowWidth = dicomObj[userId][seriesIndex][index - 1].string('x00281051') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281051')) : 0;
     result.columns = dicomObj[userId][seriesIndex][index - 1].uint16('x00280011') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280011')) : 512;
     result.rows = dicomObj[userId][seriesIndex][index - 1].uint16('x00280010') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280010')) : 512;
+    result.bitsAllocated = dicomObj[userId][seriesIndex][index - 1].uint16('x00280100') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280100')) : 16;
     result.width = result.columns;
     result.height = result.rows;
     result.sizeInBytes = result.rows * result.columns * 2;
@@ -128,22 +129,17 @@ Meteor.methods({
     }
 
     if (dicomObj[userId][seriesIndex][index - 1].uint16('x00280107')) {
-      result.minPixelValue = dicomObj[userId][seriesIndex][index - 1].uint16('x00280106')
-      result.maxPixelValue = dicomObj[userId][seriesIndex][index - 1].uint16('x00280107')
+      result.minPixelValue = dicomObj[userId][seriesIndex][index - 1].uint16('x00280106');
+      result.maxPixelValue = dicomObj[userId][seriesIndex][index - 1].uint16('x00280107');
     } else {
-      switch (result.modality) {
-        case 'CT':
-          {
-            result.minPixelValue = 0
-            result.maxPixelValue = 4096
-            break;
-          }
-        case 'DX':
-          {
-            result.minPixelValue = 0
-            result.maxPixelValue = 65536
-            break;
-          }
+      if(result.bitsAllocated === 8) {
+        result.windowWidth = Math.round(result.windowWidth / 16);
+        result.windowCenter = Math.round(result.windowCenter / 16);
+        result.minPixelValue = 0;
+        result.maxPixelValue = 255;
+      } else if(result.bitsAllocated === 16) {
+        result.minPixelValue = 0;
+        result.maxPixelValue = 65535;
       }
     }
     return result;
@@ -172,7 +168,7 @@ Meteor.methods({
 
     for (let i = 0; i < thumbnailArray[caseId].length; i++) {
       let colVal = thumbnailArray[caseId][i].uint16('x00280011') ? thumbnailArray[caseId][i].uint16('x00280011') : 512,
-        rowVal = thumbnailArray[caseId][i].uint16('x00280010') ? thumbnailArray[caseId][i].uint16('x00280010') : 512;
+          rowVal = thumbnailArray[caseId][i].uint16('x00280010') ? thumbnailArray[caseId][i].uint16('x00280010') : 512;
       result.array.push({
         imageBuf: thumbnailArray[caseId][i].byteArray,
         pixelDataOffset: thumbnailArray[caseId][i].elements.x7fe00010.dataOffset,
@@ -190,6 +186,21 @@ Meteor.methods({
         height: rowVal,
         sizeInBytes: rowVal * colVal * 2
       });
+
+      if (thumbnailArray[caseId][i].uint16('x00280107')) {
+        result.array[i].minPixelValue = thumbnailArray[caseId][i].uint16('x00280106');
+        result.arry[i].maxPixelValue = thumbnailArray[caseId][i].uint16('x00280107');
+      } else {
+        if(result.bitsAllocated === 8) {
+          result.array[i].windowWidth = Math.round(result.array[i].windowWidth / 16);
+          result.array[i].windowCenter = Math.round(result.array[i].windowCenter / 16);
+          result.array[i].minPixelValue = 0;
+          result.array[i].maxPixelValue = 255;
+        } else if(result.bitsAllocated === 16) {
+          result.array[i].minPixelValue = 0;
+          result.array[i].maxPixelValue = 65535;
+        }
+      }
     }
 
     return result;
