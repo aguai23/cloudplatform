@@ -115,16 +115,13 @@ function convertDicomFiles(seriesInstanceUID, dirPath, archive) {
     // if(transferSyntaxUID === '1.2.840.10008.1.2.1​')
 
 
-    // let windowWidth = dataset.string('x00281051');
-    // let windowCenter = dataset.string('00281050');
-    let windowWidth = 1500, windowCenter = -600;
+    let windowWidth = dataset.string('x00281051') ? parseInt(dataset.string('x00281051')) : 0;
+    let windowCenter = dataset.string('x00281050') ? parseInt(dataset.string('x00281050')) : 0;
 
     let minValue = windowCenter - windowWidth,
         maxValue = windowCenter + windowWidth;
 
-
     let frameData = new Buffer(imageWidth * imageHeight * 4);
-
 
     let j = 0;
     while(j < frameData.length) {
