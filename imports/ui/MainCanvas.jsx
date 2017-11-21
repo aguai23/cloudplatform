@@ -1,17 +1,15 @@
-import React, { Component } from 'react';
-import { Meteor } from 'meteor/meteor';
+import React, {Component} from 'react';
+import {Meteor} from 'meteor/meteor';
 
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../library/cornerstoneTools';
-import { _ } from 'underscore';
-import { ToastContainer, toast } from 'react-toastify';
+import {_} from 'underscore';
+import {ToastContainer, toast} from 'react-toastify';
 
-import { Cases } from '../api/cases';
-import { Marks } from '../api/marks';
+import {Cases} from '../api/cases';
+import {Marks} from '../api/marks';
 
 import './css/mainCanvas.css';
-
-
 
 export default class MainCanvas extends Component {
   constructor(props) {
@@ -78,7 +76,7 @@ export default class MainCanvas extends Component {
     /**
      * disable right click in canvas
      */
-    document.getElementById('viewer').oncontextmenu = function (e) {
+    document.getElementById('viewer').oncontextmenu = function(e) {
       e.preventDefault();
     };
   }
@@ -104,7 +102,7 @@ export default class MainCanvas extends Component {
       } else {
         if (result.status === 'SUCCESS') {
           let dateTime = ''
-          if(result.seriesTime && result.seriesDate){
+          if (result.seriesTime && result.seriesDate) {
             let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
             dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
           }
@@ -172,7 +170,7 @@ export default class MainCanvas extends Component {
 
         let image = result;
         let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-        image.getPixelData = function () {
+        image.getPixelData = function() {
           return pixelData
         };
         this.dicomObj[curSeriesIndex][index] = image;
@@ -180,14 +178,16 @@ export default class MainCanvas extends Component {
         var viewport = {};
         if (index === 1) {
           switch (result.modality) {
-            case 'CT': {
-              viewport.scale = 1.2;
-              break;
-            }
-            case 'DX': {
-              viewport.scale = 0.23
-              break;
-            }
+            case 'CT':
+              {
+                viewport.scale = 1.2;
+                break;
+              }
+            case 'DX':
+              {
+                viewport.scale = 0.23
+                break;
+              }
           }
         }
         cornerstone.displayImage(this.container, this.dicomObj[curSeriesIndex][index], viewport);
@@ -234,7 +234,7 @@ export default class MainCanvas extends Component {
    */
   setScrollTool() {
     let self = this;
-    $("#viewer").bind("mousewheel", function (e) {
+    $("#viewer").bind("mousewheel", function(e) {
       let event = window.event || e;
       let down = event.wheelDelta < 0;
       if (down) {
@@ -247,13 +247,15 @@ export default class MainCanvas extends Component {
 
   /**
    * handler for draging the scroll bar, moves scrollbar position and changes image
-   * @param evt mousemove event
    */
   onDragScrollBar() {
     let scrollbar = document.getElementById("scrollbar");
     this.setSlice(this.curSeriesIndex, parseInt(scrollbar.value));
   }
 
+  /**
+   * handler for manipulating request from controller
+   */
   onControllerBtnClicked() {
     let btnType = this.controllerBtnClicked;
 
@@ -339,7 +341,7 @@ export default class MainCanvas extends Component {
         break;
 
       default:
-        if(btnType !== undefined) {
+        if (btnType !== undefined) {
           console.error('Error - No matched key for ' + btnType);
         }
         break;
@@ -462,7 +464,7 @@ export default class MainCanvas extends Component {
       })
     });
 
-    let caseInfo = Cases.findOne({ _id: this.props.caseId });
+    let caseInfo = Cases.findOne({_id: this.props.caseId});
     let seriesInstanceUID = caseInfo.seriesList[this.curSeriesIndex].seriesInstanceUID
 
     let mark = {
@@ -473,10 +475,10 @@ export default class MainCanvas extends Component {
       createAt: new Date(),
       caseId: this.props.caseId,
       seriesInstanceUID: seriesInstanceUID,
-      ownerId: Meteor.userId(),
+      ownerId: Meteor.userId()
     };
 
-    let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
+    let oldState = Marks.findOne({ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID});
     if (oldState) {
       mark._id = oldState._id;
       Meteor.call('modifyMark', mark, (error) => {
@@ -505,9 +507,9 @@ export default class MainCanvas extends Component {
   restoreState() {
     let elements = [this.container];
     let currentState = cornerstoneTools.appState.save(elements);
-    let caseInfo = Cases.findOne({ _id: this.props.caseId });
+    let caseInfo = Cases.findOne({_id: this.props.caseId});
     let seriesInstanceUID = caseInfo.seriesList[this.curSeriesIndex].seriesInstanceUID
-    let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
+    let oldState = Marks.findOne({ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID});
     /**
      * save system mark to old mark
      */
@@ -607,7 +609,6 @@ export default class MainCanvas extends Component {
     cornerstone.setViewport(this.container, viewport);
   }
 
-
   /**
    * disable tools
    */
@@ -638,40 +639,41 @@ export default class MainCanvas extends Component {
 
   render() {
     return (
-      <div style={{height: '100%'}} id="outer-container">
-        <input type="range"
-          id="scrollbar"
-          min={1}
-          max={this.imageNumber}
-          step={1}
-          onChange={() => this.onDragScrollBar()}
-          style={{
-            ...{ width: this.containerHeight },
-            ...{ top: this.topValue },
-            ...{ right: this.rightValue }
-          }}
-        />
-        <div ref="viewerContainer" id="viewer" >
+      <div style={{
+        height: '100%'
+      }} id="outer-container">
+        <input type="range" id="scrollbar" min={1} max={this.imageNumber} step={1} onChange={() => this.onDragScrollBar()} style={{
+          ...{
+            width: this.containerHeight
+          },
+          ...{
+            top: this.topValue
+          },
+          ...{
+            right: this.rightValue
+          }
+        }}/>
+        <div ref="viewerContainer" id="viewer">
           <div className="text-info disable-selection patient-info" id="patientInfo">
             <div>
               <span>病人姓名: {this.displayInfo.patientName}</span>
-              <br />
+              <br/>
               <span>检查号: {this.displayInfo.patientId}</span>
             </div>
           </div>
           <div className="text-info disable-selection dicom-info" id="dicomInfo">
             <span className="pull-right">窗宽/窗位: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
-            <br />
+            <br/>
             <span className="pull-right">缩放: {this.state.zoomScale}</span>
           </div>
           <div className="text-info disable-selection slice-info" id="sliceInfo">
             <span className="pull-left">图像大小: {this.displayInfo.rows}*{this.displayInfo.cols}</span>
-            <br />
+            <br/>
             <span className="pull-left">层数: {this.index}/{this.imageNumber}</span>
-            <br />
-            <span className="pull-left">层厚: {this.displayInfo.thickness} mm</span>
-            <br />
-            <span className="pull-left">像素间距: {this.displayInfo.pixelSpacing} </span>
+            <br/>
+            <span className="pull-left">层厚: {this.displayInfo.thickness}mm</span>
+            <br/>
+            <span className="pull-left">像素间距: {this.displayInfo.pixelSpacing}</span>
           </div>
           <div className="text-info disable-selection time-info" id="timeInfo">
             <span className="pull-right">{this.displayInfo.dateTime}</span>
