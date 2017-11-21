@@ -5,19 +5,10 @@ import ReactSVG from 'react-svg';
 import { Cases } from '../api/cases';
 import FontAwesome from 'react-fontawesome';
 import cornerstone from 'cornerstone-core';
+import CustomEventEmitter from '../library/CustomEventEmitter';
 import './css/leftPanel.css';
 
-const style = {
-  diagnosisTableHead: {
-    fontSize: '16px'
-  },
-  diagnosisRow: {
-    padding: '10px 5px 10px 5px'
-  },
-  diagnosisProb: {
-    textAlign: 'right'
-  }
-};
+const customEventEmitter = new CustomEventEmitter()
 
 export default class LeftPanel extends Component {
   constructor(props) {
@@ -26,6 +17,7 @@ export default class LeftPanel extends Component {
       seriesList: [],
       panelType: 'thumbnail',
       curSeriesIndex: props.curSeriesIndex,
+      diagnosisResult: []
     }
     this.getThumbnails = this.getThumbnails.bind(this)
     this.getThumbnails(props.caseId)
@@ -59,7 +51,6 @@ export default class LeftPanel extends Component {
     image.getPixelData = function () {
       return pixelData;
     };
-
     cornerstone.displayImage(element, image);
   }
 
@@ -69,8 +60,33 @@ export default class LeftPanel extends Component {
     this.setState({
       curSeriesIndex: seriesIndex
     }, function () {
-      //TODO: call mainCanvas to rebuild the page
+      customEventEmitter.dispatch('changeSeries', { caseId: this.props.caseId, curSeriesIndex: seriesIndex })
     });
+  }
+
+  extract(data) {
+    let diagnosisResult = {};
+    let oldResult = this.state.diagnoseResult;
+    for (let key in data) {
+      let strs = key.split("_");
+
+      if (diagnosisResult[strs[0]]) {
+        diagnosisResult[strs[0]].lastSlice = parseInt(strs[1]);
+      } else {
+        diagnosisResult[strs[0]] = {};
+        diagnosisResult[strs[0]].firstSlice = parseInt(strs[1]);
+        diagnosisResult[strs[0]].prob = parseFloat(data[key].prob).toFixed(3);
+      }
+    }
+    if (!oldResult) oldResult = {}
+    oldResult[this.state.curSeriesIndex] = diagnosisResult
+    this.setState({ diagnosisResult: oldResult });
+  }
+
+  onClickDiagnosisRow(key) {
+    $('div').removeClass('leftPanel-activeRow');
+    $('#diagnosis-item-' + key).addClass('leftPanel-activeRow');
+    customEventEmitter.dispatch('setSlice',Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice))
   }
 
   switchPanelState(isDiagnosis) {
@@ -86,74 +102,16 @@ export default class LeftPanel extends Component {
         const algorithmInfo = caseInfo.seriesList[this.state.curSeriesIndex].diagnoseResult;
         const seriesNumber = caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber;
         if (algorithmInfo && algorithmInfo.circle) {
-          //TODO: render it in viewer.jsx
-          // const end = new Date().getTime();
-          // console.log("total time " + (end - start) / 1000);
-          // this.setState({ isLoadingPanelFinished: true });
-
-          // cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-          // let caseId = this.props.location.state.caseId;
-          // let elements = [this.state.container];
-          // let currentState = cornerstoneTools.appState.save(elements);
-          // let result = JSON.parse(algorithmInfo.circle)
-          // if (!this.state.diagnosisResult || !this.state.diagnosisResult[this.state.curSeriesIndex]) {
-          //   this.extract(result);
-          // }
-
-          // let picList = {};
-          // _.mapObject(result, (val, key) => {
-          //   val.num = key.split("_")[0];
-          //   if (picList[key.split("_")[1]] !== undefined) {
-          //     picList[key.split("_")[1]].push(val)
-          //   } else {
-          //     picList[key.split("_")[1]] = [val]
-          //   }
-          // });
-          // _.mapObject(picList, (val, key) => {
-          //   if (!currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`]) {
-          //     currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`] = { ellipticalRoi: { data: [] } }
-          //   }
-          //   let tempList = [];
-          //   _.each(val, (obj) => {
-          //     const standard = {
-          //       visible: true,
-          //       active: false,
-          //       invalidated: false,
-          //       handles: {
-          //         start: {
-          //           "x": 0,
-          //           "y": 0,
-          //           "highlight": true,
-          //           "active": false
-          //         },
-          //         end: {
-          //           "x": 0,
-          //           "y": 0,
-          //           "highlight": true,
-          //           "active": false
-          //         },
-          //         textBox: {
-          //           "active": false,
-          //           "hasMoved": false,
-          //           "movesIndependently": false,
-          //           "drawnIndependently": true,
-          //           "allowedOutsideImage": true,
-          //           "hasBoundingBox": true,
-          //           "index": 1,
-          //         }
-          //       },
-          //     };
-          //     standard.handles.start.x = obj.y0;
-          //     standard.handles.start.y = obj.x0;
-          //     standard.handles.end.x = obj.y1;
-          //     standard.handles.end.y = obj.x1;
-          //     standard.handles.textBox.index = obj.num;
-          //     tempList.push(standard)
-          //   });
-          //   picList[key] = tempList;
-          //   currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
-          // })
-
+          const end = new Date().getTime();
+          console.log("total time " + (end - start) / 1000);
+          this.setState({ isLoadingPanelFinished: true, diagnosisResult: algorithmInfo }, () => {
+            console.log(algorithmInfo.circle)
+            customEventEmitter.dispatch('diagnosisResult', {
+              result: algorithmInfo.circle,
+              seriesNumber: this.state.caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber
+            })
+          });
+          this.extract(JSON.parse(algorithmInfo.circle));
         } else {
           if (this.state.isDiagnosing) {
             toast.warning('诊断还未完成，请稍后');
@@ -164,111 +122,68 @@ export default class LeftPanel extends Component {
             isDiagnosing: true,
             isLoadingPanelFinished: false
           });
-          // HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
-          //   foundcase.seriesList[this.state.curSeriesIndex].path,
-          //   (error, res) => {
-          //     if (error) {
-          //       return console.error(error);
-          //     }
-          //     if (res.content === 'error') {
-          //       toast.error('服务器异常')
-          //       this.setState({
-          //         isDiagnosing: false
-          //       });
-          //       return
-          //     }
-          //     console.log('res', res)
-          //     toast.success('诊断完成')
-          //     const end = new Date().getTime();
-          //     console.log("total time " + (end - start) / 1000);
-          //     this.setState({
-          //       isLoadingPanelFinished: true,
-          //       isDiagnosing: false
-          //     });
-          //     cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-
-          //     let caseId = this.props.location.state.caseId;
-          //     let elements = [this.state.container];
-          //     let currentState = cornerstoneTools.appState.save(elements);
-          //     let result = JSON.parse(res.content);
-          //     if (!this.state.diagnosisResult || !this.state.diagnosisResult[this.state.curSeriesIndex]) {
-          //       this.extract(result);
-          //     }
-
-          //     let picList = {};
-          //     _.mapObject(result, (val, key) => {
-          //       val.num = key.split("_")[0];
-          //       if (picList[key.split("_")[1]] != undefined) {
-          //         picList[key.split("_")[1]].push(val)
-          //       } else {
-          //         picList[key.split("_")[1]] = [val]
-          //       }
-          //     });
-          //     _.mapObject(picList, (val, key) => {
-          //       if (!currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`]) {
-          //         currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`] = { ellipticalRoi: { data: [] } }
-          //       }
-          //       let tempList = [];
-          //       _.each(val, (obj) => {
-          //         const standard = {
-          //           visible: true,
-          //           active: false,
-          //           invalidated: false,
-          //           handles: {
-          //             start: {
-          //               "x": 146.26041666666666,
-          //               "y": 91.83333333333331,
-          //               "highlight": true,
-          //               "active": false
-          //             },
-          //             end: {
-          //               "x": 387.92708333333337,
-          //               "y": 275.16666666666663,
-          //               "highlight": true,
-          //               "active": false
-          //             },
-          //             textBox: {
-          //               "active": false,
-          //               "hasMoved": false,
-          //               "movesIndependently": false,
-          //               "drawnIndependently": true,
-          //               "allowedOutsideImage": true,
-          //               "hasBoundingBox": true,
-          //               "index": 1,
-          //             }
-          //           },
-          //         };
-          //         standard.handles.start.x = obj.y0;
-          //         standard.handles.start.y = obj.x0;
-          //         standard.handles.end.x = obj.y1;
-          //         standard.handles.end.y = obj.x1;
-          //         standard.handles.textBox.index = obj.num;
-          //         tempList.push(standard)
-          //       });
-          //       picList[key] = tempList;
-          //       currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
-          //     })
-          //   });
+          HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
+            foundcase.seriesList[this.state.curSeriesIndex].path,
+            (error, res) => {
+              if (error) {
+                return console.error(error);
+              }
+              if (res.content === 'error') {
+                toast.error('服务器异常')
+                this.setState({
+                  isDiagnosing: false
+                });
+                return
+              }
+              console.log('res', res)
+              toast.success('诊断完成')
+              const end = new Date().getTime();
+              console.log("total time " + (end - start) / 1000);
+              this.setState({
+                isLoadingPanelFinished: true,
+                isDiagnosing: false
+              });
+              customEventEmitter.dispatch('diagnosisResult', {
+                result: res.content,
+                seriesNumber: this.state.caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber
+              })
+              this.extract(JSON.parse(res.content));
+            });
         }
       }
       );
     } else {
       this.setState({
         panelType: 'thumbnail'
-      },
-        function () {
-          for (let i = 0; i < this.state.seriesList.length; i++) {
-            let element = document.getElementById('thumbnail' + i);
-            cornerstone.enable(element);
-            this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
-          }
+      }, function () {
+        for (let i = 0; i < this.state.seriesList.length; i++) {
+          let element = document.getElementById('thumbnail' + i);
+          cornerstone.enable(element);
+          this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
         }
+      }
       );
     }
   }
 
 
   render() {
+    let results = [];
+
+    if (this.state.diagnosisResult && this.state.diagnosisResult[this.state.curSeriesIndex]) {
+      for (let key in this.state.diagnosisResult[this.state.curSeriesIndex]) {
+        results.push(
+          <div className="row leftPanel-diagnosisRow" key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
+            onClick={() => this.onClickDiagnosisRow(key)}>
+            <div className="col-xs-4">{key}</div>
+            <div className="col-xs-4">{Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice)
+              + ' - ' + Math.max(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice)}</div>
+            <div className="col-xs-4 leftPanel-diagnosisProb">{this.state.diagnosisResult[this.state.curSeriesIndex][key].prob * 100 + '%'}</div>
+          </div>
+        );
+      }
+    }
+
     let diagnosisBox = this.state.panelType === 'diagnosis' ? (
       this.state.isLoadingPanelFinished ? (
         <div>
@@ -276,10 +191,10 @@ export default class LeftPanel extends Component {
             <h3>病变列表</h3>
           </div>
           <hr style={{ borderColor: '#aaf7f4' }} />
-          <div className="row" style={{ ...style.diagnosisRow, ...style.diagnosisTableHead }}>
+          <div className="leftPanel-listHeader" >
             <div className="col-xs-4">编号</div>
             <div className="col-xs-4">层面</div>
-            <div className="col-xs-4" style={style.diagnosisProb}>概率</div>
+            <div className="col-xs-4 leftPanel-diagnosisProb">概率</div>
           </div>
           {results}
         </div>
