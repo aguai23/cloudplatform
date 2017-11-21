@@ -47,10 +47,22 @@ export default class LeftPanel extends Component {
 
   enableThumbnailCanvas(seriesIndex, element) {
     let image = this.state.thumbnailArray[seriesIndex];
-    let pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+    let pixelData = undefined;
+
+    if(image.bitsAllocated === 8) {
+      pixelData = new Uint16Array(image.pixelDataLength);
+
+      for(let i = 0; i < image.pixelDataLength; i++) {
+        pixelData[i] = image.imageBuf[image.pixelDataOffset + i];
+      }
+    } else if(image.bitsAllocated === 16) {
+      pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+    }
+
     image.getPixelData = function () {
       return pixelData;
     };
+
     cornerstone.displayImage(element, image);
   }
 

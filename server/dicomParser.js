@@ -28,8 +28,8 @@ Meteor.methods({
    @returns {{status: string}}
    */
   prepareDicoms(caseId, seriesIndex) {
-    console.log('caseId', caseId);
-    console.log('seriesIndex', seriesIndex);
+    // console.log('caseId', caseId);
+    // console.log('seriesIndex', seriesIndex);
     let result = {
         status: 'FAILURE'
       },
@@ -176,6 +176,7 @@ Meteor.methods({
         getPixelData: function () {},
         minPixelValue: 0,
         maxPixelValue: 4096,
+        bitsAllocated: thumbnailArray[caseId][i].uint16('x00280100') ? parseInt(thumbnailArray[caseId][i].uint16('x00280100')) : 16,
         slope: thumbnailArray[caseId][i].string('x00281053') ? parseInt(thumbnailArray[caseId][i].string('x00281053')) : 0,
         intercept: thumbnailArray[caseId][i].string('x00281052') ? parseInt(thumbnailArray[caseId][i].string('x00281052')) : -1024,
         windowCenter: thumbnailArray[caseId][i].string('x00281050') ? parseInt(thumbnailArray[caseId][i].string('x00281050')) : 0,
@@ -189,14 +190,14 @@ Meteor.methods({
 
       if (thumbnailArray[caseId][i].uint16('x00280107')) {
         result.array[i].minPixelValue = thumbnailArray[caseId][i].uint16('x00280106');
-        result.arry[i].maxPixelValue = thumbnailArray[caseId][i].uint16('x00280107');
+        result.array[i].maxPixelValue = thumbnailArray[caseId][i].uint16('x00280107');
       } else {
-        if(result.bitsAllocated === 8) {
+        if(result.array[i].bitsAllocated === 8) {
           result.array[i].windowWidth = Math.round(result.array[i].windowWidth / 16);
           result.array[i].windowCenter = Math.round(result.array[i].windowCenter / 16);
           result.array[i].minPixelValue = 0;
           result.array[i].maxPixelValue = 255;
-        } else if(result.bitsAllocated === 16) {
+        } else if(result.array[i].bitsAllocated === 16) {
           result.array[i].minPixelValue = 0;
           result.array[i].maxPixelValue = 65535;
         }

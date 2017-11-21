@@ -158,6 +158,10 @@ export default class MainCanvas extends Component {
 
   componentWillUnmount() {
     window.removeEventListener('resize', () => this.updateDimensions());
+
+    let eventEmitter = new CustomEventEmitter();
+    eventEmitter.unsubscribe('changeSeries');
+    eventEmitter.unsubscribe('diagnosisResult');
   }
 
   /**
