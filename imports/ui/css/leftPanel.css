@@ -1,0 +1,8 @@
+#leftPanel-dianosisInfo {
+  overflow: hidden
+}
+
+.leftPanel-diagnosisHeader {
+  text-align: center;
+  font-weight: 200;
+}
