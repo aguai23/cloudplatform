@@ -8,21 +8,6 @@ import cornerstone from 'cornerstone-core';
 import './css/leftPanel.css';
 
 const style = {
-  diagnosisBox: {
-    position: 'relative',
-    width: '20%',
-    float: 'left',
-    border: '1px solid #aaf7f4',
-    padding: '10px 20px 10px 20px',
-    color: '#9ccef9',
-    fontSize: '12px',
-    fontWeight: '300',
-    overflowY: 'scroll'
-  },
-  diagnosisHeader: {
-    textAlign: 'center',
-    fontWeight: '200'
-  },
   diagnosisTableHead: {
     fontSize: '16px'
   },
@@ -31,11 +16,7 @@ const style = {
   },
   diagnosisProb: {
     textAlign: 'right'
-  },
-  diagnosisLink: {
-    cursor: 'pointer'
   }
-
 };
 
 export default class LeftPanel extends Component {
@@ -43,8 +24,7 @@ export default class LeftPanel extends Component {
     super(props);
     this.state = {
       seriesList: [],
-      diagnosisButton: 'primary',
-      thumbnailButton: 'default',
+      panelType: 'thumbnail',
       curSeriesIndex: props.curSeriesIndex,
     }
     this.getThumbnails = this.getThumbnails.bind(this)
@@ -90,34 +70,16 @@ export default class LeftPanel extends Component {
       curSeriesIndex: seriesIndex
     }, function () {
       //TODO: call mainCanvas to rebuild the page
-      // this.initMainCanvas(this.props.location.state.caseId, this.state.curSeriesIndex);
     });
   }
 
   switchPanelState(isDiagnosis) {
-    if ((isDiagnosis && this.state.diagnosisButton === 'primary') || (!isDiagnosis && this.state.thumbnailButton === 'primary')) {
+    if (isDiagnosis && this.state.panelType === 'diagnosis' || !isDiagnosis && this.state.panelType === 'thumbnail') {
       return
     }
     if (isDiagnosis) {
       this.setState({
-        isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened,
-        diagnosisButton: 'primary',
-        thumbnailButton: 'default'
-      },
-        function () {
-          for (let i = 0; i < this.state.seriesList.length; i++) {
-            let element = document.getElementById('thumbnail' + i);
-            cornerstone.enable(element);
-            this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
-          }
-
-        }
-      );
-    } else {
-      this.setState({
-        isDiagnosisPanelOpened: !this.state.isDiagnosisPanelOpened,
-        diagnosisButton: 'default',
-        thumbnailButton: 'primary'
+        panelType: 'diagnosis'
       }, function () {
         const start = new Date().getTime();
         const caseInfo = this.state.caseInfo
@@ -290,15 +252,27 @@ export default class LeftPanel extends Component {
         }
       }
       );
+    } else {
+      this.setState({
+        panelType: 'thumbnail'
+      },
+        function () {
+          for (let i = 0; i < this.state.seriesList.length; i++) {
+            let element = document.getElementById('thumbnail' + i);
+            cornerstone.enable(element);
+            this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
+          }
+        }
+      );
     }
   }
 
 
   render() {
-    let diagnosisBox = this.state.isDiagnosisPanelOpened ? (
+    let diagnosisBox = this.state.panelType === 'diagnosis' ? (
       this.state.isLoadingPanelFinished ? (
         <div>
-          <div style={style.diagnosisHeader}>
+          <div className="leftPanel-diagnosisHeader">
             <h3>病变列表</h3>
           </div>
           <hr style={{ borderColor: '#aaf7f4' }} />
@@ -317,7 +291,7 @@ export default class LeftPanel extends Component {
         )
     ) : undefined;
 
-    let thumbnailBox = !this.state.isDiagnosisPanelOpened ? (
+    let thumbnailBox = this.state.panelType === 'thumbnail' ? (
       this.state.seriesList && this.state.seriesList.length > 0 ? (
         this.state.seriesList.map((series, index) => {
           return (
@@ -346,16 +320,13 @@ export default class LeftPanel extends Component {
         )
     ) : undefined;
     return (
-      <div id="diagnosisInfo" style={{overflow: 'hidden'}}>
+      <div id="leftPanel-dianosisInfo">
         <ButtonGroup className="btn-panel-controller" justified>
-          <Button active={this.state.diagnosisButton === 'default'} bsSize="large" onClick={this.switchPanelState.bind(this, 0)} href="#" >结节列表</Button>
-          <Button active={this.state.thumbnailButton === 'default'} bsSize="large" onClick={this.switchPanelState.bind(this, 1)} href="#" >序列列表</Button>
+          <Button active={this.state.panelType === 'diagnosis'} bsSize="large" onClick={this.switchPanelState.bind(this, 1)} href="#" >结节列表</Button>
+          <Button active={this.state.panelType === 'thumbnail'} bsSize="large" onClick={this.switchPanelState.bind(this, 0)} href="#" >序列列表</Button>
         </ButtonGroup>
-        <div style={{overflowY:'hidden'}}>
-
         {diagnosisBox}
         {thumbnailBox}
-        </div>
       </div>
     );
   }
