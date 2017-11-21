@@ -6,17 +6,12 @@ import cornerstoneTools from '../library/cornerstoneTools';
 import { _ } from 'underscore';
 import { ToastContainer, toast } from 'react-toastify';
 
-
 import { Cases } from '../api/cases';
 import { Marks } from '../api/marks';
 
 import './css/mainCanvas.css';
 
-let style = {
-  scrollBar: {
 
-  },
-};
 
 export default class MainCanvas extends Component {
   constructor(props) {
@@ -24,40 +19,37 @@ export default class MainCanvas extends Component {
 
     console.log(props);
 
+    this.dicomObj = {};
+    this.displayInfo = {};
+    this.imageNumber = 0;
+    this.index = 1;
+    this.controllerBtnClicked = undefined;
+    this.curSeriesIndex = this.props.curSeriesIndex;
+
     this.state = {
-      curSeriesIndex: this.props.curSeriesIndex,
-      index: 1,
-      imageNumber: 0,
-      dicomObj: {},
       voi: {
         windowCenter: 0,
         windowWidth: 0
-      },
-      controllerBtnClicked: undefined
+      }
     };
-
-    this.updateInfo = this.updateInfo.bind(this);
-
   }
 
   componentDidMount() {
+    this.container = document.getElementById('viewer');
+
+    /**
+     * set scrollbar position
+     */
+    this.containerHeight = (window.innerHeight - document.getElementById('top').clientHeight) - 50;
+    this.topValue = (window.innerHeight - document.getElementById('top').clientHeight) / 2 - 8;
+    this.rightValue = -(window.innerHeight - document.getElementById('top').clientHeight) / 2 + 40;
+
     /**
      * enable cornerstone and setup cornerstoneTools
      */
-    this.setState({
-      container: document.getElementById("viewer"),
-      containerHeight: (window.innerHeight - document.getElementById('top').clientHeight) - 50,
-      topValue: (window.innerHeight - document.getElementById('top').clientHeight) / 2 - 8,
-      rightValue: -((window.innerHeight - document.getElementById('top').clientHeight) / 2 - 40)
-    }, (err) => {
-      if (err) {
-        return console.error(err);
-      }
-
-      cornerstone.enable(this.state.container);
-      cornerstoneTools.addStackStateManager(this.state.container, 'stack');
-      cornerstoneTools.toolColors.setToolColor("#ffcc33");
-    });
+    cornerstone.enable(this.container);
+    cornerstoneTools.addStackStateManager(this.container, 'stack');
+    cornerstoneTools.toolColors.setToolColor("#ffcc33");
 
     /**
      * default configuration for magnify tool
@@ -71,7 +63,7 @@ export default class MainCanvas extends Component {
     /**
      * send a request to require server load all cases first
      */
-    this.initMainCanvas(this.props.caseId, this.state.curSeriesIndex);
+    this.initMainCanvas(this.props.caseId, this.curSeriesIndex);
 
     /**
      * set scroll tool for default mousewheel operation
@@ -92,11 +84,12 @@ export default class MainCanvas extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.setState({'controllerBtnClicked': nextProps.controllerBtnClicked}, this.onControllerBtnClicked);
+    this.controllerBtnClicked = nextProps.controllerBtnClicked;
+    this.onControllerBtnClicked();
   }
 
   componentWillUnmount() {
-    window.removeEventListener("resize", () => this.updateDimensions());
+    window.removeEventListener('resize', () => this.updateDimensions());
   }
 
   /**
@@ -109,14 +102,16 @@ export default class MainCanvas extends Component {
       if (error) {
         console.error(error)
       } else {
-        if (result.status === "SUCCESS") {
+        if (result.status === 'SUCCESS') {
           let dateTime = ''
           if(result.seriesTime && result.seriesDate){
             let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
             dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
           }
-          this.setState({
-            imageNumber: result.imageNumber,
+
+          this.imageNumber = result.imageNumber;
+          this.index = 1;
+          this.displayInfo = {
             patientId: result.patientId,
             patientName: result.patientName,
             dateTime: dateTime,
@@ -126,11 +121,11 @@ export default class MainCanvas extends Component {
             thickness: result.thickness,
             index: 1,
             loadingProgress: 0
-          });
-          this.setSlice(seriesIndex, this.state.index);
-          //set info here
-          let element = $("#viewer");
-          element.on("CornerstoneImageRendered", this.updateInfo);
+          };
+
+          this.setSlice(seriesIndex, this.index);
+
+          $('#viewer').on('CornerstoneImageRendered', (e) => this.updateInfo(e));
         }
 
       }
@@ -156,7 +151,7 @@ export default class MainCanvas extends Component {
    * updates window dimensions
    */
   updateDimensions() {
-    cornerstone.resize(this.state.container, false);
+    cornerstone.resize(this.container, false);
   }
 
   /**
@@ -165,15 +160,11 @@ export default class MainCanvas extends Component {
    * @param index image index
    */
   setSlice(curSeriesIndex, index) {
-    if (!this.state.dicomObj[curSeriesIndex]) {
-      let tempObj = Object.assign({}, this.state.dicomObj);
-      tempObj[curSeriesIndex] = {};
-      this.setState({
-        dicomObj: tempObj
-      });
+    if (!this.dicomObj[curSeriesIndex]) {
+      this.dicomObj[curSeriesIndex] = {};
     }
 
-    if (!this.state.dicomObj[curSeriesIndex][index]) {
+    if (!this.dicomObj[curSeriesIndex][index]) {
       Meteor.call('getDicom', curSeriesIndex, index, (err, result) => {
         if (err) {
           return console.error(err);
@@ -184,41 +175,48 @@ export default class MainCanvas extends Component {
         image.getPixelData = function () {
           return pixelData
         };
-        this.state.dicomObj[curSeriesIndex][index] = image;
+        this.dicomObj[curSeriesIndex][index] = image;
 
         var viewport = {};
         if (index === 1) {
-          viewport.scale = 1.2;
+          switch (result.modality) {
+            case 'CT': {
+              viewport.scale = 1.2;
+              break;
+            }
+            case 'DX': {
+              viewport.scale = 0.23
+              break;
+            }
+          }
         }
-        cornerstone.displayImage(this.state.container, this.state.dicomObj[curSeriesIndex][index], viewport);
+        cornerstone.displayImage(this.container, this.dicomObj[curSeriesIndex][index], viewport);
 
         let measurementData = {
-          currentImageIdIndex: this.state.index,
+          currentImageIdIndex: this.index,
           imageIds: image.imageId
         };
 
-        cornerstoneTools.addToolState(this.state.container, 'stack', measurementData);
-        if (!this.state.imageLoaded) {
+        cornerstoneTools.addToolState(this.container, 'stack', measurementData);
+        if (!this.imageLoaded) {
           this.disableAllTools();
-          this.state.imageLoaded = true;
+          this.imageLoaded = true;
         }
       });
     } else {
-      cornerstone.displayImage(this.state.container, this.state.dicomObj[curSeriesIndex][index])
+      cornerstone.displayImage(this.container, this.dicomObj[curSeriesIndex][index])
     }
     let scrollbar = document.getElementById("scrollbar");
     scrollbar.value = index;
-    this.setState({
-      index: index
-    });
+    this.index = index;
   }
 
   /**
    * increase slice number
    */
   increaseSlice() {
-    if (this.state.index < this.state.imageNumber) {
-      this.setSlice(this.state.curSeriesIndex, this.state.index + 1);
+    if (this.index < this.imageNumber) {
+      this.setSlice(this.curSeriesIndex, this.index + 1);
     }
   }
 
@@ -226,8 +224,8 @@ export default class MainCanvas extends Component {
    * decrease slice number
    */
   decreaseSlice() {
-    if (this.state.index > 1) {
-      this.setSlice(this.state.curSeriesIndex, this.state.index - 1);
+    if (this.index > 1) {
+      this.setSlice(this.curSeriesIndex, this.index - 1);
     }
   }
 
@@ -253,11 +251,11 @@ export default class MainCanvas extends Component {
    */
   onDragScrollBar() {
     let scrollbar = document.getElementById("scrollbar");
-    this.setSlice(this.state.curSeriesIndex, parseInt(scrollbar.value));
+    this.setSlice(this.curSeriesIndex, parseInt(scrollbar.value));
   }
 
   onControllerBtnClicked() {
-    let btnType = this.state.controllerBtnClicked;
+    let btnType = this.controllerBtnClicked;
 
     switch (btnType) {
       case 'WINDOW':
@@ -353,7 +351,7 @@ export default class MainCanvas extends Component {
    */
   setWindowTool() {
     this.disableAllTools();
-    cornerstoneTools.wwwc.activate(this.state.container, 1);
+    cornerstoneTools.wwwc.activate(this.container, 1);
   }
 
   /**
@@ -370,7 +368,7 @@ export default class MainCanvas extends Component {
     };
     cornerstoneTools.zoom.setConfiguration(config);
 
-    let element = this.state.container;
+    let element = this.container;
     cornerstoneTools.zoom.activate(element, 1);
     cornerstoneTools.zoomWheel.activate(element);
   }
@@ -380,7 +378,7 @@ export default class MainCanvas extends Component {
    */
   setPanTool() {
     this.disableAllTools();
-    cornerstoneTools.pan.activate(this.state.container, 1);
+    cornerstoneTools.pan.activate(this.container, 1);
   }
 
   /**
@@ -388,7 +386,7 @@ export default class MainCanvas extends Component {
    */
   setLengthTool() {
     this.disableAllTools();
-    cornerstoneTools.length.activate(this.state.container, 1);
+    cornerstoneTools.length.activate(this.container, 1);
   }
 
   /**
@@ -396,7 +394,7 @@ export default class MainCanvas extends Component {
    */
   setRectangleTool() {
     this.disableAllTools();
-    cornerstoneTools.rectangleRoi.activate(this.state.container, 1);
+    cornerstoneTools.rectangleRoi.activate(this.container, 1);
   }
 
   /**
@@ -404,7 +402,7 @@ export default class MainCanvas extends Component {
    */
   setAnnotationTool() {
     this.disableAllTools();
-    cornerstoneTools.arrowAnnotate.activate(this.state.container, 1);
+    cornerstoneTools.arrowAnnotate.activate(this.container, 1);
   }
 
   /**
@@ -412,7 +410,7 @@ export default class MainCanvas extends Component {
    */
   setProbeTool() {
     this.disableAllTools();
-    cornerstoneTools.probe.activate(this.state.container, 1);
+    cornerstoneTools.probe.activate(this.container, 1);
   }
 
   /**
@@ -420,7 +418,7 @@ export default class MainCanvas extends Component {
    */
   setAngleTool() {
     this.disableAllTools();
-    cornerstoneTools.angle.activate(this.state.container, 1);
+    cornerstoneTools.angle.activate(this.container, 1);
   }
 
   /**
@@ -428,7 +426,7 @@ export default class MainCanvas extends Component {
    */
   setHighlightTool() {
     this.disableAllTools();
-    cornerstoneTools.highlight.activate(this.state.container, 1);
+    cornerstoneTools.highlight.activate(this.container, 1);
   }
 
   /**
@@ -436,23 +434,23 @@ export default class MainCanvas extends Component {
    */
   setMagnifyTool() {
     this.disableAllTools();
-    cornerstoneTools.magnify.activate(this.state.container, 1);
+    cornerstoneTools.magnify.activate(this.container, 1);
   }
 
   /**
    * invert viewport
    */
   invertViewport() {
-    let viewport = cornerstone.getViewport(this.state.container);
+    let viewport = cornerstone.getViewport(this.container);
     viewport.invert = !viewport.invert;
-    cornerstone.setViewport(this.state.container, viewport);
+    cornerstone.setViewport(this.container, viewport);
   }
 
   /**
    * save mark to database
    */
   saveState() {
-    let elements = [this.state.container];
+    let elements = [this.container];
     let currentState = cornerstoneTools.appState.save(elements);
     let appState = JSON.parse(JSON.stringify(currentState));
 
@@ -465,7 +463,7 @@ export default class MainCanvas extends Component {
     });
 
     let caseInfo = Cases.findOne({ _id: this.props.caseId });
-    let seriesInstanceUID = caseInfo.seriesList[this.state.curSeriesIndex].seriesInstanceUID
+    let seriesInstanceUID = caseInfo.seriesList[this.curSeriesIndex].seriesInstanceUID
 
     let mark = {
       imageIdToolState: appState.imageIdToolState,
@@ -505,10 +503,10 @@ export default class MainCanvas extends Component {
    * reload mark from database
    */
   restoreState() {
-    let elements = [this.state.container];
+    let elements = [this.container];
     let currentState = cornerstoneTools.appState.save(elements);
     let caseInfo = Cases.findOne({ _id: this.props.caseId });
-    let seriesInstanceUID = caseInfo.seriesList[this.state.curSeriesIndex].seriesInstanceUID
+    let seriesInstanceUID = caseInfo.seriesList[this.curSeriesIndex].seriesInstanceUID
     let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
     /**
      * save system mark to old mark
@@ -539,26 +537,22 @@ export default class MainCanvas extends Component {
    */
   resetViewport() {
     let canvas = $('#viewer canvas').get(0);
-    let enabledElement = cornerstone.getEnabledElement(this.state.container);
+    let enabledElement = cornerstone.getEnabledElement(this.container);
     let viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image);
     viewport.scale = 1.2;
-    cornerstone.setViewport(this.state.container, viewport);
+    cornerstone.setViewport(this.container, viewport);
   }
 
   /**
    * switch circle visible state
    */
   switchState() {
-    if (this.state.circleVisible) {
-      cornerstoneTools.ellipticalRoi.disable(this.state.container, 1);
-      this.setState({
-        circleVisible: false
-      })
+    if (this.circleVisible) {
+      cornerstoneTools.ellipticalRoi.disable(this.container, 1);
+      this.circleVisible = false;
     } else {
-      cornerstoneTools.ellipticalRoi.enable(this.state.container, 1);
-      this.setState({
-        circleVisible: true
-      })
+      cornerstoneTools.ellipticalRoi.enable(this.container, 1);
+      this.circleVisible = true;
     }
   }
 
@@ -566,9 +560,9 @@ export default class MainCanvas extends Component {
    * clear all tool data, e.g. rec, probe and angle
    */
   clearToolData() {
-    let elements = [this.state.container];
+    let elements = [this.container];
     let currentState = cornerstoneTools.appState.save(elements);
-    let element = cornerstone.getEnabledElement(this.state.container);
+    let element = cornerstone.getEnabledElement(this.container);
     let toolState = currentState.imageIdToolState;
     if (!toolState.hasOwnProperty(element.image.imageId)) {
       return;
@@ -580,14 +574,14 @@ export default class MainCanvas extends Component {
       }
     }
 
-    cornerstone.updateImage(this.state.container);
+    cornerstone.updateImage(this.container);
   }
 
   /**
    * flip viewport
    */
   flipViewport(orientation) {
-    let viewport = cornerstone.getViewport(this.state.container);
+    let viewport = cornerstone.getViewport(this.container);
 
     if (orientation === 'HORIZONTAL') {
       viewport.hflip = !viewport.hflip;
@@ -595,14 +589,14 @@ export default class MainCanvas extends Component {
       viewport.vflip = !viewport.vflip;
     }
 
-    cornerstone.setViewport(this.state.container, viewport);
+    cornerstone.setViewport(this.container, viewport);
   }
 
   /**
    * rotate viewport
    */
   rotateViewport(orientation) {
-    let viewport = cornerstone.getViewport(this.state.container);
+    let viewport = cornerstone.getViewport(this.container);
 
     if (orientation === 'CLOCKWISE') {
       viewport.rotation += 90;
@@ -610,7 +604,7 @@ export default class MainCanvas extends Component {
       viewport.rotation -= 90;
     }
 
-    cornerstone.setViewport(this.state.container, viewport);
+    cornerstone.setViewport(this.container, viewport);
   }
 
 
@@ -627,19 +621,19 @@ export default class MainCanvas extends Component {
     }
 
     element.off("mousemove");
-    cornerstoneTools.mouseInput.enable(this.state.container);
-    cornerstoneTools.mouseWheelInput.enable(this.state.container);
-    cornerstoneTools.rectangleRoi.deactivate(this.state.container, 1);
-    cornerstoneTools.wwwc.deactivate(this.state.container, 1);
-    cornerstoneTools.pan.deactivate(this.state.container, 1);
-    cornerstoneTools.zoom.deactivate(this.state.container, 1);
-    cornerstoneTools.zoomWheel.deactivate(this.state.container);
-    cornerstoneTools.length.deactivate(this.state.container, 1);
-    cornerstoneTools.probe.deactivate(this.state.container, 1);
-    cornerstoneTools.angle.deactivate(this.state.container, 1);
-    cornerstoneTools.highlight.disable(this.state.container, 1);
-    cornerstoneTools.magnify.deactivate(this.state.container, 1);
-    cornerstoneTools.arrowAnnotate.deactivate(this.state.container, 1);
+    cornerstoneTools.mouseInput.enable(this.container);
+    cornerstoneTools.mouseWheelInput.enable(this.container);
+    cornerstoneTools.rectangleRoi.deactivate(this.container, 1);
+    cornerstoneTools.wwwc.deactivate(this.container, 1);
+    cornerstoneTools.pan.deactivate(this.container, 1);
+    cornerstoneTools.zoom.deactivate(this.container, 1);
+    cornerstoneTools.zoomWheel.deactivate(this.container);
+    cornerstoneTools.length.deactivate(this.container, 1);
+    cornerstoneTools.probe.deactivate(this.container, 1);
+    cornerstoneTools.angle.deactivate(this.container, 1);
+    cornerstoneTools.highlight.disable(this.container, 1);
+    cornerstoneTools.magnify.deactivate(this.container, 1);
+    cornerstoneTools.arrowAnnotate.deactivate(this.container, 1);
   }
 
   render() {
@@ -648,21 +642,21 @@ export default class MainCanvas extends Component {
         <input type="range"
           id="scrollbar"
           min={1}
-          max={this.state.imageNumber}
+          max={this.imageNumber}
           step={1}
           onChange={() => this.onDragScrollBar()}
           style={{
-            ...{ width: this.state.containerHeight },
-            ...{ top: this.state.topValue },
-            ...{ right: this.state.rightValue }
+            ...{ width: this.containerHeight },
+            ...{ top: this.topValue },
+            ...{ right: this.rightValue }
           }}
         />
-        <div style={style.viewer} ref="viewerContainer" id="viewer" >
+        <div ref="viewerContainer" id="viewer" >
           <div className="text-info disable-selection patient-info" id="patientInfo">
             <div>
-              <span>病人姓名: {this.state.patientName}</span>
+              <span>病人姓名: {this.displayInfo.patientName}</span>
               <br />
-              <span>检查号: {this.state.patientId}</span>
+              <span>检查号: {this.displayInfo.patientId}</span>
             </div>
           </div>
           <div className="text-info disable-selection dicom-info" id="dicomInfo">
@@ -671,16 +665,16 @@ export default class MainCanvas extends Component {
             <span className="pull-right">缩放: {this.state.zoomScale}</span>
           </div>
           <div className="text-info disable-selection slice-info" id="sliceInfo">
-            <span className="pull-left">图像大小: {this.state.rows}*{this.state.cols}</span>
+            <span className="pull-left">图像大小: {this.displayInfo.rows}*{this.displayInfo.cols}</span>
             <br />
-            <span className="pull-left">层数: {this.state.index}/{this.state.imageNumber}</span>
+            <span className="pull-left">层数: {this.index}/{this.imageNumber}</span>
             <br />
-            <span className="pull-left">层厚: {this.state.thickness} mm</span>
+            <span className="pull-left">层厚: {this.displayInfo.thickness} mm</span>
             <br />
-            <span className="pull-left">像素间距: {this.state.pixelSpacing} </span>
+            <span className="pull-left">像素间距: {this.displayInfo.pixelSpacing} </span>
           </div>
           <div className="text-info disable-selection time-info" id="timeInfo">
-            <span className="pull-right">{this.state.dateTime}</span>
+            <span className="pull-right">{this.displayInfo.dateTime}</span>
           </div>
         </div>
       </div>
