@@ -5,4 +5,30 @@
 .leftPanel-diagnosisHeader {
   text-align: center;
   font-weight: 200;
+  color: rgb(145, 185, 205)
+}
+
+.leftPanel-activeRow {
+  background-color: #20a5d6;
+  color: black;
+}
+
+.leftPanel-diagnosisRow {
+  color: rgb(145, 185, 205);
+  padding: 10px 5px 10px 5px
+}
+
+.leftPanel-listHeader {
+  color: rgb(145, 185, 205);
+  font-size: 16px;
+  padding-bottom: 20px;
+}
+
+.leftPanel-diagnosisRow:hover {
+  background-color: #20a5d6;
+  color: black;
+}
+
+.leftPanel-diagnosisProb {
+  text-align: right
 }

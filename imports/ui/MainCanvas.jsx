@@ -1,21 +1,20 @@
-import React, {Component} from 'react';
-import {Meteor} from 'meteor/meteor';
+import React, { Component } from 'react';
+import { Meteor } from 'meteor/meteor';
 
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../library/cornerstoneTools';
-import {_} from 'underscore';
-import {ToastContainer, toast} from 'react-toastify';
+import { _ } from 'underscore';
+import { ToastContainer, toast } from 'react-toastify';
+import CustomEventEmitter from '../library/CustomEventEmitter';
 
-import {Cases} from '../api/cases';
-import {Marks} from '../api/marks';
+import { Cases } from '../api/cases';
+import { Marks } from '../api/marks';
 
 import './css/mainCanvas.css';
 
 export default class MainCanvas extends Component {
   constructor(props) {
     super(props);
-
-    console.log(props);
 
     this.dicomObj = {};
     this.displayInfo = {};
@@ -30,6 +29,77 @@ export default class MainCanvas extends Component {
         windowWidth: 0
       }
     };
+
+    const customEventEmitter = new CustomEventEmitter()
+    customEventEmitter.subscribe('changeSeries', (data) => {
+      this.initMainCanvas(data.caseId, data.curSeriesIndex);
+    })
+    customEventEmitter.subscribe('diagnosisResult', (data) => {
+      cornerstoneTools.ellipticalRoi.enable(this.container, 1);
+      let caseId = this.props.caseId;
+      let elements = [document.getElementById('viewer')];
+      let currentState = cornerstoneTools.appState.save(elements);
+      let result = JSON.parse(data.result);
+      let seriesNumber = data.seriesNumber;
+      let picList = {};
+
+      _.mapObject(result, (val, key) => {
+        val.num = key.split("_")[0];
+        if (picList[key.split("_")[1]] != undefined) {
+          picList[key.split("_")[1]].push(val)
+        } else {
+          picList[key.split("_")[1]] = [val]
+        }
+      });
+      _.mapObject(picList, (val, key) => {
+        if (!currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`]) {
+          currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`] = { ellipticalRoi: { data: [] } }
+        }
+        let tempList = [];
+        _.each(val, (obj) => {
+          const standard = {
+            visible: true,
+            active: false,
+            invalidated: false,
+            handles: {
+              start: {
+                "x": 0,
+                "y": 0,
+                "highlight": true,
+                "active": false
+              },
+              end: {
+                "x": 0,
+                "y": 0,
+                "highlight": true,
+                "active": false
+              },
+              textBox: {
+                "active": false,
+                "hasMoved": false,
+                "movesIndependently": false,
+                "drawnIndependently": true,
+                "allowedOutsideImage": true,
+                "hasBoundingBox": true,
+                "index": 1,
+              }
+            },
+          };
+          standard.handles.start.x = obj.y0;
+          standard.handles.start.y = obj.x0;
+          standard.handles.end.x = obj.y1;
+          standard.handles.end.y = obj.x1;
+          standard.handles.textBox.index = obj.num;
+          tempList.push(standard)
+        });
+        picList[key] = tempList;
+        currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
+      })
+      console.log(currentState.imageIdToolState)
+    })
+    customEventEmitter.subscribe('setSlice', (data) => {
+      this.setSlice(this.curSeriesIndex, data)
+    })
   }
 
   componentDidMount() {
@@ -76,7 +146,7 @@ export default class MainCanvas extends Component {
     /**
      * disable right click in canvas
      */
-    document.getElementById('viewer').oncontextmenu = function(e) {
+    document.getElementById('viewer').oncontextmenu = function (e) {
       e.preventDefault();
     };
   }
@@ -243,7 +313,7 @@ export default class MainCanvas extends Component {
    */
   setScrollTool() {
     let self = this;
-    $("#viewer").bind("mousewheel", function(e) {
+    $("#viewer").bind("mousewheel", function (e) {
       let event = window.event || e;
       let down = event.wheelDelta < 0;
       if (down) {
@@ -473,7 +543,7 @@ export default class MainCanvas extends Component {
       })
     });
 
-    let caseInfo = Cases.findOne({_id: this.props.caseId});
+    let caseInfo = Cases.findOne({ _id: this.props.caseId });
     let seriesInstanceUID = caseInfo.seriesList[this.curSeriesIndex].seriesInstanceUID
 
     let mark = {
@@ -487,7 +557,7 @@ export default class MainCanvas extends Component {
       ownerId: Meteor.userId()
     };
 
-    let oldState = Marks.findOne({ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID});
+    let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
     if (oldState) {
       mark._id = oldState._id;
       Meteor.call('modifyMark', mark, (error) => {
@@ -516,9 +586,9 @@ export default class MainCanvas extends Component {
   restoreState() {
     let elements = [this.container];
     let currentState = cornerstoneTools.appState.save(elements);
-    let caseInfo = Cases.findOne({_id: this.props.caseId});
+    let caseInfo = Cases.findOne({ _id: this.props.caseId });
     let seriesInstanceUID = caseInfo.seriesList[this.curSeriesIndex].seriesInstanceUID
-    let oldState = Marks.findOne({ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID});
+    let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
     /**
      * save system mark to old mark
      */
@@ -661,27 +731,27 @@ export default class MainCanvas extends Component {
           ...{
             right: this.rightValue
           }
-        }}/>
+        }} />
         <div ref="viewerContainer" id="viewer">
           <div className="text-info disable-selection patient-info" id="patientInfo">
             <div>
               <span>病人姓名: {this.displayInfo.patientName}</span>
-              <br/>
+              <br />
               <span>检查号: {this.displayInfo.patientId}</span>
             </div>
           </div>
           <div className="text-info disable-selection dicom-info" id="dicomInfo">
             <span className="pull-right">窗宽/窗位: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
-            <br/>
+            <br />
             <span className="pull-right">缩放: {this.state.zoomScale}</span>
           </div>
           <div className="text-info disable-selection slice-info" id="sliceInfo">
             <span className="pull-left">图像大小: {this.displayInfo.rows}*{this.displayInfo.cols}</span>
-            <br/>
+            <br />
             <span className="pull-left">层数: {this.index}/{this.imageNumber}</span>
-            <br/>
+            <br />
             <span className="pull-left">层厚: {this.displayInfo.thickness}mm</span>
-            <br/>
+            <br />
             <span className="pull-left">像素间距: {this.displayInfo.pixelSpacing}</span>
           </div>
           <div className="text-info disable-selection time-info" id="timeInfo">
