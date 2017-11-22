@@ -212,8 +212,8 @@ export default class MainCanvas extends Component {
     let viewport = cornerstone.getViewport(e.target);
     this.setState({
       voi: {
-        windowWidth: viewport.voi.windowWidth,
-        windowCenter: viewport.voi.windowCenter
+        windowWidth: parseFloat(viewport.voi.windowWidth).toFixed(0),
+        windowCenter: parseFloat(viewport.voi.windowCenter).toFixed(0)
       },
       zoomScale: parseFloat(viewport.scale).toFixed(2)
     });
@@ -244,7 +244,14 @@ export default class MainCanvas extends Component {
 
         let pixelData = undefined;
 
+<<<<<<< HEAD
         if (image.bitsAllocated === 8) {
+=======
+        /**
+         * manipulate pixelData in different ways according how many bits allocated for each pixel
+         */
+        if(image.bitsAllocated === 8) {
+>>>>>>> 36e6c321e17712345f5034bab4198058b4ffd489
           pixelData = new Uint16Array(image.pixelDataLength);
 
           for (let i = 0; i < image.pixelDataLength; i++) {
@@ -257,8 +264,12 @@ export default class MainCanvas extends Component {
         image.getPixelData = function () {
           return pixelData
         };
+
         this.dicomObj[curSeriesIndex][index] = image;
 
+        /**
+         * set viewport scale when loading first slice
+         */
         var viewport = {};
         if (index === 1) {
           viewport.scale = (600 / image.width).toFixed(2);
@@ -737,7 +748,7 @@ export default class MainCanvas extends Component {
             </div>
           </div>
           <div className="text-info disable-selection dicom-info" id="dicomInfo">
-            <span className="pull-right">窗宽/窗位: {this.state.voi.windowWidth}/{this.state.voi.windowCenter}</span>
+            <span className="pull-right">{`W ${this.state.voi.windowWidth} / L ${this.state.voi.windowCenter}`}</span>
             <br />
             <span className="pull-right">缩放: {this.state.zoomScale}</span>
           </div>
