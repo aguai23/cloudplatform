@@ -246,7 +246,7 @@ export default class LeftPanel extends Component {
         )
     ) : undefined;
     return (
-      <div id="leftPanel-dianosisInfo">
+      <div>
         <ButtonGroup className="btn-panel-controller" justified>
           <Button active={this.state.panelType === 'diagnosis'} bsSize="large" onClick={this.switchPanelState.bind(this, 1)} href="#" >结节列表</Button>
           <Button active={this.state.panelType === 'thumbnail'} bsSize="large" onClick={this.switchPanelState.bind(this, 0)} href="#" >序列列表</Button>

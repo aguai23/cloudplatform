@@ -20,40 +20,6 @@
   color: #91b9cd;
 }
 
-.btn-panel-controller a {
-  background-color: black;
-  color: #91b9cd;
-  border-color: #91b9cd;
-}
-
-.btn-panel-controller a:hover {
-  background-color: #b7e0ed;
-  opacity: 0.9;
-}
-
-.btn-panel-controller .active {
-  background-color: #91b9cd !important;
-}
-
-.btn-panel-controller .active:hover {
-  background-color: #b7e0ed !important;
-  opacity: 0.9 !important;
-}
-
-.diagnosisRow:hover {
-  cursor: pointer;
-  background-color: #22bef7;
-  color: black;
-
-  animation-name: hover-effect;
-  animation-duration: .75s;
-}
-
-.active-diagnosis-row {
-   background-color: #20a5d6;
-   color: black;
- }
-
 .button:hover{
   color: #fff;
   cursor: pointer;
@@ -90,50 +56,6 @@
 }
 
 .rotate-menu-item:hover {
-  cursor: pointer;
-}
-
-.seriesPanel {
-  left: -300px;
-  position: absolute;
-  background-color: black;
-  width: 300px;
-  z-index: 2;
-  border: 1px #91b9cd solid;
-  overflow-y:scroll;
-}
-
-.seriesPanel::-webkit-scrollbar {
-  display: none;
-}
-
-.thumbnail-container {
-  width: 240px;
-  padding: 20px;
-  margin: 0 auto;
-  margin-top: 20px;
-  margin-bottom: 10px;
-  border: 1px solid #4da2f2;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.active-thumbnail {
-  border-width: 4px;
-}
-
-.thumbnailDiv {
-  width: 160px;
-  height: 120px;
-  margin: 0 auto
-}
-
-.thumbnail-info {
-  color: white;
-  font-size: 10px;
-  font-weight: 100;
-  padding-left: 35px;
-  padding-right: 20px;
   cursor: pointer;
 }
 

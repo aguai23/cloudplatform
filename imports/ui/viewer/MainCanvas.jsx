@@ -96,7 +96,6 @@ export default class MainCanvas extends Component {
         picList[key] = tempList;
         currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
       })
-      console.log(currentState.imageIdToolState)
     })
     customEventEmitter.subscribe('setSlice', (data) => {
       this.setSlice(this.curSeriesIndex, data)
