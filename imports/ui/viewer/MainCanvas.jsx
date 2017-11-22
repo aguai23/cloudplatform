@@ -12,6 +12,7 @@ import { Cases } from '../../api/cases';
 import { Marks } from '../../api/marks';
 
 import './css/mainCanvas.css';
+const customEventEmitter = new CustomEventEmitter()
 
 export default class MainCanvas extends Component {
   constructor(props) {
@@ -32,7 +33,6 @@ export default class MainCanvas extends Component {
       }
     };
 
-    const customEventEmitter = new CustomEventEmitter()
     customEventEmitter.subscribe('changeSeries', (data) => {
       this.curSeriesIndex = data.curSeriesIndex;
       this.initMainCanvas(data.caseId, data.curSeriesIndex);
@@ -161,9 +161,8 @@ export default class MainCanvas extends Component {
   componentWillUnmount() {
     window.removeEventListener('resize', () => this.updateDimensions());
 
-    let eventEmitter = new CustomEventEmitter();
-    eventEmitter.unsubscribe('changeSeries');
-    eventEmitter.unsubscribe('diagnosisResult');
+    customEventEmitter.unsubscribe('changeSeries');
+    customEventEmitter.unsubscribe('diagnosisResult');
   }
 
   /**
@@ -236,9 +235,16 @@ export default class MainCanvas extends Component {
    * @param index image index
    */
   setSlice(curSeriesIndex, index) {
-    this.setState({
-      isLoading: true
-    });
+    // this.setState({
+    //   isLoading: true
+    // });
+    const showFlag = true
+    Meteor.setTimeout(()=>{
+      if(showFlag === true)
+      this.setState({
+        isLoading:true
+      })
+    },400)
 
     if (!this.dicomObj[curSeriesIndex]) {
       this.dicomObj[curSeriesIndex] = {};
@@ -294,12 +300,14 @@ export default class MainCanvas extends Component {
         this.setState({
           isLoading: false
         });
+        showFlag = false
       });
     } else {
       cornerstone.displayImage(this.container, this.dicomObj[curSeriesIndex][index]);
       this.setState({
         isLoading: false
       });
+      showFlag = false
     }
     let scrollbar = document.getElementById("scrollbar");
     scrollbar.value = index;

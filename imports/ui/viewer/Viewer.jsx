@@ -51,6 +51,7 @@ const style = {
     verticalAlign: "center",
   }
 };
+const customEventEmitter = new CustomEventEmitter()
 
 export default class Viewer extends Component {
   /**
@@ -82,7 +83,6 @@ export default class Viewer extends Component {
 
     };
     this.toastInfo = this.toastInfo.bind(this)
-    const customEventEmitter = new CustomEventEmitter()
     customEventEmitter.subscribe('changeSeries', (data) => {
       this.setState({
         curSeriesIndex: data.curSeriesIndex
@@ -118,6 +118,10 @@ export default class Viewer extends Component {
     });
 
     // this.getThumbnails(this.props.location.state.caseId);
+  }
+
+  componentWillUnmount(){
+    customEventEmitter.unsubscribe('changeSeries')
   }
 
   /**
