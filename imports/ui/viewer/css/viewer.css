@@ -64,6 +64,61 @@
   text-align: left!important;
 }
 
+#window-popover {
+  width: 180px;
+}
+
+#window-popover ul {
+  list-style: none;
+  padding: 0;
+  width: 120px;
+  margin: 0 auto;
+}
+
+#window-popover ul li {
+   margin-bottom: 10px;
+   cursor: pointer;
+}
+
+#window-popover input {
+  width: 40px;
+  color: black;
+}
+
+#window-popover input::-webkit-outer-spin-button,
+#window-popover input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+#window-popover input[type="number"]{
+  -moz-appearance: textfield;
+}
+
+
+#window-popover .div-input {
+  width: 120px;
+  height: 40px;
+  margin: 0 auto;
+  padding-top: 10px;
+}
+
+#window-popover .div-input div:nth-child(1) {
+  padding-left: 0;
+}
+
+#window-popover .div-confirm {
+  width: 120px;
+  height: auto;
+  margin: 0 auto;
+  padding-top: 10px;
+}
+
+#window-popover .div-confirm .btn-window-confirm {
+  width: 120px;
+  height: 23px;
+  padding-top: 0;
+}
+
 .left-panel {
   width: 20%;
   position: absolute;

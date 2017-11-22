@@ -22,7 +22,6 @@ export default class MainCanvas extends Component {
     this.displayInfo = {};
     this.imageNumber = 0;
     this.index = 1;
-    this.controllerBtnClicked = undefined;
     this.curSeriesIndex = this.props.curSeriesIndex;
 
     this.state = {
@@ -155,8 +154,17 @@ export default class MainCanvas extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    this.controllerBtnClicked = nextProps.controllerBtnClicked;
-    this.onControllerBtnClicked();
+    if(Object.keys(nextProps.canvasParams).length === 0 && nextProps.canvasParams.constructor === Object) {
+      return;
+    }
+
+    if(nextProps.canvasParams.windowParams) {
+      let viewport = cornerstone.getViewport(this.container);
+      this.setWindowParams(nextProps.canvasParams.windowParams.ww, nextProps.canvasParams.windowParams.wl);
+    } else if(nextProps.canvasParams.btnClicked) {
+      this.onControllerBtnClicked(nextProps.canvasParams.btnClicked);
+    }
+    nextProps.callback();
   }
 
   componentWillUnmount() {
@@ -350,11 +358,19 @@ export default class MainCanvas extends Component {
   }
 
   /**
+   * set specific window width and window location for the image
+   */
+  setWindowParams(ww, wl) {
+    let viewport = cornerstone.getViewport(this.container);
+    viewport.voi.windowWidth = ww;
+    viewport.voi.windowCenter = wl;
+    cornerstone.setViewport(this.container, viewport);
+  }
+
+  /**
    * handler for manipulating request from controller
    */
-  onControllerBtnClicked() {
-    let btnType = this.controllerBtnClicked;
-
+  onControllerBtnClicked(btnType) {
     switch (btnType) {
       case 'WINDOW':
         this.setWindowTool();

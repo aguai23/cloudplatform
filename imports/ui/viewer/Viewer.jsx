@@ -60,26 +60,15 @@ export default class Viewer extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      container: {},
+      canvasParams: {},
       seriesList: [],
       circleVisible: true,
-      zoomScale: 0,
-      isScrollBarHovered: false,
-      isScrollBarClicked: false,
-      scrollBarStyle: style.scrollBar,
-      timer: undefined,
-      lastY: 0,
-      startY: 0,
       curSeriesIndex: this.props.location.state.index ? this.props.location.state.index : 0,
       isDiagnosisPanelOpened: false,
       isLoadingPanelFinished: false,
       isMagnifyToolOpened: false,
       isRotateMenuOpened: false,
-      imageLoaded: false,
-      diagnosisButton: 'primary',
-      thumbnailButton: 'default',
-      loadingProgress: 0
-
+      isWindowToolOpened: false
     };
     const customEventEmitter = new CustomEventEmitter()
     customEventEmitter.subscribe('changeSeries', (data) => {
@@ -124,20 +113,104 @@ export default class Viewer extends Component {
    * @param selectedKey the key of selected MenuItem
    */
   onNavSelected(selectedKey) {
-    this.setState({ btnClicked: selectedKey });
+    this.setState({
+      canvasParams: {
+        btnClicked: selectedKey
+      }
+    });
   }
 
+  /**
+   * toggle magnify popover
+   */
   toggleMagnifyPopover() {
     this.setState({ isMagnifyToolOpened: !this.state.isMagnifyToolOpened });
   }
 
+  /**
+   * toggle rotate popover
+   */
   toggleRotatePopover() {
     this.setState({ isRotateMenuOpened: !this.state.isRotateMenuOpened });
   }
 
+  /**
+   * toggle window tool popover
+   */
+  toggleWindowPopover() {
+    this.setState({ isWindowToolOpened: !this.state.isWindowToolOpened });
+  }
+
+  /**
+   * get correct caret according to the status
+   */
   getCaret(isOpened) {
     return isOpened ? <FontAwesome style={{ paddingLeft: '5px', position: 'absolute' }} name='caret-up' size='lg' /> :
       <FontAwesome style={{ paddingLeft: '5px', position: 'absolute', marginTop: '5px' }} name='caret-down' size='lg' />
+  }
+
+  /**
+   * set selected or entered windowWidth and windowCenter into state
+   * @param ww selected window width
+   * @param wl selected window center
+   */
+  setWindowParams(ww, wl) {
+    if(ww === undefined || wl === undefined) {
+      return;
+    }
+
+    if(this.state.canvasParams.windowParams && this.state.canvasParams.windowParams.ww === ww && this.state.canvasParams.windowParams.wl === wl) {
+      return;
+    }
+
+    this.setState({
+      canvasParams: {
+        windowParams: {
+          ww: ww,
+          wl: wl
+        }
+      }
+    }, () => {
+      document.getElementById('windowPopoverTrigger').click();
+    });
+  }
+
+  /**
+   * create window tool popover component for rendering
+   */
+  getWindowPopover() {
+    return (
+      <Popover id="window-popover" className="popover-positioned-bottom">
+        <ul>
+          <li onClick={() => this.setWindowParams(40, 80)}>Brain 40/80</li>
+          <li onClick={() => this.setWindowParams(40, 350)}>Chest 40/350</li>
+          <li onClick={() => this.setWindowParams(40, 350)}>Abdomen 40/350</li>
+          <li onClick={() => this.setWindowParams(90, 350)}>Head 90/350</li>
+          <li onClick={() => this.setWindowParams(-600, 1500)}>Lung -600/1500</li>
+          <li onClick={() => this.setWindowParams(480, 2500)}>Bone 480/2500</li>
+        </ul>
+        <div className="row div-input">
+          <div className="col-sm-6">
+            <input type="number" placeholder="ww" onChange={(e) => this.setState({newWindowWidth: parseInt(e.target.value)})}/>
+          </div>
+          <div className="col-sm-6 pull-right">
+            <input type="number" placeholder="wl" onChange={(e) => this.setState({newWindowCenter: parseInt(e.target.value)})}/>
+          </div>
+        </div>
+        <div className="div-confirm">
+          <Button className="btn-window-confirm" onClick={() => this.setWindowParams(this.state.newWindowWidth, this.state.newWindowCenter)}>确认</Button>
+        </div>
+      </Popover>
+    )
+  }
+
+  /**
+   * callback function which is responsible for clearing params that already manipulated by child component (mainCanvas)
+   */
+  clearCanvasParams() {
+    this.setState({
+      canvasParams: {}
+    });
   }
 
   render() {
@@ -193,7 +266,8 @@ export default class Viewer extends Component {
     );
 
     let rotateCaret = this.getCaret(this.state.isRotateMenuOpened),
-      magnifyCaret = this.getCaret(this.state.isMagnifyToolOpened);
+        magnifyCaret = this.getCaret(this.state.isMagnifyToolOpened),
+        windowCaret = this.getCaret(this.state.isWindowToolOpened);
 
     return (
       <div id="body" style={style.body}>
@@ -205,7 +279,17 @@ export default class Viewer extends Component {
                   <div style={style.icon}>
                     <FontAwesome name='adjust' size='2x' />
                   </div>
-                  <span>窗宽窗位</span>
+                  <span>W/L</span>
+                    <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={this.getWindowPopover()}
+                      onClick={() => {
+                        if(!this.state.isWindowToolOpened) {
+                          this.toggleWindowPopover();
+                        }
+                      }}
+                      onExited={() => { this.toggleWindowPopover(); }}
+                    >
+                      <span id="windowPopoverTrigger">{windowCaret}</span>
+                    </OverlayTrigger>
                 </NavItem>
                 <NavItem eventKey="ZOOM" href="#">
                   <div style={style.icon}>
@@ -227,8 +311,12 @@ export default class Viewer extends Component {
               </Navbar.Text>
               <Navbar.Text className="button">
                 <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={rotatePopover}
-                  onClick={() => { this.toggleRotatePopover(); this.onNavSelected(); }}
-                  onExited={() => { this.toggleRotatePopover(); this.onNavSelected(); }}
+                  onClick={() => {
+                    if(!this.state.isRotateMenuOpened) {
+                      this.toggleRotatePopover();
+                    }
+                  }}
+                  onExited={() => { this.toggleRotatePopover(); }}
                 >
                   <span>
                     <FontAwesome name='cog' size='2x' />
@@ -280,7 +368,13 @@ export default class Viewer extends Component {
                   <span>高亮</span>
                 </NavItem>
                 <NavItem eventKey="MAGNIFY" href="#">
-                  <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={magnifyPopover} onClick={() => this.toggleMagnifyPopover()} onExited={() => this.toggleMagnifyPopover()}>
+                  <OverlayTrigger rootClose trigger="click" placement="bottom" overlay={magnifyPopover}
+                    onClick={() => {
+                      if(!this.state.isMagnifyToolOpened) {
+                        this.toggleMagnifyPopover();
+                      }
+                    }}
+                    onExited={() => this.toggleMagnifyPopover()}>
                     <div>
                       <div style={style.icon}>
                         <FontAwesome name='search-plus' size='2x' />
@@ -329,7 +423,8 @@ export default class Viewer extends Component {
         </div>
 
         <div className="main-canvas">
-          <MainCanvas caseId={this.props.location.state.caseId} curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0} controllerBtnClicked={this.state.btnClicked} />
+          <MainCanvas caseId={this.props.location.state.caseId} curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0}
+            canvasParams={this.state.canvasParams} callback={() => this.clearCanvasParams()}/>
         </div>
 
         <div style={style.bottom}></div>
