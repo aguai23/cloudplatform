@@ -214,7 +214,7 @@ export default class MainCanvas extends Component {
         windowWidth: viewport.voi.windowWidth,
         windowCenter: viewport.voi.windowCenter
       },
-      zoomScale: viewport.scale.toFixed(2)
+      zoomScale: parseFloat(viewport.scale).toFixed(2)
     });
   }
 
@@ -260,20 +260,9 @@ export default class MainCanvas extends Component {
 
         var viewport = {};
         if (index === 1) {
-          switch (image.modality) {
-            case 'CT':
-              {
-                viewport.scale = 1.2;
-                break;
-              }
-            case 'DX':
-              {
-                viewport.scale = 0.23
-                break;
-              }
-          }
+          viewport.scale = (600 / image.width).toFixed(2);
         }
-        cornerstone.displayImage(this.container, this.dicomObj[curSeriesIndex][index], viewport);
+        cornerstone.displayImage(this.container, image, viewport);
 
         let measurementData = {
           currentImageIdIndex: this.index,
@@ -621,10 +610,12 @@ export default class MainCanvas extends Component {
    * reset viewport to default state
    */
   resetViewport() {
-    let canvas = $('#viewer canvas').get(0);
-    let enabledElement = cornerstone.getEnabledElement(this.container);
-    let viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image);
-    viewport.scale = 1.2;
+    let canvas = $('#viewer canvas').get(0),
+        enabledElement = cornerstone.getEnabledElement(this.container),
+        viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image),
+        width = this.dicomObj[this.curSeriesIndex][this.index].width;
+
+    viewport.scale = (600 / width).toFixed(2);
     cornerstone.setViewport(this.container, viewport);
   }
 
