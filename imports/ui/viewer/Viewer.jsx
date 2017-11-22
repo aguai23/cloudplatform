@@ -15,7 +15,7 @@ import ReactSVG from 'react-svg';
 import LeftPanel from './LeftPanel';
 import MainCanvas from './MainCanvas';
 
-import "../css/viewer.css";
+import "./css/viewer.css";
 
 
 const style = {

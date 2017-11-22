@@ -6,7 +6,7 @@ import { Cases } from '../../api/cases';
 import FontAwesome from 'react-fontawesome';
 import cornerstone from 'cornerstone-core';
 import CustomEventEmitter from '../../library/CustomEventEmitter';
-import '../css/leftPanel.css';
+import './css/leftPanel.css';
 
 const customEventEmitter = new CustomEventEmitter()
 
