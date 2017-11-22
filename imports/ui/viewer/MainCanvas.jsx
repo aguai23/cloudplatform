@@ -244,14 +244,10 @@ export default class MainCanvas extends Component {
 
         let pixelData = undefined;
 
-<<<<<<< HEAD
-        if (image.bitsAllocated === 8) {
-=======
         /**
          * manipulate pixelData in different ways according how many bits allocated for each pixel
          */
         if(image.bitsAllocated === 8) {
->>>>>>> 36e6c321e17712345f5034bab4198058b4ffd489
           pixelData = new Uint16Array(image.pixelDataLength);
 
           for (let i = 0; i < image.pixelDataLength; i++) {
