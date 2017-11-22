@@ -1,5 +1,21 @@
-#leftPanel-dianosisInfo {
-  overflow: hidden
+.btn-panel-controller a {
+  background-color: black;
+  color: #91b9cd;
+  border-color: #91b9cd;
+}
+
+.btn-panel-controller a:hover {
+  background-color: #b7e0ed;
+  opacity: 0.9;
+}
+
+.btn-panel-controller .active {
+  background-color: #91b9cd !important;
+}
+
+.btn-panel-controller .active:hover {
+  background-color: #b7e0ed !important;
+  opacity: 0.9 !important;
 }
 
 .leftPanel-diagnosisHeader {
@@ -25,10 +41,43 @@
 }
 
 .leftPanel-diagnosisRow:hover {
-  background-color: #20a5d6;
+  background-color: #22bef7;
   color: black;
+  cursor: pointer;
+  animation-name: hover-effect;
+  animation-duration: .75s;
 }
 
 .leftPanel-diagnosisProb {
   text-align: right
+}
+
+.thumbnail-container {
+  width: 240px;
+  padding: 20px;
+  margin: 0 auto;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  border: 1px solid #4da2f2;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.thumbnailDiv {
+  width: 160px;
+  height: 120px;
+  margin: 0 auto
+}
+
+.active-thumbnail {
+  border-width: 4px;
+}
+
+.thumbnail-info {
+  color: white;
+  font-size: 10px;
+  font-weight: 100;
+  padding-left: 35px;
+  padding-right: 20px;
+  cursor: pointer;
 }

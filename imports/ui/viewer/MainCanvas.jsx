@@ -35,6 +35,7 @@ export default class MainCanvas extends Component {
 
     const customEventEmitter = new CustomEventEmitter()
     customEventEmitter.subscribe('changeSeries', (data) => {
+      this.curSeriesIndex = data.curSeriesIndex;
       this.initMainCanvas(data.caseId, data.curSeriesIndex);
     })
     customEventEmitter.subscribe('diagnosisResult', (data) => {
@@ -98,7 +99,6 @@ export default class MainCanvas extends Component {
         picList[key] = tempList;
         currentState.imageIdToolState[`${caseId}#${seriesNumber}#${key}`].ellipticalRoi = { data: tempList }
       })
-      console.log(currentState.imageIdToolState)
     })
     customEventEmitter.subscribe('setSlice', (data) => {
       this.setSlice(this.curSeriesIndex, data)
@@ -259,14 +259,14 @@ export default class MainCanvas extends Component {
         if(image.bitsAllocated === 8) {
           pixelData = new Uint16Array(image.pixelDataLength);
 
-          for(let i = 0; i < image.pixelDataLength; i++) {
+          for (let i = 0; i < image.pixelDataLength; i++) {
             pixelData[i] = image.imageBuf[image.pixelDataOffset + i];
           }
-        } else if(image.bitsAllocated === 16) {
+        } else if (image.bitsAllocated === 16) {
           pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
         }
 
-        image.getPixelData = function() {
+        image.getPixelData = function () {
           return pixelData
         };
 
@@ -635,9 +635,9 @@ export default class MainCanvas extends Component {
    */
   resetViewport() {
     let canvas = $('#viewer canvas').get(0),
-        enabledElement = cornerstone.getEnabledElement(this.container),
-        viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image),
-        width = this.dicomObj[this.curSeriesIndex][this.index].width;
+      enabledElement = cornerstone.getEnabledElement(this.container),
+      viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image),
+      width = this.dicomObj[this.curSeriesIndex][this.index].width;
 
     viewport.scale = (600 / width).toFixed(2);
     cornerstone.setViewport(this.container, viewport);
