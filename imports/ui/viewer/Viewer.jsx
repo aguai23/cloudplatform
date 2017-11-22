@@ -4,10 +4,10 @@ import { browserHistory } from 'react-router';
 import { Button, Navbar, NavItem, Nav, OverlayTrigger, Popover, ButtonGroup } from 'react-bootstrap';
 import { Meteor } from 'meteor/meteor';
 import cornerstone from 'cornerstone-core';
-import cornerstoneTools from '../library/cornerstoneTools';
+import cornerstoneTools from '../../library/cornerstoneTools';
 import FontAwesome from 'react-fontawesome';
-import { Cases } from '../api/cases';
-import { Marks } from '../api/marks';
+import { Cases } from '../../api/cases';
+import { Marks } from '../../api/marks';
 import { ToastContainer, toast } from 'react-toastify';
 import { _ } from 'underscore';
 import ReactSVG from 'react-svg';
@@ -15,7 +15,7 @@ import ReactSVG from 'react-svg';
 import LeftPanel from './LeftPanel';
 import MainCanvas from './MainCanvas';
 
-import "./css/viewer.css";
+import "../css/viewer.css";
 
 
 const style = {

@@ -2,15 +2,15 @@ import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
 
 import cornerstone from 'cornerstone-core';
-import cornerstoneTools from '../library/cornerstoneTools';
+import cornerstoneTools from '../../library/cornerstoneTools';
 import { _ } from 'underscore';
 import { ToastContainer, toast } from 'react-toastify';
-import CustomEventEmitter from '../library/CustomEventEmitter';
+import CustomEventEmitter from '../../library/CustomEventEmitter';
 
-import { Cases } from '../api/cases';
-import { Marks } from '../api/marks';
+import { Cases } from '../../api/cases';
+import { Marks } from '../../api/marks';
 
-import './css/mainCanvas.css';
+import '../css/mainCanvas.css';
 
 export default class MainCanvas extends Component {
   constructor(props) {
