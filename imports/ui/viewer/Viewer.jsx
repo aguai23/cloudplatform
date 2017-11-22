@@ -439,7 +439,7 @@ export class Viewer extends Component {
                 <br />
                 <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
               </Navbar.Text>
-              <Navbar.Text className="button" onClick={browserHistory.goBack}>
+              <Navbar.Text className="button" onClick={Meteor.userId() ? browserHistory.goBack : null}>
                 <FontAwesome name='reply' size='2x' />
                 <br />
                 <span>返回</span>
@@ -463,7 +463,7 @@ export class Viewer extends Component {
               <MainCanvas
                 toastInfo={this.toastInfo}
                 caseId={this.state.caseInfo._id}
-                curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0}
+                curSeriesIndex={this.state.curSeriesIndex}
                 controllerBtnClicked={this.state.btnClicked}
                 canvasParams={this.state.canvasParams}
                 callback={() => this.clearCanvasParams()}

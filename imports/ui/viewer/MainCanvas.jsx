@@ -805,3 +805,4 @@ export default class MainCanvas extends Component {
     );
   }
 }
+Meteor.subscribe('marks');
