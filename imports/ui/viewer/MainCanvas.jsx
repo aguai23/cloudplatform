@@ -4,7 +4,6 @@ import { Meteor } from 'meteor/meteor';
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../../library/cornerstoneTools';
 import { _ } from 'underscore';
-import { ToastContainer, toast } from 'react-toastify';
 
 import CustomEventEmitter from '../../library/CustomEventEmitter';
 import LoadingScene from './LoadingScene';
