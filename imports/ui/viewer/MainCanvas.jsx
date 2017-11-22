@@ -4,7 +4,6 @@ import { Meteor } from 'meteor/meteor';
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../../library/cornerstoneTools';
 import { _ } from 'underscore';
-import { ToastContainer, toast } from 'react-toastify';
 import CustomEventEmitter from '../../library/CustomEventEmitter';
 
 import { Cases } from '../../api/cases';
@@ -246,7 +245,7 @@ export default class MainCanvas extends Component {
         /**
          * manipulate pixelData in different ways according how many bits allocated for each pixel
          */
-        if(image.bitsAllocated === 8) {
+        if (image.bitsAllocated === 8) {
           pixelData = new Uint16Array(image.pixelDataLength);
 
           for (let i = 0; i < image.pixelDataLength; i++) {
@@ -562,19 +561,19 @@ export default class MainCanvas extends Component {
       mark._id = oldState._id;
       Meteor.call('modifyMark', mark, (error) => {
         if (error) {
-          toast.error(`标注保存失败,${error.reason}`);
+          this.props.toastInfo('error', `标注保存失败,${error.reason}`)
           return console.error(error);
         } else {
-          toast.success("标注保存成功!");
+          this.props.toastInfo('success', '标注保存成功!')
         }
       })
     } else {
       Meteor.call('insertMark', mark, (error) => {
         if (error) {
-          toast.error(`标注保存失败,${error.reason}`);
+          this.props.toastInfo('error', `标注保存失败,${error.reason}`)
           return console.error(error);
         } else {
-          toast.success("标注保存成功!");
+          this.props.toastInfo('success', '标注保存成功!')
         }
       })
     }
@@ -608,7 +607,7 @@ export default class MainCanvas extends Component {
 
       cornerstoneTools.appState.restore(oldState)
     } else {
-      toast.warning('无历史标注!')
+      this.props.toastInfo('warning', '无历史标注!')
     }
 
   }
