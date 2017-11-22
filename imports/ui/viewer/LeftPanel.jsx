@@ -125,10 +125,10 @@ export default class LeftPanel extends Component {
           this.extract(JSON.parse(algorithmInfo.circle));
         } else {
           if (this.state.isDiagnosing) {
-            toast.warning('诊断还未完成，请稍后');
+            this.props.toastInfo('warning','诊断还未完成，请稍后');
             return
           }
-          toast.warning('正在进行诊断，请等待');
+          this.props.toastInfo('warning','正在进行诊断，请等待');
           this.setState({
             isDiagnosing: true,
             isLoadingPanelFinished: false
@@ -140,14 +140,14 @@ export default class LeftPanel extends Component {
                 return console.error(error);
               }
               if (res.content === 'error') {
-                toast.error('服务器异常')
+                this.props.toastInfo('error','服务器异常');
                 this.setState({
                   isDiagnosing: false
                 });
                 return
               }
               console.log('res', res)
-              toast.success('诊断完成')
+              this.props.toastInfo('success','诊断完成')
               const end = new Date().getTime();
               console.log("total time " + (end - start) / 1000);
               this.setState({

@@ -51,6 +51,7 @@ const style = {
     verticalAlign: "center",
   }
 };
+const customEventEmitter = new CustomEventEmitter()
 
 export default class Viewer extends Component {
   /**
@@ -70,7 +71,7 @@ export default class Viewer extends Component {
       isRotateMenuOpened: false,
       isWindowToolOpened: false
     };
-    const customEventEmitter = new CustomEventEmitter()
+    this.toastInfo = this.toastInfo.bind(this)
     customEventEmitter.subscribe('changeSeries', (data) => {
       this.setState({
         curSeriesIndex: data.curSeriesIndex
@@ -106,6 +107,10 @@ export default class Viewer extends Component {
     });
 
     // this.getThumbnails(this.props.location.state.caseId);
+  }
+
+  componentWillUnmount(){
+    customEventEmitter.unsubscribe('changeSeries')
   }
 
   /**
@@ -211,6 +216,31 @@ export default class Viewer extends Component {
     this.setState({
       canvasParams: {}
     });
+  }
+
+  toastInfo(type, data) {
+    switch (type) {
+
+      case 'success':
+        toast.success(data);
+        break;
+
+      case 'default':
+        toast.default(data)
+        break;
+
+      case 'warning':
+        toast.warning(data);
+        break;
+
+      case 'error':
+        toast.error(data);
+        break;
+
+      default:
+        toast.default(data)
+        break;
+    }
   }
 
   render() {
@@ -416,6 +446,7 @@ export default class Viewer extends Component {
 
         <div className="left-panel">
           <LeftPanel
+            toastInfo={this.toastInfo}
             curSeriesIndex={this.state.curSeriesIndex}
             caseList={this.state.seriesList}
             caseId={this.props.location.state.caseId}
@@ -423,8 +454,14 @@ export default class Viewer extends Component {
         </div>
 
         <div className="main-canvas">
-          <MainCanvas caseId={this.props.location.state.caseId} curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0}
-            canvasParams={this.state.canvasParams} callback={() => this.clearCanvasParams()}/>
+          <MainCanvas
+            toastInfo={this.toastInfo}
+            caseId={this.props.location.state.caseId}
+            curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0}
+            controllerBtnClicked={this.state.btnClicked}
+            canvasParams={this.state.canvasParams}
+            callback={() => this.clearCanvasParams()}
+          />
         </div>
 
         <div style={style.bottom}></div>
