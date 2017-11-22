@@ -4,7 +4,10 @@ import { Meteor } from 'meteor/meteor';
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../../library/cornerstoneTools';
 import { _ } from 'underscore';
+import { ToastContainer, toast } from 'react-toastify';
+
 import CustomEventEmitter from '../../library/CustomEventEmitter';
+import LoadingScene from './LoadingScene';
 
 import { Cases } from '../../api/cases';
 import { Marks } from '../../api/marks';
@@ -23,6 +26,7 @@ export default class MainCanvas extends Component {
     this.curSeriesIndex = this.props.curSeriesIndex;
 
     this.state = {
+      isLoading: false,
       voi: {
         windowCenter: 0,
         windowWidth: 0
@@ -169,6 +173,9 @@ export default class MainCanvas extends Component {
    * @param seriesIndex
    */
   initMainCanvas(caseId, seriesIndex) {
+    this.setState({
+      isLoading: true
+    });
     Meteor.call('prepareDicoms', caseId, seriesIndex, (error, result) => {
       if (error) {
         console.error(error)
@@ -230,6 +237,10 @@ export default class MainCanvas extends Component {
    * @param index image index
    */
   setSlice(curSeriesIndex, index) {
+    this.setState({
+      isLoading: true
+    });
+
     if (!this.dicomObj[curSeriesIndex]) {
       this.dicomObj[curSeriesIndex] = {};
     }
@@ -280,9 +291,16 @@ export default class MainCanvas extends Component {
           this.disableAllTools();
           this.imageLoaded = true;
         }
+
+        this.setState({
+          isLoading: false
+        });
       });
     } else {
-      cornerstone.displayImage(this.container, this.dicomObj[curSeriesIndex][index])
+      cornerstone.displayImage(this.container, this.dicomObj[curSeriesIndex][index]);
+      this.setState({
+        isLoading: false
+      });
     }
     let scrollbar = document.getElementById("scrollbar");
     scrollbar.value = index;
@@ -721,7 +739,8 @@ export default class MainCanvas extends Component {
     return (
       <div style={{
         height: '100%'
-      }} id="outer-container">
+      }}>
+        <LoadingScene show={this.state.isLoading} />
         <input type="range" id="scrollbar" min={1} max={this.imageNumber} step={1} onChange={() => this.onDragScrollBar()} style={{
           ...{
             width: this.containerHeight
