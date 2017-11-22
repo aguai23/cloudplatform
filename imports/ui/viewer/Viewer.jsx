@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { browserHistory } from 'react-router';
 import { Button, Navbar, NavItem, Nav, OverlayTrigger, Popover, ButtonGroup } from 'react-bootstrap';
 import { Meteor } from 'meteor/meteor';
+import { withTracker } from 'meteor/react-meteor-data';
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../../library/cornerstoneTools';
 import FontAwesome from 'react-fontawesome';
@@ -53,16 +54,18 @@ const style = {
 };
 const customEventEmitter = new CustomEventEmitter()
 
-export default class Viewer extends Component {
+export class Viewer extends Component {
   /**
    * constructor, run at first
    * @param props
    */
   constructor(props) {
+    const studyInstanceUID = props.location.query.studyInstanceUID ? props.location.query.studyInstanceUID : props.location.state.studyUID
     super(props);
     this.state = {
       container: {},
       seriesList: [],
+      caseInfo: Cases.findOne({ studyInstanceUID: studyInstanceUID }),
       circleVisible: true,
       zoomScale: 0,
       isScrollBarHovered: false,
@@ -71,7 +74,7 @@ export default class Viewer extends Component {
       timer: undefined,
       lastY: 0,
       startY: 0,
-      curSeriesIndex: this.props.location.state.index ? this.props.location.state.index : 0,
+      curSeriesIndex: this.props.location.state && this.props.location.state.index ? this.props.location.state.index : 0,
       isDiagnosisPanelOpened: false,
       isLoadingPanelFinished: false,
       isMagnifyToolOpened: false,
@@ -94,11 +97,6 @@ export default class Viewer extends Component {
    * will run after elements rendered
    */
   componentDidMount() {
-    if (!Meteor.userId()) {
-      browserHistory.replace('/login');
-      toast.warning("请先登录再进行操作");
-    }
-
     /**
      * make NavItems would not lose focus when clicked on the spare place in the page
      */
@@ -116,12 +114,18 @@ export default class Viewer extends Component {
       topValue: (window.innerHeight - document.getElementById('top').clientHeight) / 2 - 8 + "px",
       rightValue: -((window.innerHeight - document.getElementById('top').clientHeight) / 2 - 10) + 'px'
     });
-
-    // this.getThumbnails(this.props.location.state.caseId);
   }
 
-  componentWillUnmount(){
+  componentWillUnmount() {
     customEventEmitter.unsubscribe('changeSeries')
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!this.state.caseInfo) {
+      this.setState({
+        caseInfo: nextProps.case
+      });
+    }
   }
 
   /**
@@ -350,23 +354,27 @@ export default class Viewer extends Component {
           </Navbar>
         </div>
 
-        <div className="left-panel">
-          <LeftPanel
-            toastInfo={this.toastInfo}
-            curSeriesIndex={this.state.curSeriesIndex}
-            caseList={this.state.seriesList}
-            caseId={this.props.location.state.caseId}
-            containerHeight={this.state.containerHeight} />
-        </div>
+        {this.state.caseInfo &&
+          <div>
+            <div className="left-panel">
+              <LeftPanel
+                toastInfo={this.toastInfo}
+                curSeriesIndex={this.state.curSeriesIndex}
+                caseList={this.state.seriesList}
+                caseId={this.state.caseInfo._id}
+                containerHeight={this.state.containerHeight} />
+            </div>
 
-        <div className="main-canvas">
-          <MainCanvas
-            toastInfo={this.toastInfo}
-            caseId={this.props.location.state.caseId}
-            curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0}
-            controllerBtnClicked={this.state.btnClicked}
-          />
-        </div>
+            <div className="main-canvas">
+              <MainCanvas
+                toastInfo={this.toastInfo}
+                caseId={this.state.caseInfo._id}
+                curSeriesIndex={this.state.curSeriesIndex}
+                controllerBtnClicked={this.state.btnClicked}
+              />
+            </div>
+          </div>
+        }
 
         <div style={style.bottom}></div>
         <ToastContainer
@@ -382,5 +390,10 @@ export default class Viewer extends Component {
     )
   }
 }
-Meteor.subscribe('marks');
-Meteor.subscribe('cases');
+
+export default withTracker(props => {
+  Meteor.subscribe('cases');
+  return {
+    case: Cases.findOne({ studyInstanceUID: props.location.query.studyInstanceUID ? props.location.query.studyInstanceUID : props.location.state.studyUID }),
+  }
+})(Viewer);

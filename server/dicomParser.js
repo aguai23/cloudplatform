@@ -33,7 +33,7 @@ Meteor.methods({
     let result = {
         status: 'FAILURE'
       },
-      userId = Meteor.userId();
+      userId = Meteor.userId() ? Meteor.userId() : 'tourist';
 
     currentCaseId = caseId;
 
@@ -91,7 +91,7 @@ Meteor.methods({
    * @return {Object} contains the status and parsed information for the DICOM
    */
   getDicom(seriesIndex, index) {
-    var userId = Meteor.userId();
+    var userId = Meteor.userId() ? Meteor.userId() : 'tourist';
 
     if (!userId || !dicomObj[userId][seriesIndex][index - 1]) return {
       status: 'FAILURE'
@@ -132,12 +132,12 @@ Meteor.methods({
       result.minPixelValue = dicomObj[userId][seriesIndex][index - 1].uint16('x00280106');
       result.maxPixelValue = dicomObj[userId][seriesIndex][index - 1].uint16('x00280107');
     } else {
-      if(result.bitsAllocated === 8) {
+      if (result.bitsAllocated === 8) {
         result.windowWidth = Math.round(result.windowWidth / 16);
         result.windowCenter = Math.round(result.windowCenter / 16);
         result.minPixelValue = 0;
         result.maxPixelValue = 255;
-      } else if(result.bitsAllocated === 16) {
+      } else if (result.bitsAllocated === 16) {
         result.minPixelValue = 0;
         result.maxPixelValue = 65535;
       }
@@ -168,7 +168,7 @@ Meteor.methods({
 
     for (let i = 0; i < thumbnailArray[caseId].length; i++) {
       let colVal = thumbnailArray[caseId][i].uint16('x00280011') ? thumbnailArray[caseId][i].uint16('x00280011') : 512,
-          rowVal = thumbnailArray[caseId][i].uint16('x00280010') ? thumbnailArray[caseId][i].uint16('x00280010') : 512;
+        rowVal = thumbnailArray[caseId][i].uint16('x00280010') ? thumbnailArray[caseId][i].uint16('x00280010') : 512;
       result.array.push({
         imageBuf: thumbnailArray[caseId][i].byteArray,
         pixelDataOffset: thumbnailArray[caseId][i].elements.x7fe00010.dataOffset,
@@ -192,12 +192,12 @@ Meteor.methods({
         result.array[i].minPixelValue = thumbnailArray[caseId][i].uint16('x00280106');
         result.array[i].maxPixelValue = thumbnailArray[caseId][i].uint16('x00280107');
       } else {
-        if(result.array[i].bitsAllocated === 8) {
+        if (result.array[i].bitsAllocated === 8) {
           result.array[i].windowWidth = Math.round(result.array[i].windowWidth / 16);
           result.array[i].windowCenter = Math.round(result.array[i].windowCenter / 16);
           result.array[i].minPixelValue = 0;
           result.array[i].maxPixelValue = 255;
-        } else if(result.array[i].bitsAllocated === 16) {
+        } else if (result.array[i].bitsAllocated === 16) {
           result.array[i].minPixelValue = 0;
           result.array[i].maxPixelValue = 65535;
         }

@@ -239,12 +239,12 @@ export default class MainCanvas extends Component {
     //   isLoading: true
     // });
     const showFlag = true
-    Meteor.setTimeout(()=>{
-      if(showFlag === true)
-      this.setState({
-        isLoading:true
-      })
-    },400)
+    Meteor.setTimeout(() => {
+      if (showFlag === true)
+        this.setState({
+          isLoading: true
+        })
+    }, 400)
 
     if (!this.dicomObj[curSeriesIndex]) {
       this.dicomObj[curSeriesIndex] = {};
@@ -578,10 +578,10 @@ export default class MainCanvas extends Component {
       createAt: new Date(),
       caseId: this.props.caseId,
       seriesInstanceUID: seriesInstanceUID,
-      ownerId: Meteor.userId()
+      ownerId: Meteor.userId() ? Meteor.userId() : 'tourist'
     };
 
-    let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
+    let oldState = Marks.findOne({ ownerId: Meteor.userId() ? Meteor.userId() : 'tourist', seriesInstanceUID: seriesInstanceUID });
     if (oldState) {
       mark._id = oldState._id;
       Meteor.call('modifyMark', mark, (error) => {
@@ -612,7 +612,7 @@ export default class MainCanvas extends Component {
     let currentState = cornerstoneTools.appState.save(elements);
     let caseInfo = Cases.findOne({ _id: this.props.caseId });
     let seriesInstanceUID = caseInfo.seriesList[this.curSeriesIndex].seriesInstanceUID
-    let oldState = Marks.findOne({ ownerId: Meteor.userId(), seriesInstanceUID: seriesInstanceUID });
+    let oldState = Marks.findOne({ ownerId: Meteor.userId() ? Meteor.userId() : 'tourist', seriesInstanceUID: seriesInstanceUID });
     /**
      * save system mark to old mark
      */
