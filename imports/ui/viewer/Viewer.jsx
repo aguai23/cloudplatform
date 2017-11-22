@@ -14,7 +14,7 @@ import ReactSVG from 'react-svg';
 
 import LeftPanel from './LeftPanel';
 import MainCanvas from './MainCanvas';
-
+import CustomEventEmitter from '../../library/CustomEventEmitter';
 import "./css/viewer.css";
 
 
@@ -108,6 +108,12 @@ export default class Viewer extends Component {
       loadingProgress: 0
 
     };
+    const customEventEmitter = new CustomEventEmitter()
+    customEventEmitter.subscribe('changeSeries', (data) => {
+      this.setState({
+        curSeriesIndex: data.curSeriesIndex
+      })
+    })
   }
 
   /**
@@ -179,7 +185,7 @@ export default class Viewer extends Component {
    * @param selectedKey the key of selected MenuItem
    */
   onNavSelected(selectedKey) {
-    this.setState({btnClicked: selectedKey});
+    this.setState({ btnClicked: selectedKey });
   }
 
   toggleMagnifyPopover() {
@@ -708,7 +714,7 @@ export default class Viewer extends Component {
         </div>
 
         <div className="main-canvas">
-          <MainCanvas caseId={this.props.location.state.caseId} curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0} controllerBtnClicked={this.state.btnClicked}/>
+          <MainCanvas caseId={this.props.location.state.caseId} curSeriesIndex={this.props.location.state.index ? this.props.location.state.index : 0} controllerBtnClicked={this.state.btnClicked} />
         </div>
 
         <div style={style.bottom}></div>
