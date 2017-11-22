@@ -18,8 +18,8 @@ import CustomEventEmitter from '../library/CustomEventEmitter';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 import './css/app.css';
-import "./css/common/spinner.css";
-import "./css/addCase.css";
+import './css/common/spinner.css';
+import './css/addCase.css';
 
 let isUploadFinished = true,
   imageArray = [];

@@ -1,0 +1,38 @@
+.overlay-base {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  color: white;
+  background-color: black;
+  z-index: 9999;
+}
+
+.overlay-base .overlay-loading {
+  position: relative;
+  top: 30%;
+  height: 200px;
+  width: 300px;
+  margin: 0 auto;
+}
+
+.overlay-loading .lds-microsoft {
+  width: 200px;
+  margin: 0 auto;
+}
+
+
+.overlay-base .overlay-loading .lds-microsoft div {
+  background-color: #91b9cd;
+}
+
+.overlay-base .overlay-loading .lds-microsoft div:nth-child(0) {
+  display: none;
+}
+
+.overlay-base .loading-text {
+  position: relative;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 26px;
+  color: #91b9cd;
+}
