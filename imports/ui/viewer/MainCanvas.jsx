@@ -10,7 +10,7 @@ import CustomEventEmitter from '../../library/CustomEventEmitter';
 import { Cases } from '../../api/cases';
 import { Marks } from '../../api/marks';
 
-import '../css/mainCanvas.css';
+import './css/mainCanvas.css';
 
 export default class MainCanvas extends Component {
   constructor(props) {
