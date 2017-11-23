@@ -1,7 +1,7 @@
 import {Cases} from '../imports/api/cases';
 const fs = require('fs');
 const path = require('path');
-
+const dicomParser = require('dicom-parser');
 /**
  * DicomData is responsible for storing and handling data
  */
@@ -20,11 +20,11 @@ export default class DicomData {
    * @returns {*}
    */
   prepareData(caseId) {
-
     if (this.studyInfo[caseId]) {
       this.loadCount.caseId ++;
       return this.studyInfo[caseId];
     }
+    console.log("start prepare");
     let caseInstance = Cases.findOne({_id : caseId});
     if (!caseInstance) {
       console.log("case not found");
@@ -32,11 +32,12 @@ export default class DicomData {
     }
     let seriesCount = caseInstance.seriesList.length;
     this.dicomData[caseId] = {};
-    for (let seriesInstance in caseInstance.seriesList) {
-      let fileNames = fs.readFileSync(seriesInstance.path);
+    for (let i = 0; i < caseInstance.seriesList.length; i++) {
+      let seriesInstance = caseInstance.seriesList[i];
+      let fileNames = fs.readdirSync(seriesInstance.path);
       this.dicomData[caseId][seriesInstance.seriesNumber] = {};
-      for (let filename in fileNames) {
-        let data = fs.readFileSync(path.join(seriesInstance.path, filename));
+      for (let i = 0; i < fileNames.length ;i++) {
+        let data = fs.readFileSync(path.join(seriesInstance.path, fileNames[i]));
         let dataset = dicomParser.parseDicom(data);
         let index = parseInt(dataset.string('x00200013'));
         this.dicomData[caseId][seriesInstance.seriesNumber][index] = dataset;
@@ -47,6 +48,7 @@ export default class DicomData {
     result.status = "SUCCESS";
     result.seriesCount = seriesCount;
     this.loadCount[caseId] = 1;
+    this.studyInfo[caseId] = result;
     return result;
   }
 
@@ -60,8 +62,7 @@ export default class DicomData {
     for (let seriesNumber in this.dicomData[caseId]) {
       if (this.dicomData[caseId].hasOwnProperty(seriesNumber)) {
         result[seriesNumber] = {};
-        let data = this.dicomData[caseId][seriesNumber][1];
-        let dataset = dicomParser.parseDicom(data);
+        let dataset = this.dicomData[caseId][seriesNumber][1];
         result[seriesNumber].patientName = dataset.string('x00100010');
         result[seriesNumber].patientId = dataset.string('x00100020');
         result[seriesNumber].rows = dataset.uint16('x00280010');
@@ -155,16 +156,17 @@ export default class DicomData {
   getThumbnail(caseId) {
     let result = {};
     result.array = [];
-    while( ! this.doneLoading.caseId) {
+    // if (! this.doneLoading.caseId) {
+    //   this.prepareData(caseId)
+    // }
+
+    for(let seriesNumber in this.dicomData[caseId]) {
+      let thumbnail = this.constructDicomInfo(this.dicomData[caseId][seriesNumber][1], 1);
+      result.array.push(thumbnail);
     }
-    if (this.doneLoading) {
-      for(let seriesNumber in this.dicomData[caseId]) {
-        let thumbnail = this.constructDicomInfo(this.dicomData[caseId][seriesNumber][1], 1);
-        result.array.push(thumbnail);
-      }
-      result.status = "SUCCESS";
-      return result;
-    }
+    result.status = "SUCCESS";
+    return result;
+
 
   }
 
