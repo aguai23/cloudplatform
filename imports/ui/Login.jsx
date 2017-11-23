@@ -8,17 +8,18 @@ import "./css/login.css"
 const styles = {
 
   loginBox: {
-    border: '1px solid black',
-    borderRadius: '20px',
     margin: '0 auto',
     padding: '10px 30px 10px 30px',
     position: 'relative',
-    top: '200px',
-    width: '400px'
+    marginTop: '10%',
+    width: '400px',
+    marginLeft: '60%',
+    background: 'white'
   },
 
   linkNoAccountYet: {
-    fontSize: '12px'
+    fontSize: '12px',
+    color: '#2659ad'
   }
 };
 
@@ -55,22 +56,24 @@ export default class Login extends Component {
 
   render() {
     return (
-      <div id = "background">
+      <div id = "login-background">
+        <div id = "login-logo"/>
         <div ref="container" className="container" style={styles.loginBox}>
-          <h3 style={{textAlign: 'center'}}>用户登录</h3>
-          <hr/>
+          <h3 style={{textAlign: 'center', color: '#2659ad', marginBottom: '20px'}}>用户登录</h3>
           <Form horizontal>
-            <FormGroup>
-              <Col sm={2}>邮箱</Col>
-              <Col sm={10}>
-                <FormControl type="email" placeholder="Email" inputRef={function(ref) { this.emailInput = ref; }} />
+            <FormGroup >
+              <Col smOffset={1} sm={2} className = "login-text">邮箱</Col>
+              <br/>
+              <Col smOffset={1} sm={10}>
+                <FormControl id= "login-input" type="email" placeholder="Email" inputRef={function(ref) { this.emailInput = ref; }} />
               </Col>
             </FormGroup>
 
-            <FormGroup>
-              <Col sm={2}>密码</Col>
-              <Col sm={10}>
-                <FormControl type="password" placeholder="Password" inputRef={function(ref) { this.passwordInput = ref; }}/>
+            <FormGroup className = "login-box">
+              <Col smOffset={1} sm={2} className = "login-text">密码</Col>
+              <br/>
+              <Col smOffset={1} sm={10}>
+                <FormControl id= "login-input" type="password" placeholder="Password" inputRef={function(ref) { this.passwordInput = ref; }}/>
               </Col>
             </FormGroup>
 
@@ -81,8 +84,8 @@ export default class Login extends Component {
             </FormGroup> */}
 
             <FormGroup>
-              <Col smOffset={2} sm={10}>
-                <Button className="btn btn-success" onClick={this.login}>登录</Button>
+              <Col smOffset={8} sm={3} style={{textAlign: 'center'}}>
+                <Button className = "login-button" onClick={this.login}>登录</Button>
               </Col>
             </FormGroup>
 
