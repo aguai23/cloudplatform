@@ -172,6 +172,7 @@ export default class MainCanvas extends Component {
 
     customEventEmitter.unsubscribe('changeSeries');
     customEventEmitter.unsubscribe('diagnosisResult');
+    customEventEmitter.unsubscribe('setSlice');
   }
 
   /**

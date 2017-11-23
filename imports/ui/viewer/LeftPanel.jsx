@@ -90,7 +90,6 @@ export default class LeftPanel extends Component {
 
   extract(data) {
     let diagnosisResult = {};
-    let oldResult = this.state.diagnoseResult;
     for (let key in data) {
       let strs = key.split("_");
 
@@ -102,15 +101,15 @@ export default class LeftPanel extends Component {
         diagnosisResult[strs[0]].prob = parseFloat(data[key].prob).toFixed(3);
       }
     }
-    if (!oldResult) oldResult = {}
-    oldResult[this.state.curSeriesIndex] = diagnosisResult
-    this.setState({ diagnosisResult: oldResult });
+    let tempResult = {};
+    this.setState({ diagnosisResult: diagnosisResult });
   }
 
   onClickDiagnosisRow(key) {
+    console.log('key', key);
     $('div').removeClass('leftPanel-activeRow');
     $('#diagnosis-item-' + key).addClass('leftPanel-activeRow');
-    customEventEmitter.dispatch('setSlice',Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice))
+    customEventEmitter.dispatch('setSlice',Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice))
   }
 
   switchPanelState(isDiagnosis) {
@@ -123,15 +122,15 @@ export default class LeftPanel extends Component {
       }, function () {
         const start = new Date().getTime();
         const caseInfo = this.state.caseInfo
-        const algorithmInfo = caseInfo.seriesList[this.state.curSeriesIndex].diagnoseResult;
-        const seriesNumber = caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber;
+        const algorithmInfo = caseInfo.seriesList[this.map[this.state.curSeriesNumber]].diagnoseResult;
+        // const seriesNumber = caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber;
         if (algorithmInfo && algorithmInfo.circle) {
           const end = new Date().getTime();
           console.log("total time " + (end - start) / 1000);
           this.setState({ isLoadingPanelFinished: true, diagnosisResult: algorithmInfo }, () => {
             customEventEmitter.dispatch('diagnosisResult', {
               result: algorithmInfo.circle,
-              seriesNumber: this.state.caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber
+              seriesNumber: this.state.curSeriesNumber
             })
           });
           this.extract(JSON.parse(algorithmInfo.circle));
@@ -146,7 +145,7 @@ export default class LeftPanel extends Component {
             isLoadingPanelFinished: false
           });
           HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
-            foundcase.seriesList[this.state.curSeriesIndex].path,
+            foundcase.seriesList[this.map[this.state.curSeriesNumber]].path,
             (error, res) => {
               if (error) {
                 return console.error(error);
@@ -168,7 +167,7 @@ export default class LeftPanel extends Component {
               });
               customEventEmitter.dispatch('diagnosisResult', {
                 result: res.content,
-                seriesNumber: this.state.caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber
+                seriesNumber: this.state.curSeriesNumber
               })
               this.extract(JSON.parse(res.content));
             });
@@ -193,15 +192,15 @@ export default class LeftPanel extends Component {
   render() {
     let results = [];
 
-    if (this.state.diagnosisResult && this.state.diagnosisResult[this.state.curSeriesIndex]) {
-      for (let key in this.state.diagnosisResult[this.state.curSeriesIndex]) {
+    if (this.state.diagnosisResult) {
+      for (let key in this.state.diagnosisResult) {
         results.push(
           <div className="row leftPanel-diagnosisRow" key={'diagnosis-item-' + key} id={'diagnosis-item-' + key}
             onClick={() => this.onClickDiagnosisRow(key)}>
             <div className="col-xs-4">{key}</div>
-            <div className="col-xs-4">{Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice)
-              + ' - ' + Math.max(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice)}</div>
-            <div className="col-xs-4 leftPanel-diagnosisProb">{this.state.diagnosisResult[this.state.curSeriesIndex][key].prob * 100 + '%'}</div>
+            <div className="col-xs-4">{Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)
+              + ' - ' + Math.max(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice)}</div>
+            <div className="col-xs-4 leftPanel-diagnosisProb">{this.state.diagnosisResult[key].prob * 100 + '%'}</div>
           </div>
         );
       }

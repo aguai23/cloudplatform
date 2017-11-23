@@ -88,7 +88,7 @@ export default class DicomData {
         status: 'FAILURE'
       }
     }
-    return this.constructDicomInfo(this.dicomData[caseId][seriesNumber][index], index);
+    return this.constructDicomInfo(caseId, this.dicomData[caseId][seriesNumber][index], index);
   }
 
   /**
@@ -97,11 +97,12 @@ export default class DicomData {
    * @param index dicom index
    * @returns {{}}
    */
-  constructDicomInfo(dataset, index) {
+  constructDicomInfo(caseId, dataset, index) {
     let result = {};
     let seriesNumber = dataset.string('x00200011') ? dataset.string('x00200011') : 0;
+    result.seriesNumber = seriesNumber;
     result.status = 'SUCCESS';
-    result.imageId = this.caseId + "#" + seriesNumber + '#' + index;
+    result.imageId = caseId + "#" + seriesNumber + '#' + index;
     result.imageBuf = dataset.byteArray;
     result.pixelDataOffset = dataset.elements.x7fe00010.dataOffset;
     result.pixelDataLength = dataset.elements.x7fe00010.length;
@@ -144,6 +145,7 @@ export default class DicomData {
         result.maxPixelValue = 65535;
       }
     }
+
     return result;
 
   }
@@ -161,7 +163,7 @@ export default class DicomData {
     // }
 
     for(let seriesNumber in this.dicomData[caseId]) {
-      let thumbnail = this.constructDicomInfo(this.dicomData[caseId][seriesNumber][1], 1);
+      let thumbnail = this.constructDicomInfo(caseId, this.dicomData[caseId][seriesNumber][1], 1);
       result.array.push(thumbnail);
     }
     result.status = "SUCCESS";
@@ -175,7 +177,7 @@ export default class DicomData {
    * @param caseId
    */
   freeMemory(caseId) {
-    this.loadCount.caseId --;
+    this.loadCount.caseId--;
     if (this.loadCount.caseId === 0 && this.dicomData.hasOwnProperty(caseId)) {
       delete this.dicomData.caseId;
     }
