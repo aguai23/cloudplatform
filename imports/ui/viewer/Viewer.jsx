@@ -484,7 +484,8 @@ export class Viewer extends Component {
 
 export default withTracker(props => {
   Meteor.subscribe('cases');
+  let studyUID = props.location.state ? props.location.state.studyUID : undefined;
   return {
-    case: Cases.findOne({ studyInstanceUID: props.location.query.studyInstanceUID ? props.location.query.studyInstanceUID : props.location.state.studyUID }),
+    case: Cases.findOne({ studyInstanceUID: props.location.query.studyInstanceUID ? props.location.query.studyInstanceUID : studyUID }),
   }
 })(Viewer);

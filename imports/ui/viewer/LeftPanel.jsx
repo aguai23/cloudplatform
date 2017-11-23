@@ -16,7 +16,7 @@ export default class LeftPanel extends Component {
     let foundCase = Cases.findOne({ _id: props.caseId });
     this.state = {
       panelType: 'thumbnail',
-      caseInfo: foundCase,
+      caseInstance: foundCase,
       curSeriesNumber: foundCase.seriesList[0].seriesNumber,
       diagnosisResult: [],
       seriesList: foundCase.seriesList
@@ -105,7 +105,6 @@ export default class LeftPanel extends Component {
   }
 
   onClickDiagnosisRow(key) {
-    console.log('key', key);
     $('div').removeClass('leftPanel-activeRow');
     $('#diagnosis-item-' + key).addClass('leftPanel-activeRow');
     customEventEmitter.dispatch('setSlice',Math.min(this.state.diagnosisResult[key].firstSlice, this.state.diagnosisResult[key].lastSlice))
@@ -120,9 +119,8 @@ export default class LeftPanel extends Component {
         panelType: 'diagnosis'
       }, function () {
         const start = new Date().getTime();
-        const caseInfo = this.state.caseInfo
-        const algorithmInfo = caseInfo.seriesList[this.map[this.state.curSeriesNumber]].diagnoseResult;
-        // const seriesNumber = caseInfo.seriesList[this.state.curSeriesIndex].seriesNumber;
+        const caseInstance = this.state.caseInstance;
+        const algorithmInfo = caseInstance.seriesList[this.map[this.state.curSeriesNumber]].diagnoseResult;
         if (algorithmInfo && algorithmInfo.circle) {
           const end = new Date().getTime();
           console.log("total time " + (end - start) / 1000);
@@ -144,7 +142,7 @@ export default class LeftPanel extends Component {
             isLoadingPanelFinished: false
           });
           HTTP.call('GET', Meteor.settings.public.ALGORITHM_SERVER + '/lung_nodule' +
-            foundcase.seriesList[this.map[this.state.curSeriesNumber]].path,
+          caseInstance.seriesList[this.map[this.state.curSeriesNumber]].path,
             (error, res) => {
               if (error) {
                 return console.error(error);
@@ -156,7 +154,6 @@ export default class LeftPanel extends Component {
                 });
                 return
               }
-              console.log('res', res)
               this.props.toastInfo('success', '诊断完成')
               const end = new Date().getTime();
               console.log("total time " + (end - start) / 1000);
