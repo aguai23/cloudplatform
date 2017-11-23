@@ -69,7 +69,6 @@ export class Viewer extends Component {
       seriesList: [],
       caseInfo: Cases.findOne({ studyInstanceUID: this.studyInstanceUID }),
       circleVisible: true,
-      curSeriesIndex: this.props.location.state && this.props.location.state.index ? this.props.location.state.index : 0,
       isDiagnosisPanelOpened: false,
       isLoadingPanelFinished: false,
       isMagnifyToolOpened: false,
@@ -77,11 +76,6 @@ export class Viewer extends Component {
       isWindowToolOpened: false
     };
     this.toastInfo = this.toastInfo.bind(this)
-    customEventEmitter.subscribe('changeSeries', (data) => {
-      this.setState({
-        curSeriesIndex: data.curSeriesIndex
-      })
-    })
   }
 
   /**
@@ -455,7 +449,7 @@ export class Viewer extends Component {
             <div className="left-panel">
               <LeftPanel
                 toastInfo={this.toastInfo}
-                curSeriesIndex={this.state.curSeriesIndex}
+                seriesNumber={this.seriesNumber}
                 caseList={this.state.seriesList}
                 caseId={this.state.caseInfo._id}
                 containerHeight={this.state.containerHeight} />
@@ -465,9 +459,7 @@ export class Viewer extends Component {
               <MainCanvas
                 toastInfo={this.toastInfo}
                 caseId={this.state.caseInfo._id}
-                curSeriesIndex={this.state.curSeriesIndex}
                 seriesNumber={this.seriesNumber}
-                controllerBtnClicked={this.state.btnClicked}
                 canvasParams={this.state.canvasParams}
                 callback={() => this.clearCanvasParams()}
               />
