@@ -1,0 +1,140 @@
+/* general styles */
+.btn-large {
+  width: 150px;
+  font-size: 18px;
+}
+
+.active-nav-item {
+  color: white!important;
+}
+
+@keyframes hover-effect {
+  from {background-color: black;}
+  to {background-color: #22bef7;}
+
+  from {color: #9ccef9;}
+  to {color: black;}
+}
+
+.navbar-inverse .navbar-text, .navbar-inverse .navbar-nav > li > a {
+  color: #91b9cd;
+}
+
+.button:hover{
+  color: #fff;
+  cursor: pointer;
+}
+
+.magnifyTool {
+  top: 0;
+  left: 0;
+  border: 4px white solid;
+  box-shadow: 2px 2px 10px #1e1e1e;
+  border-radius: 50%;
+  display: none;
+  cursor: none;
+}
+
+ /* prevents selection when left click dragging */
+.disable-selection {
+  -moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;
+}
+
+.popover-positioned-bottom {
+  background-color: black;
+  border-color: #91b9cd;
+  color: #91b9cd;
+  padding-bottom: 10px;
+}
+
+.popover-positioned-bottom > .arrow {
+  display: none;
+}
+
+#rotate-popover {
+  font-size: 10px;
+}
+
+.rotate-menu-item:hover {
+  cursor: pointer;
+}
+
+.control-label {
+  margin-left: 5px;
+  text-align: left!important;
+}
+
+#window-popover {
+  width: 180px;
+}
+
+#window-popover ul {
+  list-style: none;
+  padding: 0;
+  width: 120px;
+  margin: 0 auto;
+}
+
+#window-popover ul li {
+   margin-bottom: 10px;
+   cursor: pointer;
+}
+
+#window-popover input {
+  width: 40px;
+  color: black;
+}
+
+#window-popover input::-webkit-outer-spin-button,
+#window-popover input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+#window-popover input[type="number"]{
+  -moz-appearance: textfield;
+}
+
+
+#window-popover .div-input {
+  width: 120px;
+  height: 40px;
+  margin: 0 auto;
+  padding-top: 10px;
+}
+
+#window-popover .div-input div:nth-child(1) {
+  padding-left: 0;
+}
+
+#window-popover .div-confirm {
+  width: 120px;
+  height: auto;
+  margin: 0 auto;
+  padding-top: 10px;
+}
+
+#window-popover .div-confirm .btn-window-confirm {
+  width: 120px;
+  height: 23px;
+  padding-top: 0;
+}
+
+.left-panel {
+  width: 20%;
+  position: absolute;
+  top: 80px;
+  bottom: 0;
+  border: 1px solid #9ccef9;
+  border-right: 0;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.main-canvas {
+  width: 80%;
+  position: absolute;
+  top: 80px;
+  left: 20%;
+  bottom: 0;
+  border: 1px solid #9ccef9;
+}

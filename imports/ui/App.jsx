@@ -45,7 +45,7 @@ export default class App extends Component {
         <Header routes={this.props.routes} params={this.props.params} location={this.props.location}/>
           <div className="eight-cols" style={{height: containerHeight}}>
             <div className="col-sm-1 nav-container">
-              <DatasetMenu selectHandler={this.onTabSelectHandler}/>
+              <DatasetMenu location={this.props.location}/>
             </div>
             <div className="col-sm-7 content-container">
               {childrenWithProps}

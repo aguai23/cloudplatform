@@ -3,91 +3,32 @@
  * parsing data form DICOM files on the server side
  */
 
-import {
-  Meteor
-} from 'meteor/meteor';
+import { Meteor } from 'meteor/meteor';
 
-import {
-  Cases
-} from '../imports/api/cases';
+import DicomData from './dicomData';
 
-var fs = require('fs'),
-  path = require('path');
-
-//TODO: put this three object into closures or database
-var dicomObj = {};
-var thumbnailArray = {};
-var currentCaseId = undefined;
-
+let dicomData = new DicomData();
 Meteor.methods({
 
   /**
    * Parse all DICOMs that belongs to the requested case
    @param caseId the id of requested caseId
-   @param seriesIndex which series to load
+   @param seriesNumber which series to load
    @returns {{status: string}}
    */
-  prepareDicoms(caseId, seriesIndex) {
-    let result = {
-        status: 'FAILURE'
-      },
-      userId = Meteor.userId();
-
-    currentCaseId = caseId;
-
-    if (!userId) {
-      return result;
-    }
-
-    if (dicomObj[userId] === undefined) {
-      dicomObj[userId] = {};
-    }
-
-    if (seriesIndex !== undefined && dicomObj[userId][seriesIndex] === undefined) {
-      dicomObj[userId][seriesIndex] = {};
-    }
-
-    /**
-     * get requested case
-     */
-    let foundCase = Cases.findOne({
-      _id: caseId
-    });
-
-    /**
-     * parse all DICOMs and save
-     */
-    let dirPath = foundCase.seriesList[seriesIndex].path;
-
-    let fileNames = fs.readdirSync(dirPath);
-
-    for (let i = 0; i < fileNames.length; i++) {
-      let data = fs.readFileSync(path.join(dirPath, fileNames[i]));
-      let dataset = dicomParser.parseDicom(data);
-      let index = parseInt(dataset.string('x00200013'));
-      if (i === 0) {
-        result.patientName = dataset.string('x00100010');
-        result.patientId = dataset.string('x00100020');
-        result.rows = dataset.uint16('x00280010');
-        result.cols = dataset.uint16('x00280011');
-        result.pixelSpacing = dataset.string('x00280030');
-        result.thickness = dataset.string('x00180050');
-        result.seriesDate = dataset.string('x00080021');
-        result.seriesTime = dataset.string('x00080031');
-      }
-
-      dicomObj[userId][seriesIndex][index - 1] = dataset;
-    }
-    result.status = "SUCCESS";
-    result.imageNumber = fileNames.length;
-    return result;
+  prepareDicoms(caseId, seriesNumber) {
+    let result = dicomData.prepareData(caseId);
+    return result[seriesNumber];
   },
 
   /**
    * Get specific DICOM according to the request
+   * @param caseId the study id
+   * @param seriesNumber which series
    * @param index index of the DICOM file
    * @return {Object} contains the status and parsed information for the DICOM
    */
+<<<<<<< HEAD
   getDicom(seriesIndex, index) {
     var userId = Meteor.userId();
 
@@ -147,6 +88,10 @@ Meteor.methods({
       }
     }
     return result;
+=======
+  getDicom(caseId, seriesNumber, index) {
+    return dicomData.getData(caseId, seriesNumber,index);
+>>>>>>> 179e889afd8b06df9fee2a5510c9d6850dee91dc
   },
 
   /**
@@ -154,68 +99,7 @@ Meteor.methods({
    * @param caseId
    */
   getThumbnailDicoms(caseId) {
-    let result = {};
-    result.array = [];
-    result.status = 'SUCCESS';
-    if (!thumbnailArray && !thumbnailArray[caseId]) return {
-      status: 'FAILURE'
-    };
-
-    if (thumbnailArray[caseId] === undefined || thumbnailArray[caseId].length === 0) {
-      let foundCase = Cases.findOne({
-        _id: caseId
-      });
-      for (let i = 0; i < foundCase.seriesList.length; i++) {
-        initThumbnail(i, foundCase.seriesList[i].path, caseId);
-      }
-    }
-
-    for (let i = 0; i < thumbnailArray[caseId].length; i++) {
-      let colVal = thumbnailArray[caseId][i].uint16('x00280011') ? thumbnailArray[caseId][i].uint16('x00280011') : 512,
-        rowVal = thumbnailArray[caseId][i].uint16('x00280010') ? thumbnailArray[caseId][i].uint16('x00280010') : 512;
-      result.array.push({
-        imageBuf: thumbnailArray[caseId][i].byteArray,
-        pixelDataOffset: thumbnailArray[caseId][i].elements.x7fe00010.dataOffset,
-        pixelDataLength: thumbnailArray[caseId][i].elements.x7fe00010.length,
-        getPixelData: function () {},
-        minPixelValue: 0,
-        maxPixelValue: 4096,
-        slope: thumbnailArray[caseId][i].string('x00281053') ? parseInt(thumbnailArray[caseId][i].string('x00281053')) : 0,
-        intercept: thumbnailArray[caseId][i].string('x00281052') ? parseInt(thumbnailArray[caseId][i].string('x00281052')) : -1024,
-        windowCenter: -600,
-        windowWidth: 1500,
-        columns: colVal,
-        rows: rowVal,
-        width: colVal,
-        height: rowVal,
-        sizeInBytes: rowVal * colVal * 2
-      });
-    }
-
-    return result;
+    return dicomData.getThumbnail(caseId);
   }
 
 });
-
-/**
- * initialize thumbnails for series panel
- * @param seriesIndex the corresponding series index for the thumbnail
- * @param dirPath the directory path where the dicom stores for this series
- */
-function initThumbnail(seriesIndex, dirPath, caseId) {
-  let fileNames = fs.readdirSync(dirPath);
-  for (let i = 0; i < fileNames.length; i++) {
-    if (!thumbnailArray[caseId]) {
-      thumbnailArray[caseId] = []
-    }
-    let tokens = fileNames[i].split('_');
-
-    if (tokens[tokens.length - 1] === '1.dcm') {
-      let data = fs.readFileSync(path.join(dirPath, fileNames[i]));
-      thumbnailArray[caseId][seriesIndex] = dicomParser.parseDicom(data);
-      return;
-    }
-  }
-
-
-}

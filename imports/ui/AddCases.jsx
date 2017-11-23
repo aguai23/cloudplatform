@@ -18,8 +18,8 @@ import CustomEventEmitter from '../library/CustomEventEmitter';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 import './css/app.css';
-import "./css/common/spinner.css";
-import "./css/addCase.css";
+import './css/common/spinner.css';
+import './css/addCase.css';
 
 let isUploadFinished = true,
   imageArray = [];
@@ -869,7 +869,7 @@ export class AddCase extends Component {
                       <Button onClick={this.changeSeriesModalState.bind(this, index)} style={{marginLeft: '5px'}}>详情</Button>
                       <Link to={{
                         pathname: '/viewer',
-                        state: { caseId: oldCase && oldCase._id, index: index }
+                        state: { studyUID: oldCase && oldCase.studyInstanceUID, index: index }
                       }} className="btn btn-default" style={{marginLeft: '5px'}}>浏览</Link>
                       <Button onClick={() => this.download(oldCase._id, index)} style={{marginLeft: '5px'}}>
                         <FontAwesome name='download' size='lg' />

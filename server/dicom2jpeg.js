@@ -47,7 +47,7 @@ Picker.route('/download', (params, req, res, next) => {
     let caseId = params.query.caseId,
         seriesIndex = params.query.seriesIndex;
 
-    let dirPath = '/zip',
+    let dirPath = Meteor.settings.ZIP_FILE_PATH,
         result = {
           status: 'FAILURE'
         };
@@ -110,25 +110,28 @@ function convertDicomFiles(seriesInstanceUID, dirPath, archive) {
         transferSyntaxUID = dataset.string('x00020010'),
         slope = parseInt(dataset.string('x00281053')),
         intercept = parseInt(dataset.string('x00281052'));
+        windowWidth = dataset.string('x00281051') ? parseInt(dataset.string('x00281051')) : 0,
+        windowCenter = dataset.string('x00281050') ? parseInt(dataset.string('x00281050')) : 0,
+        bitsAllocated = dataset.uint16('x00280100') ? dataset.uint16('x00280100') : 16;
+
 
     // now treat all dicom as Little Endian encoded as default
     // if(transferSyntaxUID === '1.2.840.10008.1.2.1​')
 
-
-    // let windowWidth = dataset.string('x00281051');
-    // let windowCenter = dataset.string('00281050');
-    let windowWidth = 1500, windowCenter = -600;
-
     let minValue = windowCenter - windowWidth,
         maxValue = windowCenter + windowWidth;
 
-
     let frameData = new Buffer(imageWidth * imageHeight * 4);
 
-
     let j = 0;
-    while(j < frameData.length) {
-      let value = dataset.byteArray.readInt16LE(offset + j / 2);
+    while(j < frameData.length && (offset + j * bitsAllocated / 32 < dataset.byteArray.length)) {
+      let value = 0;
+
+      if(bitsAllocated === 8) {
+        value = dataset.byteArray.readInt8(offset + j * bitsAllocated / 32);
+      } else if(bitsAllocated === 16) {
+        value = dataset.byteArray.readInt16LE(offset + j * bitsAllocated / 32);
+      }
 
       value = value * slope + intercept;
       value = Math.min(Math.max(minValue, value), maxValue);
@@ -139,8 +142,6 @@ function convertDicomFiles(seriesInstanceUID, dirPath, archive) {
       frameData[j++] = value;
       frameData[j++] = 0xFF;
     }
-
-    // let encodedPixelData = dicomParser.readEncapsulatedPixelData(dataset, dataset.elements.x7fe00010, 0);
 
     let rawImageData = {
       width: imageWidth,
