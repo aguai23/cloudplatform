@@ -23,7 +23,6 @@ export default class MainCanvas extends Component {
     this.imageNumber = 0;
     this.index = 1;
     this.caseId = this.props.caseId;
-    this.curSeriesIndex = this.props.curSeriesIndex;
     this.curSeriesNumber = this.props.seriesNumber;
 
     this.state = {
@@ -188,6 +187,9 @@ export default class MainCanvas extends Component {
       if (error) {
         console.error(error)
       } else {
+        let eventEmitter = new CustomEventEmitter();
+        eventEmitter.dispatch('loadThumbnails');
+
         let dateTime = ''
         if (result.seriesTime && result.seriesDate) {
           let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);

@@ -16,11 +16,22 @@ export default class LeftPanel extends Component {
     this.state = {
       seriesList: [],
       panelType: 'thumbnail',
-      curSeriesIndex: props.curSeriesIndex,
+      curSeriesNumber: undefined,
       diagnosisResult: []
     }
     this.getThumbnails = this.getThumbnails.bind(this);
-    this.getThumbnails(props.caseId);
+
+    let eventEmitter = new CustomEventEmitter();
+    eventEmitter.subscribe('loadThumbnails', () => {
+      this.getThumbnails(props.caseId);
+    });
+
+    this.map = {};
+  }
+
+  componentWillUnmount() {
+    let eventEmitter = new CustomEventEmitter();
+    eventEmitter.unsubscribe('loadThumbnails');
   }
 
   getThumbnails(caseId) {
@@ -30,19 +41,18 @@ export default class LeftPanel extends Component {
         return console.error(err);
       }
 
-      console.log('result', result);
-
       this.setState({
         thumbnailArray: result.array,
         seriesList: foundCase.seriesList,
-        caseInfo: foundCase
+        caseInfo: foundCase,
+        curSeriesNumber: foundCase.seriesList[0].seriesNumber
       }, () => {
         for (let i = 0; i < this.state.seriesList.length; i++) {
           let element = document.getElementById('thumbnail' + i);
           cornerstone.enable(element);
           this.enableThumbnailCanvas(i, document.getElementById('thumbnail' + i));
+          this.map[this.state.seriesList[i].seriesNumber] = i;
         }
-
       });
     });
   }
@@ -69,10 +79,10 @@ export default class LeftPanel extends Component {
   }
 
   switchSeries(seriesIndex, seriesNumber) {
-    if (this.state.curSeriesIndex === seriesIndex) return;
+    if (this.state.curSeriesNumber === seriesNumber) return;
 
     this.setState({
-      curSeriesIndex: seriesIndex
+      curSeriesNumber: seriesNumber
     }, function () {
       customEventEmitter.dispatch('changeSeries', { caseId: this.props.caseId, seriesNumber: seriesNumber })
     });
@@ -224,7 +234,7 @@ export default class LeftPanel extends Component {
         this.state.seriesList.map((series, index) => {
           return (
             <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index, series.seriesNumber) }}>
-              <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
+              <div className={"thumbnail-container " + (this.state.curSeriesNumber === series.seriesNumber ? 'active-thumbnail' : '')}>
                 <div className="thumbnailDiv" id={'thumbnail' + index} />
               </div>
               <div className="thumbnail-info row">
