@@ -4,16 +4,16 @@ import { browserHistory } from 'react-router';
 import { Accounts } from 'meteor/accounts-base';
 import { Button, Checkbox, Col, Form, FormControl, FormGroup } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
-
+import './css/registration.css';
 const styles = {
   loginBox: {
-    border: '1px solid black',
-    borderRadius: '20px',
-    margin: '0 auto',
-    padding: '10px 30px 10px 30px',
-    position: 'relative',
-    top: '200px',
-    width: '400px'
+      margin: '0 auto',
+      padding: '10px 30px 10px 30px',
+      position: 'relative',
+      marginTop: '10%',
+      width: '400px',
+      marginLeft: '60%',
+      background: 'white'
   },
 
   btnRegister: {
@@ -22,7 +22,8 @@ const styles = {
   },
 
   linkAlreadyHaveAccount: {
-    fontSize: '12px'
+    fontSize: '12px',
+    color: '#2659ad'
   }
 };
 
@@ -76,60 +77,58 @@ export default class Registration extends Component {
 
   render() {
     return (
-      <div ref="container" className="container" style={styles.loginBox}>
-        <h3 style={{textAlign: 'center'}}>新用户注册</h3>
-        <hr/>
+      <div id = "registration-background">
+        <div id = "registration-logo"/>
+        <div ref="container" className="container" style={styles.loginBox}>
+          <h3 style={{textAlign: 'center',color: '#2659ad', marginBottom: '20px'}}>新用户注册</h3>
           <Form horizontal>
             <FormGroup>
-              <Col sm={3}>Email</Col>
-              <Col sm={9}>
-                <FormControl type="email" placeholder="Email" inputRef={function(ref) { this.emailInput = ref; }} />
+              <Col smOffset={1} sm={2} className={'registration-text'}>Email</Col>
+              <Col smOffset={1} sm={10}>
+                <FormControl className = "registration-input" type="email" placeholder="Email" inputRef={function(ref) { this.emailInput = ref; }} />
               </Col>
             </FormGroup>
 
             <FormGroup>
-              <Col sm={3}>密码</Col>
-              <Col sm={9}>
-                <FormControl type="password" placeholder="Password" inputRef={function(ref) { this.passwordInput = ref; }}/>
+              <Col smOffset={1} sm={2} className={'registration-text'}>密码</Col>
+              <Col smOffset={1} sm={10}>
+                <FormControl className = "registration-input" type="password" placeholder="Password" inputRef={function(ref) { this.passwordInput = ref; }}/>
               </Col>
             </FormGroup>
 
             <FormGroup>
-              <Col sm={3}>确认密码</Col>
-              <Col sm={9}>
-                <FormControl type="password" placeholder="Confirm password" inputRef={function(ref) { this.confirmPasswordInput = ref; }}/>
+              <Col smOffset={1} sm={4} className={'registration-text'}>确认密码</Col>
+              <Col smOffset={1} sm={10}>
+                <FormControl className = "registration-input" type="password" placeholder="Confirm password" inputRef={function(ref) { this.confirmPasswordInput = ref; }}/>
               </Col>
             </FormGroup>
 
             <FormGroup>
-              <Col smOffset={3} sm={9}>
+              <Col smOffset={1} sm={4}>
                 <Checkbox inputRef={function(ref) { this.adminInput = ref; }}  >管理员</Checkbox>
               </Col>
-            </FormGroup>
-
-            <FormGroup>
-              <Col smOffset={3} sm={9}>
+              <Col smOffset={4} sm={3}>
+                <Button className="registration-button" onClick={this.register}>注册</Button>
+              </Col>
+              <Col smOffset={1} sm={5}>
                 <Checkbox>同意使用协议</Checkbox>
               </Col>
+
             </FormGroup>
 
-            <hr/>
-
-            <div style={styles.btnRegister}>
-              <Button className="btn btn-warning" onClick={this.register}>注册</Button>
-            </div>
             <a href="login" className="pull-right" style={styles.linkAlreadyHaveAccount}>已经有账号?</a>
           </Form>
 
           <ToastContainer
-              position="top-center"
-              type="info"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              pauseOnHover
-            />
+            position="top-center"
+            type="info"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            pauseOnHover
+          />
+        </div>
       </div>
     );
   }

@@ -13,11 +13,13 @@ const customEventEmitter = new CustomEventEmitter()
 export default class LeftPanel extends Component {
   constructor(props) {
     super(props);
+    let foundCase = Cases.findOne({ _id: props.caseId });
     this.state = {
-      seriesList: [],
       panelType: 'thumbnail',
-      curSeriesNumber: undefined,
-      diagnosisResult: []
+      caseInfo: foundCase,
+      curSeriesNumber: foundCase.seriesList[0].seriesNumber,
+      diagnosisResult: [],
+      seriesList: foundCase.seriesList
     }
     this.getThumbnails = this.getThumbnails.bind(this);
 
@@ -42,10 +44,7 @@ export default class LeftPanel extends Component {
       }
 
       this.setState({
-        thumbnailArray: result.array,
-        seriesList: foundCase.seriesList,
-        caseInfo: foundCase,
-        curSeriesNumber: foundCase.seriesList[0].seriesNumber
+        thumbnailArray: result.array
       }, () => {
         for (let i = 0; i < this.state.seriesList.length; i++) {
           let element = document.getElementById('thumbnail' + i);
@@ -61,13 +60,13 @@ export default class LeftPanel extends Component {
     let image = this.state.thumbnailArray[seriesIndex];
     let pixelData = undefined;
 
-    if(image.bitsAllocated === 8) {
+    if (image.bitsAllocated === 8) {
       pixelData = new Uint16Array(image.pixelDataLength);
 
-      for(let i = 0; i < image.pixelDataLength; i++) {
+      for (let i = 0; i < image.pixelDataLength; i++) {
         pixelData[i] = image.imageBuf[image.pixelDataOffset + i];
       }
-    } else if(image.bitsAllocated === 16) {
+    } else if (image.bitsAllocated === 16) {
       pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
     }
 
@@ -110,7 +109,7 @@ export default class LeftPanel extends Component {
   onClickDiagnosisRow(key) {
     $('div').removeClass('leftPanel-activeRow');
     $('#diagnosis-item-' + key).addClass('leftPanel-activeRow');
-    customEventEmitter.dispatch('setSlice',Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice))
+    customEventEmitter.dispatch('setSlice', Math.min(this.state.diagnosisResult[this.state.curSeriesIndex][key].firstSlice, this.state.diagnosisResult[this.state.curSeriesIndex][key].lastSlice))
   }
 
   switchPanelState(isDiagnosis) {
@@ -137,10 +136,10 @@ export default class LeftPanel extends Component {
           this.extract(JSON.parse(algorithmInfo.circle));
         } else {
           if (this.state.isDiagnosing) {
-            this.props.toastInfo('warning','诊断还未完成，请稍后');
+            this.props.toastInfo('warning', '诊断还未完成，请稍后');
             return
           }
-          this.props.toastInfo('warning','正在进行诊断，请等待');
+          this.props.toastInfo('warning', '正在进行诊断，请等待');
           this.setState({
             isDiagnosing: true,
             isLoadingPanelFinished: false
@@ -152,14 +151,14 @@ export default class LeftPanel extends Component {
                 return console.error(error);
               }
               if (res.content === 'error') {
-                this.props.toastInfo('error','服务器异常');
+                this.props.toastInfo('error', '服务器异常');
                 this.setState({
                   isDiagnosing: false
                 });
                 return
               }
               console.log('res', res)
-              this.props.toastInfo('success','诊断完成')
+              this.props.toastInfo('success', '诊断完成')
               const end = new Date().getTime();
               console.log("total time " + (end - start) / 1000);
               this.setState({
