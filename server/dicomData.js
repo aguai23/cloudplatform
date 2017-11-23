@@ -22,21 +22,23 @@ export default class DicomData {
   prepareData(caseId) {
 
     if (this.studyInfo[caseId]) {
-      this.loadCount.caseId ++;
+      this.loadCount.caseId++;
       return this.studyInfo[caseId];
     }
     let caseInstance = Cases.findOne({_id : caseId});
     if (!caseInstance) {
-      console.log("case not found");
-      return {status: "Failure"};
+      console.error("case not found");
+      return {status: "FAILURE"};
     }
     let seriesCount = caseInstance.seriesList.length;
     this.dicomData[caseId] = {};
-    for (let seriesInstance in caseInstance.seriesList) {
-      let fileNames = fs.readFileSync(seriesInstance.path);
+    //for (let seriesInstance in caseInstance.seriesList) {
+    for(let i = 0; i < seriesCount; i++) {
+      let seriesInstance = caseInstance.seriesList[i];
+      let fileNames = fs.readdirSync(seriesInstance.path);
       this.dicomData[caseId][seriesInstance.seriesNumber] = {};
-      for (let filename in fileNames) {
-        let data = fs.readFileSync(path.join(seriesInstance.path, filename));
+      for (let j = 0; j < fileNames.length; j++) {
+        let data = fs.readFileSync(path.join(seriesInstance.path, fileNames[j]));
         let dataset = dicomParser.parseDicom(data);
         let index = parseInt(dataset.string('x00200013'));
         this.dicomData[caseId][seriesInstance.seriesNumber][index] = dataset;
@@ -44,7 +46,6 @@ export default class DicomData {
     }
     this.doneLoading[caseId] = true;
     let result = this.constructStudyInfo(caseId);
-    result.status = "SUCCESS";
     result.seriesCount = seriesCount;
     this.loadCount[caseId] = 1;
     return result;
@@ -60,8 +61,7 @@ export default class DicomData {
     for (let seriesNumber in this.dicomData[caseId]) {
       if (this.dicomData[caseId].hasOwnProperty(seriesNumber)) {
         result[seriesNumber] = {};
-        let data = this.dicomData[caseId][seriesNumber][1];
-        let dataset = dicomParser.parseDicom(data);
+        let dataset = this.dicomData[caseId][seriesNumber][1];
         result[seriesNumber].patientName = dataset.string('x00100010');
         result[seriesNumber].patientId = dataset.string('x00100020');
         result[seriesNumber].rows = dataset.uint16('x00280010');

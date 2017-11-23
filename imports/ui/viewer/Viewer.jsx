@@ -60,12 +60,14 @@ export class Viewer extends Component {
    * @param props
    */
   constructor(props) {
-    const studyInstanceUID = props.location.query.studyInstanceUID ? props.location.query.studyInstanceUID : props.location.state.studyUID
     super(props);
+
+    this.studyInstanceUID = props.location.query.studyInstanceUID ? props.location.query.studyInstanceUID : props.location.state.studyUID;
+    this.seriesNumber = props.location.state.seriesNumber;
     this.state = {
       canvasParams: {},
       seriesList: [],
-      caseInfo: Cases.findOne({ studyInstanceUID: studyInstanceUID }),
+      caseInfo: Cases.findOne({ studyInstanceUID: this.studyInstanceUID }),
       circleVisible: true,
       curSeriesIndex: this.props.location.state && this.props.location.state.index ? this.props.location.state.index : 0,
       isDiagnosisPanelOpened: false,
@@ -464,6 +466,7 @@ export class Viewer extends Component {
                 toastInfo={this.toastInfo}
                 caseId={this.state.caseInfo._id}
                 curSeriesIndex={this.state.curSeriesIndex}
+                seriesNumber={this.seriesNumber}
                 controllerBtnClicked={this.state.btnClicked}
                 canvasParams={this.state.canvasParams}
                 callback={() => this.clearCanvasParams()}

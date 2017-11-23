@@ -20,7 +20,7 @@ export default class LeftPanel extends Component {
       diagnosisResult: []
     }
     this.getThumbnails = this.getThumbnails.bind(this)
-    this.getThumbnails(props.caseId)
+    // this.getThumbnails(props.caseId)
   }
 
   getThumbnails(caseId) {

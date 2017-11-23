@@ -132,7 +132,7 @@ export default class MainCanvas extends Component {
     /**
      * send a request to require server load all cases first
      */
-    this.initMainCanvas(this.props.caseId, this.curSeriesIndex);
+    this.initMainCanvas(this.props.caseId, this.props.seriesNumber);
 
     /**
      * set scroll tool for default mousewheel operation
@@ -178,39 +178,36 @@ export default class MainCanvas extends Component {
    * @param caseId
    * @param seriesIndex
    */
-  initMainCanvas(caseId, seriesIndex) {
+  initMainCanvas(caseId, seriesNumber) {
     this.setState({
       isLoading: true
     });
-    Meteor.call('prepareDicoms', caseId, seriesIndex, (error, result) => {
+    Meteor.call('prepareDicoms', caseId, seriesNumber, (error, result) => {
       if (error) {
         console.error(error)
       } else {
-        if (result.status === 'SUCCESS') {
-          let dateTime = ''
-          if (result.seriesTime && result.seriesDate) {
-            let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
-            dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
-          }
-
-          this.imageNumber = result.imageNumber;
-          this.index = 1;
-          this.displayInfo = {
-            patientId: result.patientId,
-            patientName: result.patientName,
-            dateTime: dateTime,
-            rows: result.rows,
-            cols: result.cols,
-            pixelSpacing: result.pixelSpacing,
-            thickness: result.thickness,
-            index: 1
-          };
-
-          this.setSlice(seriesIndex, this.index);
-
-          $('#viewer').on('CornerstoneImageRendered', (e) => this.updateInfo(e));
+        let dateTime = ''
+        if (result.seriesTime && result.seriesDate) {
+          let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
+          dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
         }
 
+        this.imageNumber = result.imageNumber;
+        this.index = 1;
+        this.displayInfo = {
+          patientId: result.patientId,
+          patientName: result.patientName,
+          dateTime: dateTime,
+          rows: result.rows,
+          cols: result.cols,
+          pixelSpacing: result.pixelSpacing,
+          thickness: result.thickness,
+          index: 1
+        };
+
+        this.setSlice(caseId, seriesNumber, this.index);
+
+        $('#viewer').on('CornerstoneImageRendered', (e) => this.updateInfo(e));
       }
     });
   }
@@ -239,10 +236,10 @@ export default class MainCanvas extends Component {
 
   /**
    * set image slice
-   * @param curSeriesIndex
+   * @param seriesNumber
    * @param index image index
    */
-  setSlice(curSeriesIndex, index) {
+  setSlice(caseId, seriesNumber, index) {
     // this.setState({
     //   isLoading: true
     // });
@@ -254,12 +251,12 @@ export default class MainCanvas extends Component {
         })
     }, 400)
 
-    if (!this.dicomObj[curSeriesIndex]) {
-      this.dicomObj[curSeriesIndex] = {};
+    if (!this.dicomObj[seriesNumber]) {
+      this.dicomObj[seriesNumber] = {};
     }
 
-    if (!this.dicomObj[curSeriesIndex][index]) {
-      Meteor.call('getDicom', curSeriesIndex, index, (err, image) => {
+    if (!this.dicomObj[seriesNumber][index]) {
+      Meteor.call('getDicom', caseId, seriesNumber, index, (err, image) => {
         if (err) {
           return console.error(err);
         }
@@ -283,7 +280,7 @@ export default class MainCanvas extends Component {
           return pixelData
         };
 
-        this.dicomObj[curSeriesIndex][index] = image;
+        this.dicomObj[seriesNumber][index] = image;
 
         /**
          * set viewport scale when loading first slice
@@ -315,7 +312,7 @@ export default class MainCanvas extends Component {
         showFlag = false
       });
     } else {
-      cornerstone.displayImage(this.container, this.dicomObj[curSeriesIndex][index]);
+      cornerstone.displayImage(this.container, this.dicomObj[seriesNumber][index]);
       this.setState({
         isLoading: false
       });
