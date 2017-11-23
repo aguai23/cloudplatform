@@ -107,7 +107,7 @@ Meteor.methods({
     result.getPixelData = function () {};
     result.slope = dicomObj[userId][seriesIndex][index - 1].string('x00281053') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281053')) : 0;
     result.intercept = dicomObj[userId][seriesIndex][index - 1].string('x00281052') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281052')) : -1024;
-    result.modality = dicomObj[userId][seriesIndex][index - 1].string('x00080060')
+    result.modality = dicomObj[userId][seriesIndex][index - 1].string('x00080060');
     result.windowCenter = dicomObj[userId][seriesIndex][index - 1].string('x00281050') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281050')) : 0;
     result.windowWidth = dicomObj[userId][seriesIndex][index - 1].string('x00281051') ? parseInt(dicomObj[userId][seriesIndex][index - 1].string('x00281051')) : 0;
     result.columns = dicomObj[userId][seriesIndex][index - 1].uint16('x00280011') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280011')) : 512;
@@ -115,6 +115,8 @@ Meteor.methods({
     result.width = result.columns;
     result.height = result.rows;
     result.sizeInBytes = result.rows * result.columns * 2;
+    result.minPixelValue = 0;
+    result.maxPixelValue = 4096;
 
     var pixelspacing = dicomObj[userId][seriesIndex][index - 1].string('x00280030');
     if (pixelspacing) {
