@@ -187,12 +187,12 @@ export default class Viewer extends Component {
     return (
       <Popover id="window-popover" className="popover-positioned-bottom">
         <ul>
-          <li onClick={() => this.setWindowParams(40, 80)}>Brain 40/80</li>
-          <li onClick={() => this.setWindowParams(40, 350)}>Chest 40/350</li>
-          <li onClick={() => this.setWindowParams(40, 350)}>Abdomen 40/350</li>
-          <li onClick={() => this.setWindowParams(90, 350)}>Head 90/350</li>
-          <li onClick={() => this.setWindowParams(-600, 1500)}>Lung -600/1500</li>
-          <li onClick={() => this.setWindowParams(480, 2500)}>Bone 480/2500</li>
+          <li onClick={() => this.setWindowParams(80, 40)}>CT脑窗</li>
+          <li onClick={() => this.setWindowParams(350, 40)}>CT胸窗</li>
+          <li onClick={() => this.setWindowParams(350, 40)}>CT腹窗</li>
+          <li onClick={() => this.setWindowParams(1500, -600)}>CT肺窗</li>
+          <li onClick={() => this.setWindowParams(2500, 480)}>CT骨窗</li>
+          <li onClick={() => this.setWindowParams(350, 90)}>CT面颅软组织窗</li>
         </ul>
         <div className="row div-input">
           <div className="col-sm-6">
