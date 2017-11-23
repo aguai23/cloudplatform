@@ -246,7 +246,7 @@ export default class MainCanvas extends Component {
     // this.setState({
     //   isLoading: true
     // });
-    const showFlag = true
+    let showFlag = true;
     Meteor.setTimeout(() => {
       if (showFlag === true)
         this.setState({
