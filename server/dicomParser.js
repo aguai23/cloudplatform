@@ -115,6 +115,7 @@ Meteor.methods({
     result.columns = dicomObj[userId][seriesIndex][index - 1].uint16('x00280011') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280011')) : 512;
     result.rows = dicomObj[userId][seriesIndex][index - 1].uint16('x00280010') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280010')) : 512;
     result.bitsAllocated = dicomObj[userId][seriesIndex][index - 1].uint16('x00280100') ? parseInt(dicomObj[userId][seriesIndex][index - 1].uint16('x00280100')) : 16;
+    result.photometricInterpretation = dicomObj[userId][seriesIndex][index - 1].string('x00280004') ? dicomObj[userId][seriesIndex][index - 1].string('x00280004') : 'MONOCHROME2';
     result.width = result.columns;
     result.height = result.rows;
     result.sizeInBytes = result.rows * result.columns * 2;
