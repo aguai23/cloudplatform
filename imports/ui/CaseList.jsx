@@ -319,7 +319,7 @@ export class CaseList extends Component {
                               pathname: '/viewer',
                               state: {
                                 studyUID: specificCase.studyInstanceUID,
-                                seriesNumber: parseInt(specificCase.seriesList[0].seriesNumber)
+                                seriesNumber: specificCase.seriesList[0].seriesNumber
                               }
                             }} className="glyphicon glyphicon-picture" />
                             &nbsp;&nbsp;&nbsp;

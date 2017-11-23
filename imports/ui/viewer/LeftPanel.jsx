@@ -19,8 +19,8 @@ export default class LeftPanel extends Component {
       curSeriesIndex: props.curSeriesIndex,
       diagnosisResult: []
     }
-    this.getThumbnails = this.getThumbnails.bind(this)
-    // this.getThumbnails(props.caseId)
+    this.getThumbnails = this.getThumbnails.bind(this);
+    this.getThumbnails(props.caseId);
   }
 
   getThumbnails(caseId) {
@@ -29,6 +29,8 @@ export default class LeftPanel extends Component {
       if (err) {
         return console.error(err);
       }
+
+      console.log('result', result);
 
       this.setState({
         thumbnailArray: result.array,
@@ -66,13 +68,13 @@ export default class LeftPanel extends Component {
     cornerstone.displayImage(element, image);
   }
 
-  switchSeries(seriesIndex) {
+  switchSeries(seriesIndex, seriesNumber) {
     if (this.state.curSeriesIndex === seriesIndex) return;
 
     this.setState({
       curSeriesIndex: seriesIndex
     }, function () {
-      customEventEmitter.dispatch('changeSeries', { caseId: this.props.caseId, curSeriesIndex: seriesIndex })
+      customEventEmitter.dispatch('changeSeries', { caseId: this.props.caseId, seriesNumber: seriesNumber })
     });
   }
 
@@ -221,7 +223,7 @@ export default class LeftPanel extends Component {
       this.state.seriesList && this.state.seriesList.length > 0 ? (
         this.state.seriesList.map((series, index) => {
           return (
-            <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index) }}>
+            <div key={'thumbnail' + index} onClick={() => { this.switchSeries(index, series.seriesNumber) }}>
               <div className={"thumbnail-container " + (this.state.curSeriesIndex === index ? 'active-thumbnail' : '')}>
                 <div className="thumbnailDiv" id={'thumbnail' + index} />
               </div>

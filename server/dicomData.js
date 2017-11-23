@@ -24,7 +24,6 @@ export default class DicomData {
       this.loadCount.caseId++;
       return this.studyInfo[caseId];
     }
-    console.log("start prepare");
     let caseInstance = Cases.findOne({_id : caseId});
     if (!caseInstance) {
       console.error("case not found");

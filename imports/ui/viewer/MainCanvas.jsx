@@ -22,7 +22,9 @@ export default class MainCanvas extends Component {
     this.displayInfo = {};
     this.imageNumber = 0;
     this.index = 1;
+    this.caseId = this.props.caseId;
     this.curSeriesIndex = this.props.curSeriesIndex;
+    this.curSeriesNumber = this.props.seriesNumber;
 
     this.state = {
       isLoading: false,
@@ -33,12 +35,12 @@ export default class MainCanvas extends Component {
     };
 
     customEventEmitter.subscribe('changeSeries', (data) => {
-      this.curSeriesIndex = data.curSeriesIndex;
-      this.initMainCanvas(data.caseId, data.curSeriesIndex);
+      this.curSeriesNumber = data.seriesNumber;
+      this.initMainCanvas(data.caseId, data.seriesNumber);
     })
     customEventEmitter.subscribe('diagnosisResult', (data) => {
       cornerstoneTools.ellipticalRoi.enable(this.container, 1);
-      let caseId = this.props.caseId;
+      let caseId = this.caseId;
       let elements = [document.getElementById('viewer')];
       let currentState = cornerstoneTools.appState.save(elements);
       let result = JSON.parse(data.result);
@@ -99,7 +101,7 @@ export default class MainCanvas extends Component {
       })
     })
     customEventEmitter.subscribe('setSlice', (data) => {
-      this.setSlice(this.curSeriesIndex, data)
+      this.setSlice(this.caseId, this.curSeriesNumber, data)
     })
   }
 
@@ -132,7 +134,7 @@ export default class MainCanvas extends Component {
     /**
      * send a request to require server load all cases first
      */
-    this.initMainCanvas(this.props.caseId, this.props.seriesNumber);
+    this.initMainCanvas(this.caseId, this.props.seriesNumber);
 
     /**
      * set scroll tool for default mousewheel operation
@@ -328,7 +330,7 @@ export default class MainCanvas extends Component {
    */
   increaseSlice() {
     if (this.index < this.imageNumber) {
-      this.setSlice(this.curSeriesIndex, this.index + 1);
+      this.setSlice(this.caseId, this.curSeriesNumber, this.index + 1);
     }
   }
 
@@ -337,7 +339,7 @@ export default class MainCanvas extends Component {
    */
   decreaseSlice() {
     if (this.index > 1) {
-      this.setSlice(this.curSeriesIndex, this.index - 1);
+      this.setSlice(this.caseId, this.curSeriesNumber, this.index - 1);
     }
   }
 
@@ -362,7 +364,7 @@ export default class MainCanvas extends Component {
    */
   onDragScrollBar() {
     let scrollbar = document.getElementById("scrollbar");
-    this.setSlice(this.curSeriesIndex, parseInt(scrollbar.value));
+    this.setSlice(this.caseId, this.curSeriesNumber, parseInt(scrollbar.value));
   }
 
   /**
@@ -584,8 +586,17 @@ export default class MainCanvas extends Component {
       })
     });
 
-    let caseInfo = Cases.findOne({ _id: this.props.caseId });
-    let seriesInstanceUID = caseInfo.seriesList[this.curSeriesIndex].seriesInstanceUID
+    let caseInstance = Cases.findOne({ _id: this.caseId });
+
+    let index = 0;
+    while(index < caseInstance.seriesList.length) {
+      if(caseInstance.seriesList[index].seriesNumber === this.curSeriesNumber) {
+        break;
+      }
+      index++;
+    }
+
+    let seriesInstanceUID = caseInstance.seriesList[index].seriesInstanceUID
 
     let mark = {
       imageIdToolState: appState.imageIdToolState,
@@ -593,7 +604,7 @@ export default class MainCanvas extends Component {
       elementViewport: appState.elementViewport,
       source: 'USER',
       createAt: new Date(),
-      caseId: this.props.caseId,
+      caseId: this.caseId,
       seriesInstanceUID: seriesInstanceUID,
       ownerId: Meteor.userId() ? Meteor.userId() : 'tourist'
     };
@@ -625,10 +636,19 @@ export default class MainCanvas extends Component {
    * reload mark from database
    */
   restoreState() {
-    let elements = [this.container];
-    let currentState = cornerstoneTools.appState.save(elements);
-    let caseInfo = Cases.findOne({ _id: this.props.caseId });
-    let seriesInstanceUID = caseInfo.seriesList[this.curSeriesIndex].seriesInstanceUID
+    let elements = [this.container],
+        currentState = cornerstoneTools.appState.save(elements),
+        caseInstance = Cases.findOne({ _id: this.caseId });
+
+    let index = 0;
+    while(index < caseInstance.seriesList.length) {
+      if(caseInstance.seriesList[index].seriesNumber === this.curSeriesNumber) {
+        break;
+      }
+      index++;
+    }
+
+    let seriesInstanceUID = caseInstance.seriesList[index].seriesInstanceUID
     let oldState = Marks.findOne({ ownerId: Meteor.userId() ? Meteor.userId() : 'tourist', seriesInstanceUID: seriesInstanceUID });
     /**
      * save system mark to old mark
@@ -661,7 +681,7 @@ export default class MainCanvas extends Component {
     let canvas = $('#viewer canvas').get(0),
       enabledElement = cornerstone.getEnabledElement(this.container),
       viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image),
-      width = this.dicomObj[this.curSeriesIndex][this.index].width;
+      width = this.dicomObj[this.curSeriesNumber][this.index].width;
 
     viewport.scale = (600 / width).toFixed(2);
     cornerstone.setViewport(this.container, viewport);
