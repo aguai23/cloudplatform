@@ -130,9 +130,9 @@ export default class DicomData {
       }
     }
 
-    if (dataset.uint16('x00280107')) {
-      result.minPixelValue = dataset.uint16('x00280106');
-      result.maxPixelValue = dataset.uint16('x00280107');
+    if (dataset.int16('x00280107')) {
+      result.minPixelValue = dataset.int16('x00280106');
+      result.maxPixelValue = dataset.int16('x00280107');
     } else {
       if(result.bitsAllocated === 8) {
         result.windowWidth = Math.round(result.windowWidth / 16);
