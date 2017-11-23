@@ -1,7 +1,7 @@
 import {Cases} from '../imports/api/cases';
 const fs = require('fs');
 const path = require('path');
-
+const dicomParser = require('dicom-parser');
 /**
  * DicomData is responsible for storing and handling data
  */
@@ -20,11 +20,11 @@ export default class DicomData {
    * @returns {*}
    */
   prepareData(caseId) {
-
     if (this.studyInfo[caseId]) {
       this.loadCount.caseId++;
       return this.studyInfo[caseId];
     }
+    console.log("start prepare");
     let caseInstance = Cases.findOne({_id : caseId});
     if (!caseInstance) {
       console.error("case not found");
@@ -32,7 +32,6 @@ export default class DicomData {
     }
     let seriesCount = caseInstance.seriesList.length;
     this.dicomData[caseId] = {};
-    //for (let seriesInstance in caseInstance.seriesList) {
     for(let i = 0; i < seriesCount; i++) {
       let seriesInstance = caseInstance.seriesList[i];
       let fileNames = fs.readdirSync(seriesInstance.path);
@@ -48,6 +47,7 @@ export default class DicomData {
     let result = this.constructStudyInfo(caseId);
     result.seriesCount = seriesCount;
     this.loadCount[caseId] = 1;
+    this.studyInfo[caseId] = result;
     return result;
   }
 
@@ -157,16 +157,17 @@ export default class DicomData {
   getThumbnail(caseId) {
     let result = {};
     result.array = [];
-    while( ! this.doneLoading.caseId) {
+    // if (! this.doneLoading.caseId) {
+    //   this.prepareData(caseId)
+    // }
+
+    for(let seriesNumber in this.dicomData[caseId]) {
+      let thumbnail = this.constructDicomInfo(this.dicomData[caseId][seriesNumber][1], 1);
+      result.array.push(thumbnail);
     }
-    if (this.doneLoading) {
-      for(let seriesNumber in this.dicomData[caseId]) {
-        let thumbnail = this.constructDicomInfo(this.dicomData[caseId][seriesNumber][1], 1);
-        result.array.push(thumbnail);
-      }
-      result.status = "SUCCESS";
-      return result;
-    }
+    result.status = "SUCCESS";
+    return result;
+
 
   }
 
