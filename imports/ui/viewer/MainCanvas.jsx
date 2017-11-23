@@ -291,6 +291,10 @@ export default class MainCanvas extends Component {
         var viewport = {};
         if (index === 1) {
           viewport.scale = (600 / image.width).toFixed(2);
+
+          if(image.photometricInterpretation === 'MONOCHROME1') {
+            viewport.invert = true;
+          }
         }
         cornerstone.displayImage(this.container, image, viewport);
 
@@ -483,7 +487,7 @@ export default class MainCanvas extends Component {
 
     var config = {
       // invert: true,
-      minScale: 0.25,
+      minScale: 0.1,
       maxScale: 20.0,
       preventZoomOutsideImage: true
     };

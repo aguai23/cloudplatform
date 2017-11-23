@@ -3,10 +3,7 @@
  * parsing data form DICOM files on the server side
  */
 
-import {
-  Meteor
-} from 'meteor/meteor';
-
+import { Meteor } from 'meteor/meteor';
 
 import DicomData from './dicomData';
 
@@ -40,7 +37,6 @@ Meteor.methods({
    * @param caseId
    */
   getThumbnailDicoms(caseId) {
-
     return dicomData.getThumbnail(caseId);
   }
 

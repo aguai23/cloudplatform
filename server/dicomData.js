@@ -117,6 +117,8 @@ export default class DicomData {
     result.columns = dataset.uint16('x00280011') ? parseInt(dataset.uint16('x00280011')) : 512;
     result.rows = dataset.uint16('x00280010') ? parseInt(dataset.uint16('x00280010')) : 512;
     result.bitsAllocated = dataset.uint16('x00280100') ? parseInt(dataset.uint16('x00280100')) : 16;
+    result.photometricInterpretation = dataset.string('x00280004') ? dataset.string('x00280004') : 'MONOCHROME2';
+
     result.width = result.columns;
     result.height = result.rows;
     result.sizeInBytes = result.rows * result.columns * 2;
