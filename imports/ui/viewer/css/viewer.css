@@ -126,8 +126,7 @@
   bottom: 0;
   border: 1px solid #9ccef9;
   border-right: 0;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .main-canvas {

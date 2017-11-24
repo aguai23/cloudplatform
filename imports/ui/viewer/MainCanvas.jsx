@@ -24,6 +24,9 @@ export default class MainCanvas extends Component {
     this.index = 1;
     this.caseId = this.props.caseId;
     this.curSeriesNumber = this.props.seriesNumber;
+    // this.nextImageToCache = 1;
+    // this.uncachedPool = {};
+    this.cachingPool = {};
 
     this.state = {
       isLoading: false,
@@ -101,7 +104,7 @@ export default class MainCanvas extends Component {
     })
     customEventEmitter.subscribe('setSlice', (data) => {
       this.setSlice(this.caseId, this.curSeriesNumber, data)
-    })
+    });
   }
 
   componentDidMount() {
@@ -245,22 +248,15 @@ export default class MainCanvas extends Component {
    * @param index image index
    */
   setSlice(caseId, seriesNumber, index) {
-    // this.setState({
-    //   isLoading: true
-    // });
-    let showFlag = true;
-    Meteor.setTimeout(() => {
-      if (showFlag === true)
-        this.setState({
-          isLoading: true
-        })
-    }, 400)
-
     if (!this.dicomObj[seriesNumber]) {
       this.dicomObj[seriesNumber] = {};
     }
 
     if (!this.dicomObj[seriesNumber][index]) {
+      this.setState({
+        isLoading: true
+      });
+      this.cachingPool[index] = true;
       Meteor.call('getDicom', caseId, seriesNumber, index, (err, image) => {
         if (err) {
           return console.error(err);
@@ -298,7 +294,15 @@ export default class MainCanvas extends Component {
             viewport.invert = true;
           }
         }
-        cornerstone.displayImage(this.container, image, viewport);
+
+        delete this.cachingPool[index];
+        if(Object.keys(this.cachingPool).length === 0) {
+          this.setState({
+            isLoading: false
+          }, () => {
+            cornerstone.displayImage(this.container, image, viewport);
+          });
+        }
 
         let measurementData = {
           currentImageIdIndex: this.index,
@@ -310,18 +314,9 @@ export default class MainCanvas extends Component {
           this.disableAllTools();
           this.imageLoaded = true;
         }
-
-        this.setState({
-          isLoading: false
-        });
-        showFlag = false
       });
     } else {
       cornerstone.displayImage(this.container, this.dicomObj[seriesNumber][index]);
-      this.setState({
-        isLoading: false
-      });
-      showFlag = false
     }
     let scrollbar = document.getElementById("scrollbar");
     scrollbar.value = index;
@@ -365,9 +360,10 @@ export default class MainCanvas extends Component {
   /**
    * handler for draging the scroll bar, moves scrollbar position and changes image
    */
-  onDragScrollBar() {
-    let scrollbar = document.getElementById("scrollbar");
-    this.setSlice(this.caseId, this.curSeriesNumber, parseInt(scrollbar.value));
+  onDragScrollBar(e) {
+    if(this.index != e.target.value) {
+      this.setSlice(this.caseId, this.curSeriesNumber, parseInt(scrollbar.value));
+    }
   }
 
   /**
@@ -787,19 +783,22 @@ export default class MainCanvas extends Component {
       <div style={{
         height: '100%'
       }}>
-        <LoadingScene show={this.state.isLoading} />
-        <input type="range" id="scrollbar" min={1} max={this.imageNumber} step={1} onChange={() => this.onDragScrollBar()} style={{
-          ...{
-            width: this.containerHeight
-          },
-          ...{
-            top: this.topValue
-          },
-          ...{
-            right: this.rightValue
-          }
-        }} />
+        <input type="range" id="scrollbar" min={1} max={this.imageNumber} step={1}
+          onMouseUp={(e) => this.onDragScrollBar(e)}
+          style={{
+            ...{
+              width: this.containerHeight
+            },
+            ...{
+              top: this.topValue
+            },
+            ...{
+              right: this.rightValue
+            }
+          }}
+        />
         <div ref="viewerContainer" id="viewer">
+          <LoadingScene show={this.state.isLoading} />
           <div className="text-info disable-selection patient-info" id="patientInfo">
             <div>
               <span>病人姓名: {this.displayInfo.patientName}</span>

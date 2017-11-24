@@ -5,6 +5,6 @@
   "ZIP_FILE_PATH": "/zip",
   "public": {
     "ALGORITHM_SERVER": "http://localhost:5000",
-    "server":"http://localhost:3000"
+    "server":"http://192.168.12.142:3000"
   }
 }
