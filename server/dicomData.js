@@ -21,7 +21,7 @@ export default class DicomData {
    */
   prepareData(caseId) {
     if (this.studyInfo[caseId]) {
-      this.loadCount.caseId++;
+      this.loadCount[caseId]++;
       return this.studyInfo[caseId];
     }
     let caseInstance = Cases.findOne({_id : caseId});
@@ -158,9 +158,6 @@ export default class DicomData {
   getThumbnail(caseId) {
     let result = {};
     result.array = [];
-    // if (! this.doneLoading.caseId) {
-    //   this.prepareData(caseId)
-    // }
 
     for(let seriesNumber in this.dicomData[caseId]) {
       let thumbnail = this.constructDicomInfo(caseId, this.dicomData[caseId][seriesNumber][1], 1);
@@ -177,9 +174,11 @@ export default class DicomData {
    * @param caseId
    */
   freeMemory(caseId) {
-    this.loadCount.caseId--;
-    if (this.loadCount.caseId === 0 && this.dicomData.hasOwnProperty(caseId)) {
-      delete this.dicomData.caseId;
+    this.loadCount[caseId]--;
+    if (this.loadCount[caseId]=== 0 && this.dicomData.hasOwnProperty(caseId)) {
+      delete this.dicomData[caseId];
+      delete this.studyInfo[caseId];
+      console.log("delete" + caseId);
     }
   }
 

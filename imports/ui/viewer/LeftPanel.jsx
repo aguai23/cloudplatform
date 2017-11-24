@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Meteor } from 'meteor/meteor';
+import {HTTP} from 'meteor/http';
 import { Button, Navbar, NavItem, Nav, OverlayTrigger, Popover, ButtonGroup } from 'react-bootstrap';
 import ReactSVG from 'react-svg';
 import { Cases } from '../../api/cases';
@@ -20,7 +21,7 @@ export default class LeftPanel extends Component {
       curSeriesNumber: foundCase.seriesList[0].seriesNumber,
       diagnosisResult: [],
       seriesList: foundCase.seriesList
-    }
+    };
     this.getThumbnails = this.getThumbnails.bind(this);
 
     let eventEmitter = new CustomEventEmitter();
@@ -37,12 +38,12 @@ export default class LeftPanel extends Component {
   }
 
   getThumbnails(caseId) {
-    Meteor.call('getThumbnailDicoms', caseId, (err, result) => {
+    HTTP.call("GET", '/getThumbnailDicoms', {params: {caseId: caseId}}, (err, result) => {
       let foundCase = Cases.findOne({ _id: caseId });
       if (err) {
         return console.error(err);
       }
-
+      result = JSON.parse(result.content);
       this.setState({
         thumbnailArray: result.array
       }, () => {
@@ -59,7 +60,9 @@ export default class LeftPanel extends Component {
   enableThumbnailCanvas(seriesIndex, element) {
     let image = this.state.thumbnailArray[seriesIndex];
     let pixelData = undefined;
-
+    if (image.imageBuf.data) {
+      image.imageBuf = new Uint8Array(image.imageBuf.data);
+    }
     if (image.bitsAllocated === 8) {
       pixelData = new Uint16Array(image.pixelDataLength);
 

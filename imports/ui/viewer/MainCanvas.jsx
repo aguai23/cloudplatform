@@ -294,14 +294,14 @@ export default class MainCanvas extends Component {
         let pixelData = this.setPixelData(image);
 
         image.getPixelData = function () {
-          return pixelData
-        };
+          return pixelData;
+        }
 
         this.dicomObj[seriesNumber][index] = image;
 
         /**
          * set viewport scale when loading first slice
-         */
+          */
         var viewport = {};
         if (index === 1) {
           viewport.scale = (600 / image.width).toFixed(2);
