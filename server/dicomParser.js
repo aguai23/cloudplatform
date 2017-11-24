@@ -8,6 +8,19 @@ import { Meteor } from 'meteor/meteor';
 import DicomData from './dicomData';
 
 let dicomData = new DicomData();
+
+Picker.route('/getDicom',  function(params, req, res, next) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify(dicomData.getData(params.query.caseId, params.query.seriesNumber, params.query.index)));
+
+});
+
+Picker.route("/getThumbnailDicoms", function(params, req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify(dicomData.getThumbnail(params.query.caseId)));
+});
 Meteor.methods({
 
   /**

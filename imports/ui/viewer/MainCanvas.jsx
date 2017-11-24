@@ -257,63 +257,68 @@ export default class MainCanvas extends Component {
         isLoading: true
       });
       this.cachingPool[index] = true;
-      Meteor.call('getDicom', caseId, seriesNumber, index, (err, image) => {
+      HTTP.call("GET", "/getDicom", {
+        params: {caseId: caseId, seriesNumber: seriesNumber, index: index}
+      }, (err, result) => {
+        let image = result.data;
         if (err) {
-          return console.error(err);
-        }
+              return console.error(err);
+            }
 
-        let pixelData = undefined;
+            let pixelData = undefined;
+            image.imageBuf = new Uint8Array(image.imageBuf.data);
 
-        /**
-         * manipulate pixelData in different ways according how many bits allocated for each pixel
-         */
-        if (image.bitsAllocated === 8) {
-          pixelData = new Uint16Array(image.pixelDataLength);
+            /**
+             * manipulate pixelData in different ways according how many bits allocated for each pixel
+             */
+            if (image.bitsAllocated === 8) {
+              pixelData = new Uint16Array(image.pixelDataLength);
 
-          for (let i = 0; i < image.pixelDataLength; i++) {
-            pixelData[i] = image.imageBuf[image.pixelDataOffset + i];
-          }
-        } else if (image.bitsAllocated === 16) {
-          pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-        }
+              for (let i = 0; i < image.pixelDataLength; i++) {
+                pixelData[i] = image.imageBuf[image.pixelDataOffset + i];
+              }
+            } else if (image.bitsAllocated === 16) {
+              pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
 
-        image.getPixelData = function () {
-          return pixelData
-        };
+            }
 
-        this.dicomObj[seriesNumber][index] = image;
+            image.getPixelData = function () {
+              return pixelData
+            };
 
-        /**
-         * set viewport scale when loading first slice
-         */
-        var viewport = {};
-        if (index === 1) {
-          viewport.scale = (600 / image.width).toFixed(2);
+            this.dicomObj[seriesNumber][index] = image;
 
-          if(image.photometricInterpretation === 'MONOCHROME1') {
-            viewport.invert = true;
-          }
-        }
+            /**
+             * set viewport scale when loading first slice
+             */
+            var viewport = {};
+            if (index === 1) {
+              viewport.scale = (600 / image.width).toFixed(2);
 
-        delete this.cachingPool[index];
-        if(Object.keys(this.cachingPool).length === 0) {
-          this.setState({
-            isLoading: false
-          }, () => {
-            cornerstone.displayImage(this.container, image, viewport);
-          });
-        }
+              if(image.photometricInterpretation === 'MONOCHROME1') {
+                viewport.invert = true;
+              }
+            }
 
-        let measurementData = {
-          currentImageIdIndex: this.index,
-          imageIds: image.imageId
-        };
+            delete this.cachingPool[index];
+            if(Object.keys(this.cachingPool).length === 0) {
+              this.setState({
+                isLoading: false
+              }, () => {
+                cornerstone.displayImage(this.container, image, viewport);
+              });
+            }
 
-        cornerstoneTools.addToolState(this.container, 'stack', measurementData);
-        if (!this.imageLoaded) {
-          this.disableAllTools();
-          this.imageLoaded = true;
-        }
+            let measurementData = {
+              currentImageIdIndex: this.index,
+              imageIds: image.imageId
+            };
+
+            cornerstoneTools.addToolState(this.container, 'stack', measurementData);
+            if (!this.imageLoaded) {
+              this.disableAllTools();
+              this.imageLoaded = true;
+            }
       });
     } else {
       cornerstone.displayImage(this.container, this.dicomObj[seriesNumber][index]);
