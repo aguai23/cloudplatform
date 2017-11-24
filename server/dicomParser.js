@@ -51,6 +51,15 @@ Meteor.methods({
    */
   getThumbnailDicoms(caseId) {
     return dicomData.getThumbnail(caseId);
+  },
+
+  /**
+   * free the memory when this case is no longer needed
+   * @param caseId
+   */
+  freeMemory(caseId) {
+    dicomData.freeMemory(caseId)
+    return "free";
   }
 
 });

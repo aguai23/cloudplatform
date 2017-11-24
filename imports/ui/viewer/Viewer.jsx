@@ -102,7 +102,9 @@ export class Viewer extends Component {
   }
 
   componentWillUnmount() {
-    customEventEmitter.unsubscribe('changeSeries')
+    customEventEmitter.unsubscribe('changeSeries');
+    Meteor.call("freeMemory", this.state.caseInfo._id, (err, result) => {
+    });
   }
 
   componentWillReceiveProps(nextProps) {
