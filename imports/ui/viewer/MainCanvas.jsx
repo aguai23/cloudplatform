@@ -181,7 +181,7 @@ export default class MainCanvas extends Component {
   /**
    * initialize main canvas
    * @param caseId
-   * @param seriesIndex
+   * @param seriesNumber
    */
   initMainCanvas(caseId, seriesNumber) {
     Meteor.call('prepareDicoms', caseId, seriesNumber, (error, result) => {
@@ -191,7 +191,7 @@ export default class MainCanvas extends Component {
         let eventEmitter = new CustomEventEmitter();
         eventEmitter.dispatch('loadThumbnails');
 
-        let dateTime = ''
+        let dateTime = '';
         if (result.seriesTime && result.seriesDate) {
           let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
           dateTime = `${result.seriesDate.substring(0, 4)}-${result.seriesDate.substring(4, 6)}-${result.seriesDate.substring(6, 8)} ${timeStr[1]}:${timeStr[2]}:${timeStr[3]}`
@@ -241,6 +241,7 @@ export default class MainCanvas extends Component {
 
   /**
    * set image slice
+   * @param caseId
    * @param seriesNumber
    * @param index image index
    */
@@ -363,7 +364,7 @@ export default class MainCanvas extends Component {
    * handler for draging the scroll bar, moves scrollbar position and changes image
    */
   onDragScrollBar(e) {
-    if(this.index != e.target.value) {
+    if(this.index !== e.target.value) {
       this.setSlice(this.caseId, this.curSeriesNumber, parseInt(scrollbar.value));
     }
   }
@@ -485,7 +486,7 @@ export default class MainCanvas extends Component {
   setZoomTool() {
     this.disableAllTools('ZOOM');
 
-    var config = {
+    let config = {
       // invert: true,
       minScale: 0.1,
       maxScale: 20.0,
@@ -679,7 +680,7 @@ export default class MainCanvas extends Component {
    * reset viewport to default state
    */
   resetViewport() {
-    let canvas = $('#viewer canvas').get(0),
+    let canvas = $('#viewer').find('canvas').get(0),
       enabledElement = cornerstone.getEnabledElement(this.container),
       viewport = cornerstone.getDefaultViewport(canvas, enabledElement.image),
       width = this.dicomObj[this.curSeriesNumber][this.index].width;
