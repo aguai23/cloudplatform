@@ -9,7 +9,7 @@ import CaseList from '../imports/ui/CaseList';
 import Login from '../imports/ui/Login';
 import Main from '../imports/ui/Main';
 import Registration from '../imports/ui/Registration';
-import Viewer from '../imports/ui/Viewer';
+import Viewer from '../imports/ui/viewer/Viewer';
 
 
 injectTapEventPlugin();

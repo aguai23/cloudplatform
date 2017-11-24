@@ -3,8 +3,8 @@ import { Meteor } from 'meteor/meteor';
 import ReactDOM from 'react-dom';
 import { browserHistory, Link } from 'react-router';
 import { Cases } from '../api/cases';
-import {DataCollections} from "../api/dataCollections";
-import {  Row, Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Modal, Table } from 'react-bootstrap';
+import { DataCollections } from "../api/dataCollections";
+import { Row, Col, Radio, Form, Button, FormGroup, FormControl, ControlLabel, Modal, Table } from 'react-bootstrap';
 import FineUploaderTraditional from 'fine-uploader-wrappers';
 import { ToastContainer, toast } from 'react-toastify';
 import { withTracker } from 'meteor/react-meteor-data';
@@ -18,8 +18,8 @@ import CustomEventEmitter from '../library/CustomEventEmitter';
 import 'react-toastify/dist/ReactToastify.min.css';
 
 import './css/app.css';
-import "./css/common/spinner.css";
-import "./css/addCase.css";
+import './css/common/spinner.css';
+import './css/addCase.css';
 
 let isUploadFinished = true,
   imageArray = [];
@@ -29,7 +29,7 @@ export class AddCase extends Component {
     super(props);
     let that = this;
     const oldCase = Cases.findOne({ _id: props.location.query.id });
-    const dataCollection = DataCollections.findOne({name: props.location.query.collection});
+    const dataCollection = DataCollections.findOne({ name: props.location.query.collection });
     this.uploader = new FineUploaderTraditional({
       options: {
         chunking: {
@@ -631,7 +631,7 @@ export class AddCase extends Component {
   download(caseId, seriesIndex) {
     console.log('conversion started at', new Date());
 
-    this.setState({showDownloadModal: true});
+    this.setState({ showDownloadModal: true });
 
     HTTP.call('GET', '/generateZipFile', {
       params: {
@@ -639,7 +639,7 @@ export class AddCase extends Component {
         seriesIndex: seriesIndex
       }
     }, (err, res) => {
-      if(err) {
+      if (err) {
         return console.error(err);
       }
 
@@ -647,7 +647,7 @@ export class AddCase extends Component {
 
       let result = JSON.parse(res.content);
 
-      this.setState({showDownloadModal: false});
+      this.setState({ showDownloadModal: false });
 
       let file_path = Meteor.settings.public.server + `/download?dirPath=${result.dirPath}&fileName=${result.fileName}`;
       let a = document.createElement('A');
@@ -665,19 +665,17 @@ export class AddCase extends Component {
     const oldCase = this.state.oldCase;
     const Case = this.state.Case;
     return (
-      <div>
-        <div id="modal-base"/>
       <div id={"addcase-container"} style={{ padding: '20px' }}>
-        <div style={{ textAlign: 'left' , fontWeight: "bold", color: "grey"}}>
-          {this.state.collection ? this.state.collection.type === "PUBLIC" ? "公共数据集": "个人数据集" : "个人数据集"}
+        <div style={{ textAlign: 'left', fontWeight: "bold", color: "grey" }}>
+          {this.state.collection ? this.state.collection.type === "PUBLIC" ? "公共数据集" : "个人数据集" : "个人数据集"}
           > {this.state.collectionName}
           > {oldCase ? `修改病例` : '添加新病例'}
         </div>
 
         <form id="form1" encType="multipart/form-data" method="post">
-          <div style={{textAlign: 'right'}}>
-            <input type="file" id="customUploader" ref="customAttributes" multiple onChange={() => this.selectFile()}/>
-            <label id = "uploader-label" className="btn btn-primary" htmlFor="customUploader"><FontAwesome name='upload' size={"lg"} style={{ marginRight: '20px' }} />批量上传DICOM文件</label>
+          <div style={{ textAlign: 'right' }}>
+            <input type="file" id="customUploader" ref="customAttributes" multiple onChange={() => this.selectFile()} />
+            <label id="uploader-label" className="btn btn-primary" htmlFor="customUploader"><FontAwesome name='upload' size={"lg"} style={{ marginRight: '20px' }} />批量上传DICOM文件</label>
           </div>
         </form>
 
@@ -685,9 +683,9 @@ export class AddCase extends Component {
           <h4>{this.state.uploadProgress + '%'}</h4>
           <Line percent={this.state.uploadProgress} strokeWidth="1" strokeColor="#2db7f5" />
         </div>
-        <Form horizontal className = "case-form">
+        <Form horizontal className="case-form">
           <div className="well" style={wellStyles}>
-            <div className = "well-title">患者基本信息</div>
+            <div className="well-title">患者基本信息</div>
             <Row className="show-grid">
               <Col md={6} mdPush={6}>
                 <FormGroup controlId="patientBirthDate">
@@ -753,7 +751,7 @@ export class AddCase extends Component {
           </div>
 
           <div className="well" style={wellStyles}>
-            <div className = "well-title">检查信息</div>
+            <div className="well-title">检查信息</div>
             <Row className="show-grid">
               <Col md={6} mdPush={6}>
                 <FormGroup controlId="studyID">
@@ -844,51 +842,49 @@ export class AddCase extends Component {
 
           <div className="series-well" style={wellStyles}>
             <Table bordered condensed hover>
-              <thead className = "series-head">
-              <tr>
-                <th>序列流水号</th>
-                <th>序列编号</th>
-                <th>序列描述</th>
-                <th>日期</th>
-                <th>时间</th>
-                <th>图像数</th>
-                <th>选项</th>
-              </tr>
+              <thead className="series-head">
+                <tr>
+                  <th>序列流水号</th>
+                  <th>序列编号</th>
+                  <th>序列描述</th>
+                  <th>日期</th>
+                  <th>时间</th>
+                  <th>图像数</th>
+                  <th>选项</th>
+                </tr>
               </thead>
               <tbody>
-              {(oldCase ? oldCase.seriesList : Case.seriesList) && (oldCase ? oldCase.seriesList : Case.seriesList).map((obj, index) => {
-                return (
-                  <tr key={index}>
-                    <td>{obj.seriesNumber}</td>
-                    <td>{obj.seriesInstanceUID}</td>
-                    <td>{obj.seriesDescription}</td>
-                    <td>{obj.seriesDate}</td>
-                    <td>{obj.seriesTime}</td>
-                    <td>{obj.total}</td>
-                    <td>
-                      <Button onClick={this.changeSeriesModalState.bind(this, index)} style={{marginLeft: '5px'}}>详情</Button>
-                      <Link to={{
-                        pathname: '/viewer',
-                        state: { caseId: oldCase && oldCase._id, index: index }
-                      }} className="btn btn-default" style={{marginLeft: '5px'}}>浏览</Link>
-                      <Button onClick={() => this.download(oldCase._id, index)} style={{marginLeft: '5px'}}>
-                        <FontAwesome name='download' size='lg' />
-                      </Button>
-                    </td>
-                  </tr>)
-              })
-              }
+                {(oldCase ? oldCase.seriesList : Case.seriesList) && (oldCase ? oldCase.seriesList : Case.seriesList).map((obj, index) => {
+                  return (
+                    <tr key={index}>
+                      <td>{obj.seriesNumber}</td>
+                      <td>{obj.seriesInstanceUID}</td>
+                      <td>{obj.seriesDescription}</td>
+                      <td>{obj.seriesDate}</td>
+                      <td>{obj.seriesTime}</td>
+                      <td>{obj.total}</td>
+                      <td>
+                        <Button onClick={this.changeSeriesModalState.bind(this, index)} style={{ marginLeft: '5px' }}>详情</Button>
+                        <Link to={{
+                          pathname: '/viewer',
+                          state: { studyUID: oldCase && oldCase.studyInstanceUID, seriesNumber: obj.seriesNumber }
+                        }} className="btn btn-default" style={{ marginLeft: '5px' }}>浏览</Link>
+                        <Button onClick={() => this.download(oldCase._id, index)} style={{ marginLeft: '5px' }}>
+                          <FontAwesome name='download' size='lg' />
+                        </Button>
+                      </td>
+                    </tr>)
+                })
+                }
 
               </tbody>
             </Table>
 
           </div>
 
-
-
           <div className="bottom-button">
             <Button className="pull-right" onClick={browserHistory.goBack}>返回</Button>
-            <Button className="pull-right" onClick={oldCase ? this.modifyCase : this.submitCases} disabled={!this.state.isUploadFinished}>{oldCase ? '修改' : '新建'}</Button>
+            <Button className="pull-right" style={{ marginRight: '10px' }} onClick={oldCase ? this.modifyCase : this.submitCases} disabled={!this.state.isUploadFinished}>{oldCase ? '修改' : '新建'}</Button>
           </div>
 
         </Form>
@@ -906,11 +902,11 @@ export class AddCase extends Component {
 
         <Modal show={this.state.showDownloadModal} className="modal">
           <Modal.Header>
-            <Modal.Title style={{textAlign: 'center'}}>文件准备中</Modal.Title>
+            <Modal.Title style={{ textAlign: 'center' }}>文件准备中</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <div id="load-spinner" >
-              <div className="lds-microsoft" style={{height: '100%'}}>
+              <div className="lds-microsoft" style={{ height: '100%' }}>
                 <div></div>
                 <div></div>
                 <div></div>
@@ -923,7 +919,7 @@ export class AddCase extends Component {
             </div>
             <div className="waiting-text">
               <span>正在准备文件，请稍候...</span>
-              <br/><br/>
+              <br /><br />
               <span>文件准备完成后会自动开始下载并关闭本窗口</span>
             </div>
           </Modal.Body>
@@ -978,12 +974,10 @@ export class AddCase extends Component {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button onClick={this.removeSeries.bind(this)} style={{color:'#FFFFFF', backgroundColor: '#2659AD'}}>删除</Button>
+            <Button onClick={this.removeSeries.bind(this)} style={{ color: '#FFFFFF', backgroundColor: '#2659AD' }}>删除</Button>
           </Modal.Footer>
         </Modal>
       </div>
-
-</div>
     )
   }
 }
@@ -997,6 +991,6 @@ export default withTracker(props => {
   Meteor.subscribe('dataCollections');
   return {
     case: Cases.findOne({ _id: props.location.query.id }),
-    dataCollection: DataCollections.findOne({name: props.location.query.collection})
+    dataCollection: DataCollections.findOne({ name: props.location.query.collection })
   }
 })(AddCase);
