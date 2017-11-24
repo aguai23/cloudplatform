@@ -10,7 +10,6 @@ let __emitterInstance = (function() {
 }());
 
 export default class CustomEventEmitter {
-  static _emitterInstance = undefined;
   _events = {};
 
   constructor() {

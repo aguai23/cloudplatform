@@ -6,6 +6,7 @@ import cornerstoneTools from '../../library/cornerstoneTools';
 import { _ } from 'underscore';
 
 import CustomEventEmitter from '../../library/CustomEventEmitter';
+import AutoCacheManager from './AutoCacheManager';
 import LoadingScene from './LoadingScene';
 
 import { Cases } from '../../api/cases';
@@ -24,9 +25,7 @@ export default class MainCanvas extends Component {
     this.index = 1;
     this.caseId = this.props.caseId;
     this.curSeriesNumber = this.props.seriesNumber;
-    // this.nextImageToCache = 1;
-    // this.uncachedPool = {};
-    this.cachingPool = {};
+    this.nextImageToCache = 1;
 
     this.state = {
       isLoading: false,
@@ -213,6 +212,19 @@ export default class MainCanvas extends Component {
           index: 1
         };
 
+        this.cacheManager = new AutoCacheManager(this.imageNumber);
+        console.log(this.cacheManager);
+        this.cacheManager.startAutoCacheSeries(caseId, seriesNumber, (image) => {
+          let pixelData = this.setPixelData(image);
+
+          image.getPixelData = function () {
+            return pixelData
+          };
+
+          this.dicomObj[seriesNumber][image.index] = image;
+          // console.log(`image ${image.index}`, image);
+        });
+
         this.setSlice(caseId, seriesNumber, this.index);
 
         $('#viewer').on('CornerstoneImageRendered', (e) => this.updateInfo(e));
@@ -242,12 +254,34 @@ export default class MainCanvas extends Component {
     cornerstone.resize(this.container, false);
   }
 
+  setPixelData(image) {
+    let pixelData = undefined;
+    /**
+     * manipulate pixelData in different ways according how many bits allocated for each pixel
+     */
+    if (image.bitsAllocated === 8) {
+      pixelData = new Uint16Array(image.pixelDataLength);
+
+      for (let i = 0; i < image.pixelDataLength; i++) {
+        pixelData[i] = image.imageBuf[image.pixelDataOffset + i];
+      }
+    } else if (image.bitsAllocated === 16) {
+      pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
+    }
+
+    return pixelData;
+  }
+
   /**
    * set image slice
    * @param seriesNumber
    * @param index image index
    */
   setSlice(caseId, seriesNumber, index) {
+    let scrollbar = document.getElementById("scrollbar");
+    scrollbar.value = index;
+    this.index = index;
+
     if (!this.dicomObj[seriesNumber]) {
       this.dicomObj[seriesNumber] = {};
     }
@@ -256,26 +290,8 @@ export default class MainCanvas extends Component {
       this.setState({
         isLoading: true
       });
-      this.cachingPool[index] = true;
-      Meteor.call('getDicom', caseId, seriesNumber, index, (err, image) => {
-        if (err) {
-          return console.error(err);
-        }
-
-        let pixelData = undefined;
-
-        /**
-         * manipulate pixelData in different ways according how many bits allocated for each pixel
-         */
-        if (image.bitsAllocated === 8) {
-          pixelData = new Uint16Array(image.pixelDataLength);
-
-          for (let i = 0; i < image.pixelDataLength; i++) {
-            pixelData[i] = image.imageBuf[image.pixelDataOffset + i];
-          }
-        } else if (image.bitsAllocated === 16) {
-          pixelData = new Uint16Array(image.imageBuf.buffer, image.pixelDataOffset, image.pixelDataLength / 2);
-        }
+      this.cacheManager.cacheSlice(caseId, seriesNumber, index, (image) => {
+        let pixelData = this.setPixelData(image);
 
         image.getPixelData = function () {
           return pixelData
@@ -295,14 +311,11 @@ export default class MainCanvas extends Component {
           }
         }
 
-        delete this.cachingPool[index];
-        if(Object.keys(this.cachingPool).length === 0) {
-          this.setState({
-            isLoading: false
-          }, () => {
-            cornerstone.displayImage(this.container, image, viewport);
-          });
-        }
+        this.setState({
+          isLoading: false
+        }, () => {
+          cornerstone.displayImage(this.container, image, viewport);
+        });
 
         let measurementData = {
           currentImageIdIndex: this.index,
@@ -318,9 +331,7 @@ export default class MainCanvas extends Component {
     } else {
       cornerstone.displayImage(this.container, this.dicomObj[seriesNumber][index]);
     }
-    let scrollbar = document.getElementById("scrollbar");
-    scrollbar.value = index;
-    this.index = index;
+
   }
 
   /**
