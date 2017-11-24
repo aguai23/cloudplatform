@@ -184,9 +184,6 @@ export default class MainCanvas extends Component {
    * @param seriesIndex
    */
   initMainCanvas(caseId, seriesNumber) {
-    this.setState({
-      isLoading: true
-    });
     Meteor.call('prepareDicoms', caseId, seriesNumber, (error, result) => {
       if (error) {
         console.error(error)
