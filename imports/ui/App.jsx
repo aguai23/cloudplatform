@@ -29,7 +29,7 @@ export default class App extends Component {
   }
 
   render() {
-    let containerHeight = window.innerHeight - 80;
+    let containerHeight = window.innerHeight - 81;
 
     const childrenWithProps = React.Children.map(this.props.children, (child) => {
 

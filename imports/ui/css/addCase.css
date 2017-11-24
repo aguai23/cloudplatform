@@ -59,6 +59,7 @@
 .bottom-button {
   text-align: right;
   width: 100%;
+  padding-bottom: 30px;
 }
 
 .case-form {
@@ -67,6 +68,5 @@
 
 #addcase-container {
   background: #e7edf6;
-  height: 100%;
   width: 100%;
 }
