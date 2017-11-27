@@ -188,9 +188,6 @@ export default class MainCanvas extends Component {
       if (error) {
         console.error(error)
       } else {
-        let eventEmitter = new CustomEventEmitter();
-        eventEmitter.dispatch('loadThumbnails');
-
         let dateTime = '';
         if (result.seriesTime && result.seriesDate) {
           let timeStr = result.seriesTime.substring(0, 6).match(/^(\d{2})(\d{1,2})(\d{1,2})$/);
@@ -222,6 +219,7 @@ export default class MainCanvas extends Component {
    * @param e
    */
   updateInfo(e) {
+    console.log(new Date().getTime() - this.start);
     let viewport = cornerstone.getViewport(e.target);
     this.setState({
       voi: {
@@ -255,9 +253,17 @@ export default class MainCanvas extends Component {
         isLoading: true
       });
       this.cachingPool[index] = true;
+      let start = new Date().getTime();
+      this.start = start;
       HTTP.call("GET", "/getDicom", {
         params: {caseId: caseId, seriesNumber: seriesNumber, index: index}
       }, (err, result) => {
+        let end = new Date().getTime();
+        console.log(end - start);
+        if (index === 1) {
+          let eventEmitter = new CustomEventEmitter();
+          eventEmitter.dispatch('loadThumbnails');
+        }
         let image = result.data;
         if (err) {
               return console.error(err);
