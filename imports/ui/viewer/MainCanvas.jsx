@@ -38,7 +38,7 @@ export default class MainCanvas extends Component {
     customEventEmitter.subscribe('changeSeries', (data) => {
       this.curSeriesNumber = data.seriesNumber;
       this.initMainCanvas(data.caseId, data.seriesNumber);
-    })
+    });
     customEventEmitter.subscribe('diagnosisResult', (data) => {
       cornerstoneTools.ellipticalRoi.enable(this.container, 1);
       let caseId = this.caseId;
@@ -190,6 +190,10 @@ export default class MainCanvas extends Component {
       if (error) {
         console.error(error)
       } else {
+        this.setState({
+          isLoading: false
+        });
+
         let eventEmitter = new CustomEventEmitter();
         eventEmitter.dispatch('loadThumbnails');
 
@@ -213,7 +217,7 @@ export default class MainCanvas extends Component {
         };
 
         this.cacheManager = new AutoCacheManager(this.imageNumber);
-        console.log(this.cacheManager);
+        this.cacheManager.clear(this.imageNumber);
         this.cacheManager.startAutoCacheSeries(caseId, seriesNumber, (image) => {
           let pixelData = this.setPixelData(image);
 
@@ -222,7 +226,6 @@ export default class MainCanvas extends Component {
           };
 
           this.dicomObj[seriesNumber][image.index] = image;
-          // console.log(`image ${image.index}`, image);
         });
 
         this.setSlice(caseId, seriesNumber, this.index);
@@ -357,7 +360,7 @@ export default class MainCanvas extends Component {
    */
   setScrollTool() {
     let self = this;
-    $("#viewer").bind("mousewheel", function (e) {
+    $("#viewer").bind("mousewheel", (e) => {
       let event = window.event || e;
       let down = event.wheelDelta < 0;
       if (down) {
