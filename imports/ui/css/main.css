@@ -8,8 +8,8 @@
 .content-container {
   height: inherit;
   background-color: #e7edf6;
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: 20px;
+  padding-right: 20px;
   overflow-y: scroll;
 }
 
