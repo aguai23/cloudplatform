@@ -16,7 +16,7 @@ export default class AutoCacheManager {
     }
 
     this.series = {};
-    console.log(seriesList);
+
     for(let i = 0; i < seriesList.length; i++) {
       let seriesNumber = seriesList[i].seriesNumber;
       this.series[seriesNumber] = {};
@@ -34,35 +34,19 @@ export default class AutoCacheManager {
         series.uncachedMap[j-1].next = series.uncachedMap[j] = new ListNode(j);
       }
     }
-    // this.init(sliceNumber);
 
     __instance(this);
   }
 
-  /**
-   * initialize the instance
-   * @param sliceNumber
-   */
-  init(sliceNumber) {
-    this.sliceNumber = sliceNumber;
-    this.nextSliceToCache = 2;
-    this.uncachedMap = {size: sliceNumber};
-    this.uncachedList = new ListNode(0);
-    this.cachingPool = {};
 
-    this.uncachedMap[1] = new ListNode(1);
-    this.uncachedList.next = this.uncachedMap[1];
-    for(let i = 2; i <= this.sliceNumber; i++) {
-      this.uncachedMap[i-1].next = this.uncachedMap[i] = new ListNode(i);
+  /**
+   * get existed AutoCacheManager instance
+   */
+  static getInstance() {
+    if(__instance()) {
+      return __instance();
     }
-  }
-
-  /**
-   * clear/reset data in the cache manager
-   */
-  clear(sliceNumber) {
-    window.clearInterval(this.autoCacheProcess);
-    this.init(sliceNumber);
+    return undefined;
   }
 
   /**
@@ -100,11 +84,13 @@ export default class AutoCacheManager {
     let series = this.series[seriesNumber];
 
     if(series.cachingPool.hasOwnProperty(index)) {
-      return console.log(`slice${index} is being cached`);
+      // console.log(`slice${index} is being cached`);
+      return;
     }
 
     if(series.uncachedMap[index] === undefined) {
-      return console.log(`slice${index} has already been cached`);
+      // console.log(`slice${index} has already been cached`);
+      return;
     }
 
     if(series.uncachedMap[index].next !== undefined) {

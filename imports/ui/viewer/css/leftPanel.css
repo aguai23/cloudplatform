@@ -97,3 +97,16 @@
   padding-right: 20px;
   cursor: pointer;
 }
+
+.loading-info {
+  padding-left: 75px;
+  padding-right: 75px;
+}
+
+.loading-info .block {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  background-color: darkgray;
+  margin-right: 2px;
+}

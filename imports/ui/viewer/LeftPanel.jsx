@@ -15,26 +15,49 @@ export default class LeftPanel extends Component {
   constructor(props) {
     super(props);
     let foundCase = Cases.findOne({ _id: props.caseId });
+
+    this.loadingList = {};
+
+    for(let i = 0; i < foundCase.seriesList.length; i++) {
+      let series = foundCase.seriesList[i];
+
+      this.loadingList[series.seriesNumber] = [];
+      this.loadingList[series.seriesNumber].push(series.total);
+
+      for(let j = 0; j < series.total; j++) {
+        this.loadingList[series.seriesNumber].push(false);
+      }
+    }
+
+    // console.log(loadingList);
+
     this.state = {
       panelType: 'thumbnail',
       caseInstance: foundCase,
       curSeriesNumber: foundCase.seriesList[0].seriesNumber,
       diagnosisResult: [],
-      seriesList: foundCase.seriesList
+      seriesList: foundCase.seriesList,
+      loadingList: this.loadingList,
     };
+
     this.getThumbnails = this.getThumbnails.bind(this);
 
-    let eventEmitter = new CustomEventEmitter();
-    eventEmitter.subscribe('loadThumbnails', () => {
+    customEventEmitter.subscribe('loadThumbnails', () => {
       this.getThumbnails(props.caseId);
+    });
+
+    customEventEmitter.subscribe('showSliceLoaded', (data) => {
+      this.loadingList[data.seriesNumber][data.index] = true;
+      this.setState({
+        loadingList: this.loadingList
+      });
     });
 
     this.map = {};
   }
 
   componentWillUnmount() {
-    let eventEmitter = new CustomEventEmitter();
-    eventEmitter.unsubscribe('loadThumbnails');
+    customEventEmitter.unsubscribe('loadThumbnails');
   }
 
   getThumbnails(caseId) {
@@ -187,6 +210,50 @@ export default class LeftPanel extends Component {
     }
   }
 
+  getLoadingBlocks(seriesNumber) {
+    // console.log('seriesNumber', seriesNumber);
+    // console.log(this.state.loadingList[seriesNumber]);
+
+    let loadingList = this.state.loadingList[seriesNumber];
+
+    let col = 40;
+    let row = Math.round(loadingList[0] / col - 0.5) + 1;
+
+    let blocks = [];
+
+    for(let i = 0; i < row; i++) {
+      blocks[i] = [];
+      for(let j = 0; j < col; j++) {
+        if(i * col + j < loadingList[0]) {
+          // loadingList[i*col + j] ?
+          blocks[i][j] = (
+            <div key={`col${j}`} className="block" style={{backgroundColor: loadingList[i*col + j + 1] ? 'orange' : 'darkgray'}}></div>
+          )
+        } else {
+          break;
+        }
+      }
+    }
+
+    return (
+      <div>
+        {
+          blocks.map((row, colNum) => {
+            return (
+              <div key={`row${colNum}`}>
+                {
+                  row.map((block, rowNum) => {
+                    return block
+                  })
+                }
+              </div>
+            )
+          })
+        }
+      </div>
+    )
+  }
+
 
   render() {
     let results = [];
@@ -240,10 +307,19 @@ export default class LeftPanel extends Component {
                   {this.state.seriesList[index].seriesDescription}
                 </div>
                 <div className="col-sm-4" style={{ textAlign: 'center', color: '#91b9cd' }}>
-                  <div><b style={{ color: '#4da2f2' }}>S</b>{' ' + this.state.seriesList[index].seriesNumber}</div>
+                  <div>
+                    <b style={{ color: '#4da2f2' }}>S</b>{' ' + this.state.seriesList[index].seriesNumber}
+                    <FontAwesome name='ellipsis-h' size='lg' />
+                    <FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}
+                  </div>
+                  {/*
                   <div><FontAwesome name='ellipsis-v' size='lg' /></div>
                   <div><FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}</div>
+                  */}
                 </div>
+              </div>
+              <div className="loading-info row">
+                {this.getLoadingBlocks(series.seriesNumber)}
               </div>
             </div>
           )

@@ -197,8 +197,7 @@ export default class MainCanvas extends Component {
           isLoading: false
         });
 
-        let eventEmitter = new CustomEventEmitter();
-        eventEmitter.dispatch('loadThumbnails');
+        customEventEmitter.dispatch('loadThumbnails');
 
         let dateTime = ''
         if (result.seriesTime && result.seriesDate) {
@@ -227,6 +226,7 @@ export default class MainCanvas extends Component {
           };
 
           this.dicomObj[seriesNumber][image.index] = image;
+          customEventEmitter.dispatch('showSliceLoaded', {seriesNumber: seriesNumber, index: image.index});
         });
 
         this.setSlice(caseId, seriesNumber, this.index);
@@ -302,6 +302,7 @@ export default class MainCanvas extends Component {
         }
 
         this.dicomObj[seriesNumber][index] = image;
+        customEventEmitter.dispatch('showSliceLoaded', {seriesNumber: seriesNumber, index: image.index});
 
         /**
          * set viewport scale when loading first slice
