@@ -132,6 +132,9 @@ export default class MainCanvas extends Component {
     };
     cornerstoneTools.magnify.setConfiguration(config);
 
+    let caseInstance = Cases.findOne({ _id: this.caseId });
+    this.cacheManager = new AutoCacheManager(caseInstance.seriesList);
+
     /**
      * send a request to require server load all cases first
      */
@@ -216,8 +219,6 @@ export default class MainCanvas extends Component {
           index: 1
         };
 
-        this.cacheManager = new AutoCacheManager(this.imageNumber);
-        this.cacheManager.clear(this.imageNumber);
         this.cacheManager.startAutoCacheSeries(caseId, seriesNumber, (image) => {
           let pixelData = this.setPixelData(image);
 
