@@ -4,29 +4,62 @@
     height: 100%;
     width: 100%;
     margin: auto;
+    min-width: 1280px;
 }
 
 .login-text{
-    color: black;
+    color: #353a44;
+    font-family: "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    margin-left: 40px;
+
 }
 
 #login-logo {
-    background: url("/img/logo3.jpg") no-repeat 100% 100%;
+    background: url("/img/logo3.jpg") no-repeat center;
     position: relative;
     height: 90px;
-    width: 400px;
-    margin-left: 55%;
+    width: 380px;
+    margin-right: 180px;
+    margin-left: auto;
     z-index: 100;
     top: 10%;
 }
 
 .login-button {
-    background: #2659ad;
+    background: #245aa8;
     color: white;
+    height:46px;
+    width: 80px;
+    margin-left: 260px;
+    margin-bottom: 10px;
+    border-radius: 0;
+}
+
+.login-link{
+    text-align: right;
+    margin-right:40px;
+
 }
 
 #login-input {
     margin-top:10px;
-    border-color: black;
-    width: 100%;
+    border-color: #353a44;
+    height: 46px;
+    width:300px;
+    border-width: 1px;
+    border-radius: 0;
+    padding-left: 20px;
+    margin-bottom: 20px;
+    margin-left: 40px;
+    outline: #245aa8
+}
+
+#login-input:focus {
+    border: #245aa8 solid 1px;
+}
+
+::placeholder {
+    color: #535868;
+    opacity: 0.5;
 }
