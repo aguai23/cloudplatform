@@ -35,11 +35,9 @@ export default class SingleCollectionInList extends Component {
         </div>
         <div className="col-sm-7">
         </div>
-        <div className="col-sm-1" style={{padding: 0}}>
-          <Button className="btn-tool pull-right" bsSize='small' onClick={() => this.onClickModify()} style={{marginRight: '-30px'}}>编辑</Button>
-        </div>
-        <div className="col-sm-1"  style={{padding: 0}}>
-          <Button className="btn-tool pull-right" bsSize='small' onClick={() => this.onClickRemove()}>删除</Button>
+        <div className="col-sm-2" style={{padding: 0}}>
+          <Button className="btn-tool pull-right" onClick={() => this.onClickRemove()}>删除</Button>
+          <Button className="btn-tool pull-right" style={{marginRight: '20px'}} onClick={() => this.onClickModify()}>编辑</Button>
         </div>
       </div>
     );

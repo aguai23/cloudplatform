@@ -1,41 +1,40 @@
-.nav-container {
-  background-color: #353a44;
-  overflow: hidden;
-  padding: 0;
-  height: inherit;
-}
-
-.content-container {
-  height: inherit;
-  background-color: #e7edf6;
-  padding-left: 20px;
-  padding-right: 20px;
-  overflow-y: scroll;
-}
-
 .upper-div {
-  height: 80px;
-  margin-top: 30px;
+  height: 70px;
+  margin-top: 22px;
 }
 
-.searchBar {
+.search-bar {
   position: relative;
   display: inline-block;
   width: 400px;
 }
 
-.searchBar input {
-  height: 45px!important;
+.search-bar input {
+  height: 46px!important;
   font-size: 14px!important;
   border: 1px solid black;
+}
+
+.search-bar input::-webkit-input-placeholder {
+  padding-left: 15px;
+}
+
+.search-bar input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+  padding-left: 15px;
+}
+.search-bar input::-moz-placeholder { /* Mozilla Firefox 19+ */
+   padding-left: 15px;
+}
+.search-bar input:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   padding-left: 15px;
 }
 
 .btn-search {
   color: grey;
   display: inline-block;
   position: absolute;
-  right: 10px;
-  top: 10px;
+  right: 16px;
+  top: 12px;
   border-radius: 3px;
   border: none;
   cursor: pointer;
@@ -47,7 +46,7 @@
   background-size: 100% 100%;
   -moz-background-size: 100% 100%;
   width: 120px;
-  height: 45px;
+  height: 46px;
 }
 
 .bottom-div {
@@ -55,25 +54,29 @@
   width: 100%;
   border: 1px solid #cddcf2;
   border-radius: 5px;
-  box-shadow: 2px 2px 2px #aaaaaa;
+  box-shadow: 2px 2px 2px rgba(176,176,176,0.3), -2px -2px 2px rgba(176,176,176,0.3);
+  padding: 0 20px 0 20px;
 }
 
 .bottom-div ul {
   list-style: none;
+  padding-left: 10px;
 }
 
 .bottom-div ul li{
   list-style: none;
   padding: 15px 0 15px 0;
   height: 60px;
-  border-bottom: 1px solid #dbdbdb;
+  border-bottom: 1px solid rgba(38,89,173,0.1);
 }
 
 .data-item {
   line-height: 2;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .btn-tool {
-  width: 60px;
+  width: 50px;
+  height: 30px;
+  padding: 3px 4px;
 }

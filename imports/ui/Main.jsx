@@ -178,7 +178,7 @@ export class Main extends Component {
         <div id="modal-base"/>
             <div id="upper-div" className="upper-div">
               <div className="col-sm-6" style={{padding: 0}}>
-                <FormGroup bsSize="small" className="searchBar">
+                <FormGroup bsSize="small" className="search-bar">
                   <FormControl type="text" placeholder="输入名称搜索" inputRef={input => { this.textInput = input }} />
                   <a onClick={this.searchDatabase.bind(this)} className='btn-search'>
                     <FontAwesome name='search' size='lg' />
@@ -192,7 +192,7 @@ export class Main extends Component {
             </div>
             <div className="bottom-div" style={{height: this.state.bottomDivHeight}}>
               <div>
-                <ul style={{padding: '0 15px 0 15px'}}>
+                <ul>
                   {this.state.dataCollections.map((dataCollection) => {
                     return (
                       <li key={dataCollection._id}>

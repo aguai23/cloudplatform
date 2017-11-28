@@ -11,15 +11,15 @@
   .eight-cols>.col-md-1,
   .eight-cols>.col-sm-1,
   .eight-cols>.col-lg-1 {
-    width: 12.5%;
-    *width: 12.5%;
+    width: 11.1%;
+    *width: 11.1%;
   }
 
   .eight-cols>.col-md-7,
   .eight-cols>.col-sm-7,
   .eight-cols>.col-lg-7 {
-    width: 87.5%;
-    *width: 87.5%;
+    width: 88.9%;
+    *width: 88.9%;
   }
 }
 
@@ -31,14 +31,14 @@
   .eight-cols>.col-md-1,
   .eight-cols>.col-sm-1,
   .eight-cols>.col-lg-1 {
-    width: 12.5%;
-    *width: 12.5%;
+    width: 11.1%;
+    *width: 11.1%;
   }
 
   .eight-cols>.col-md-7,
   .eight-cols>.col-sm-7,
   .eight-cols>.col-lg-7 {
-    width: 87.5%;
-    *width: 87.5%;
+    width: 88.9%;
+    *width: 88.9%;
   }
 }
