@@ -33,6 +33,10 @@
   width: 120px;
 }
 
+.btn-account .icon-user {
+  margin-right: 6px;
+}
+
 .dropdown-menu {
   width: 100px;
   min-width: 120px;

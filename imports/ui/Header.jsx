@@ -56,7 +56,7 @@ export default class Header extends Component {
       return (
         <ButtonToolbar className="pull-right btn-account">
           <div className="dropdown-toggle dropdown-label" data-toggle="dropdown" onSelect={(key) => this.onDropdownSelectHandler(key)}>
-            <FontAwesome name="user" />{' ' + this.state.userInfo.emails[0].address}
+            <FontAwesome name="user" className="icon-user"/>{this.state.userInfo.emails[0].address}
           </div>
           <ul className="dropdown-menu">
             <MenuItem onClick={() => this.onDropdownSelectHandler("CHANGE_PWD")}>修改密码</MenuItem>
