@@ -4,6 +4,7 @@ import { DataCollections } from '../api/dataCollections';
 import { Button, Checkbox, ControlLabel, Form, FormControl, Modal } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 
+import './css/modalAddCollection.css';
 
 export default class ModalAddCollection extends Component {
   constructor(props) {
@@ -75,7 +76,7 @@ export default class ModalAddCollection extends Component {
       <div>
         <Modal show={this.state.showModal} onHide={() => this.close()}>
           <Modal.Header closeButton>
-            <Modal.Title>{oldData ? `修改${oldData.name}` : '添加新'}数据集</Modal.Title>
+            <Modal.Title className="add-collection-title">{oldData ? `修改${oldData.name}` : '添加新'}数据集</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <div>

@@ -62,7 +62,6 @@ export default class Header extends Component {
             <MenuItem onClick={() => this.onDropdownSelectHandler("CHANGE_PWD")}>修改密码</MenuItem>
             <MenuItem onClick={() => this.onDropdownSelectHandler("EDIT_PROFILE")}>编辑资料</MenuItem>
             <MenuItem onClick={() => this.onDropdownSelectHandler("MANAGE_DATASETS")}>管理数据集</MenuItem>
-            <MenuItem divider />
             <MenuItem onClick={() => this.onDropdownSelectHandler("LOGOUT")}>退出</MenuItem>
           </ul>
         </ButtonToolbar>

@@ -1,0 +1,25 @@
+.data-item {
+  line-height: 2;
+  font-size: 14px;
+  padding-top: 15px;
+  margin-left: 20px;
+  margin-right: 20px;
+  border-bottom: 1px solid rgba(38,89,173,0.1);
+  height: 60px;
+}
+
+.btn-tool {
+  width: 50px;
+  height: 30px;
+  padding: 3px 4px;
+  border: 1px solid rgba(0,0,0,0.5);
+}
+
+.btn-tool:hover {
+  background-color: #446eb1;
+  color: white;
+}
+
+.btn-delete {
+  color: rgba(53,58,68,0.8);
+}
