@@ -251,7 +251,7 @@ export class CaseList extends Component {
               <span>性别</span>
             </div>
             <div className="caseList_middleLine" />
-            <select style={{paddingTop:'0px'}} onChange={this.handleInputChange} className="caseList_input caseList_input_patientSex" name="patientSex" id="patientSex">
+            <select style={{ paddingTop: '0px' }} onChange={this.handleInputChange} className="caseList_input caseList_input_patientSex" name="patientSex" id="patientSex">
               <option value="不限">不限</option>
               <option value="M">男</option>
               <option value="F">女</option>
@@ -303,82 +303,20 @@ export class CaseList extends Component {
               </div>
             </div>
           </div>
-
-          {/* <FormGroup>
-            <InputGroup>
-              <InputGroup.Addon>检查号</InputGroup.Addon>
-              <FormControl name="patientID" type="text"  />
-            </InputGroup>
-          </FormGroup>
-        <FormGroup>
-          <InputGroup>
-            <InputGroup.Addon>姓名</InputGroup.Addon>
-            <FormControl name="patientName" type="text" onChange={this.handleInputChange} />
-          </InputGroup>
-        </FormGroup>
-        <FormGroup>
-          <InputGroup>
-            <InputGroup.Addon>年龄</InputGroup.Addon>
-            <FormControl name="patientAge" type="text" onChange={this.handleInputChange} />
-          </InputGroup>
-        </FormGroup> */}
-
-          {/* <div className="col-md-4">
-              <div className="col-md-7" style={{ paddingLeft: 0 }}>
-                <FormGroup>
-                  <InputGroup>
-                    <InputGroup.Addon>时间</InputGroup.Addon>
-                    <FormControl type='date' name="startTime" value={this.state.startTime} onChange={this.handleInputChange} />
-                  </InputGroup>
-                </FormGroup>
-              </div>
-              <div className="col-md-5" style={{ paddingLeft: 0, paddingRight: 0 }}>
-                <FormGroup>
-                  <FormControl type='date' name="endTime" value={this.state.endTime} onChange={this.handleInputChange} />
-
-                </FormGroup>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <div className="col-md-3" style={{ padding: 0 }}>
-                <DropdownButton id="patientSex" onSelect={this.handleSexSelect} title={this.state.patientSex === 'M' ? '男' : this.state.patientSex === 'F' ? '女' : this.state.patientSex}>
-                  <MenuItem eventKey="M">男</MenuItem>
-                  <MenuItem eventKey="F">女</MenuItem>
-                  <MenuItem eventKey="不限" >不限</MenuItem>
-                </DropdownButton>
-              </div>
-              <div className="col-md-3" style={{ padding: 0 }}>
-                <DropdownButton id="modality" onSelect={this.handleModalitySelect} title={this.state.modality} style={{ marginLeft: '3px' }}>
-                  <MenuItem eventKey="CT">CT</MenuItem>
-                  <MenuItem eventKey="MRI">MRI</MenuItem>
-                  <MenuItem eventKey="DSA">DSA</MenuItem>
-                  <MenuItem eventKey="DR">DR</MenuItem>
-                  <MenuItem eventKey="CR">CR</MenuItem>
-                  <MenuItem eventKey="RF">RF</MenuItem>
-                  <MenuItem eventKey="MG">MG</MenuItem>
-                  <MenuItem eventKey="US">US</MenuItem>
-                  <MenuItem eventKey="不限">不限</MenuItem>
-                </DropdownButton>
-              </div>
-              <div className="col-md-6" style={{ padding: 0 }}>
-                <Button style={{ marginLeft: '6px', color: '#FFFFFF', backgroundColor: '#2659AD' }} onClick={this.searchCase}>查询</Button>
-                <Button bsStyle="default" style={{ marginLeft: '3px' }} onClick={() => this.reset()}>重置</Button>
-              </div>
-            </div> */}
         </div>
-        <div className="container caseList">
+        <div>
           <div className="searchResult">{searchResult}</div>
-          <Table striped condensed hover responsive>
+          <table className="caseList_table">
             <thead>
               {tHead}
             </thead>
-            <tbody>
+            <tbody className="bottom-div">
               {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
                 return (
-                  <tr style={{ backgroundColor: "#F5F5F5" }} key={specificCase._id} onDoubleClick={() => self.jumpTo(specificCase._id)}>
+                  <tr className="caseList_tr" key={specificCase._id} onDoubleClick={() => self.jumpTo(specificCase._id)}>
                     <td>{specificCase.accessionNumber}</td>
-                    <td style={{ maxWidth: '170px', overflow: 'hidden' }}>{specificCase.patientID}</td>
-                    <td style={{ maxWidth: '150px', overflow: 'hidden' }}>{specificCase.patientName}</td>
+                    <td className="caseList_td_patientName">{specificCase.patientID}</td>
+                    <td>{specificCase.patientName}</td>
                     <td>{specificCase.patientAge}</td>
                     <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
                     <td>{specificCase.studyID}</td>
@@ -404,7 +342,7 @@ export class CaseList extends Component {
               })
               }
             </tbody>
-          </Table>
+          </table>
         </div>
         <ToastContainer
           position="bottom-right"

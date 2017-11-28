@@ -1,20 +1,8 @@
-/* select {
-  background: #9ccef9;
-  width: 100px;
-} */
-
 .searchResult {
   margin-top: 10px;
   margin-bottom: 20p;
   padding-left: 20px;
   font-size: 18px
-}
-
-.caseList {
-  margin-right: 10px;
-  width: 100%;
-  margin-top: 10px;
-  float: right;
 }
 
 .caseList_littleMargin{
@@ -36,7 +24,8 @@
   display: flex;
   justify-content: space-between;
   height: 36px;
-  outline: none
+  outline: none;
+  margin-bottom: 16px;
 }
 
 .caseList_searchBar_container {
@@ -165,4 +154,27 @@
   margin: auto 10px auto 10px;
   font-size: 12px;
   color: #353a44;
+}
+
+.caseList_table{
+  width: 100%;
+}
+
+.caseList_tr {
+  height: 60px;
+  width: 100%;
+  border-bottom: 1px solid rgba(53, 58, 68, 0.5)
+}
+
+td {
+  padding-right: 10px;
+  overflow: hidden;
+}
+
+th:first-child,td:first-child{
+  padding-left: 20px;
+}
+
+.caseList_td_patientName {
+  /* max-width: 150px; */
 }
