@@ -204,148 +204,218 @@ export class CaseList extends Component {
 
     return (
       <div>
-        <div id="modal-base" />
-            <div className="row" style={{ marginTop: '30px' }}>
-              <div>
-                <div className="col-md-4" style={{ textAlign: 'left', fontWeight: "bold", color: "grey" }}>
-                  {this.props.location.state === 'PUBLIC' ? '公共数据集' : '个人数据集'}
-                  > {this.props.params.collectionName}
-                </div>
-              </div>
-              <div className="col-md-3 col-md-offset-5">
-                <div className="col-md-6 col-md-offset-6" style={{ padding: 0 }}>
-                  <button onClick={browserHistory.goBack} style={{ border: "none", background: "transparent" }}>
-                    <i className={"fa fa-angle-left"} style={{ color: '#255BA8', fontSize: "15px", marginRight: "8px" }}>返回</i>
-                  </button>
-                  <Link to={`/newCase?collection=${this.props.params.collectionName}`}>
-                    <i className="fa fa-plus" style={{ color: '#255BA8', fontSize: "15px" }}>新建</i>
-                  </Link>
-                </div>
+        <div className="caseList_header">
+          <span>
+            {this.props.location.state === 'PUBLIC' ? '公共数据集' : '个人数据集'}
+            &nbsp; > {this.props.params.collectionName}
+          </span>
+          <span>
+            <Link onClick={browserHistory.goBack} style={{ marginRight: '20px' }}>
+              <i className="fa fa-undo caseList_littleMargin" />返回
+            </Link>
+            <Link to={`/newCase?collection=${this.props.params.collectionName}`}>
+              <i className="fa fa-plus caseList_littleMargin" />新建
+            </Link>
+          </span>
+        </div>
+        <div className="caseList_searchBar">
+          <div className="caseList_searchBar_container caseList_searchBar_patientID">
+            <div className="caseList_searchBar_headerText">
+              <span>检查号</span>
+            </div>
+            <div className="caseList_middleLine" />
+            <input name="patientID" onChange={this.handleInputChange} className="caseList_input caseList_input_patientID" type="text" />
+            <span className="caseList_border"></span>
+          </div>
+
+          <div className="caseList_searchBar_container caseList_searchBar_patientName">
+            <div className="caseList_searchBar_headerText">
+              <span>姓名</span>
+            </div>
+            <div className="caseList_middleLine" />
+            <input name="patientName" onChange={this.handleInputChange} className="caseList_input caseList_input_patientName" type="text" />
+            <span className="caseList_border"></span>
+          </div>
+
+          <div className="caseList_searchBar_container caseList_searchBar_patientAge">
+            <div className="caseList_searchBar_headerText">
+              <span>年龄</span>
+            </div>
+            <div className="caseList_middleLine" />
+            <input name="patientAge" onChange={this.handleInputChange} className="caseList_input caseList_input_patientAge" type="text " />
+            <span className="caseList_border"></span>
+          </div>
+
+          <div className="caseList_searchBar_container caseList_searchBar_patientSex">
+            <div className="caseList_searchBar_headerText">
+              <span>性别</span>
+            </div>
+            <div className="caseList_middleLine" />
+            <select style={{paddingTop:'0px'}} onChange={this.handleInputChange} className="caseList_input caseList_input_patientSex" name="patientSex" id="patientSex">
+              <option value="不限">不限</option>
+              <option value="M">男</option>
+              <option value="F">女</option>
+            </select>
+            <span className="caseList_border"></span>
+          </div>
+
+          <div className="caseList_searchBar_container caseList_searchBar_modality">
+            <div className="caseList_searchBar_headerText">
+              <span>设备</span>
+            </div>
+            <div className="caseList_middleLine" />
+            <select onChange={this.handleInputChange} className="caseList_input caseList_input_modality" name="modality" id="modality">
+              <option value="不限">不限</option>
+              <option value="CT">CT</option>
+              <option value="MRI">MRI</option>
+              <option value="DSA">DSA</option>
+              <option value="DR">DR</option>
+              <option value="CR">CR</option>
+              <option value="RF">RF</option>
+              <option value="MG">MG</option>
+              <option value="US">US</option>
+
+            </select>
+            <span className="caseList_border"></span>
+          </div>
+
+          <div className="caseList_searchBar_container caseList_searchBar_time">
+            <div className="caseList_searchBar_headerText">
+              <span>时间</span>
+            </div>
+            <div className="caseList_middleLine" />
+            <input name="startTime" onChange={this.handleInputChange} className="caseList_input caseList_input_time" style={{ marginRight: '0px' }} type="date" />
+            <i style={{ margin: 'auto' }} className="fa fa-caret-right"></i>
+            <input name="endTime" onChange={this.handleInputChange} className="caseList_input caseList_input_time" style={{ marginLeft: '0px', marginRight: '1px' }} type="date" />
+            <span className="caseList_border"></span>
+          </div>
+
+          <div className="caseList_buttonList" onClick={this.searchCase}>
+            <div className="caseList_buttonContainer">
+              <div className="caseList_buttonText">
+                <span>查询</span>
               </div>
             </div>
-            <div id="searchBar" style={{ height: '80px', marginTop: '5px' }}>
-              <div className="row">
-                <div className="col-md-5">
-                  <div className="col-md-4" style={{ paddingLeft: 0 }}>
-                    <FormGroup>
-                      <InputGroup>
-                        <InputGroup.Addon>检查号</InputGroup.Addon>
-                        <FormControl name="patientID" type="text" onChange={this.handleInputChange} />
-                      </InputGroup>
-                    </FormGroup>
-                  </div>
-                  <div className="col-md-4" style={{ paddingLeft: 0 }}>
-                    <FormGroup>
-                      <InputGroup>
-                        <InputGroup.Addon>姓名</InputGroup.Addon>
-                        <FormControl name="patientName" type="text" onChange={this.handleInputChange} />
-                      </InputGroup>
-                    </FormGroup>
-                  </div>
-                  <div className="col-md-4" style={{ paddingLeft: 0, paddingRight: 0 }}>
-                    <FormGroup>
-                      <InputGroup>
-                        <InputGroup.Addon>年龄</InputGroup.Addon>
-                        <FormControl name="patientAge" type="text" onChange={this.handleInputChange} />
-                      </InputGroup>
-                    </FormGroup>
-                  </div>
-                </div>
-                <div className="col-md-4" style={{ paddingLeft: 0 }}>
-                  <div className="col-md-7" style={{ paddingLeft: 0 }}>
-                    <FormGroup>
-                      <InputGroup>
-                        <InputGroup.Addon>时间</InputGroup.Addon>
-                        <FormControl type='date' name="startTime" value={this.state.startTime} onChange={this.handleInputChange} />
-                      </InputGroup>
-                    </FormGroup>
-                  </div>
-                  <div className="col-md-5" style={{ paddingLeft: 0, paddingRight: 0 }}>
-                    <FormGroup>
-                      <FormControl type='date' name="endTime" value={this.state.endTime} onChange={this.handleInputChange} />
 
-                    </FormGroup>
-                  </div>
-                </div>
-                <div className="col-md-3" style={{ paddingLeft: 0 }}>
-                  <div className="col-md-3" style={{ padding: 0 }}>
-                    <DropdownButton id="patientSex" onSelect={this.handleSexSelect} title={this.state.patientSex === 'M' ? '男' : this.state.patientSex === 'F' ? '女' : this.state.patientSex}>
-                      <MenuItem eventKey="M">男</MenuItem>
-                      <MenuItem eventKey="F">女</MenuItem>
-                      <MenuItem eventKey="不限" >不限</MenuItem>
-                    </DropdownButton>
-                  </div>
-                  <div className="col-md-3" style={{ padding: 0 }}>
-                    <DropdownButton id="modality" onSelect={this.handleModalitySelect} title={this.state.modality} style={{ marginLeft: '3px' }}>
-                      <MenuItem eventKey="CT">CT</MenuItem>
-                      <MenuItem eventKey="MRI">MRI</MenuItem>
-                      <MenuItem eventKey="DSA">DSA</MenuItem>
-                      <MenuItem eventKey="DR">DR</MenuItem>
-                      <MenuItem eventKey="CR">CR</MenuItem>
-                      <MenuItem eventKey="RF">RF</MenuItem>
-                      <MenuItem eventKey="MG">MG</MenuItem>
-                      <MenuItem eventKey="US">US</MenuItem>
-                      <MenuItem eventKey="不限">不限</MenuItem>
-                    </DropdownButton>
-                  </div>
-                  <div className="col-md-6" style={{ padding: 0 }}>
-                    <Button style={{ marginLeft: '6px', color: '#FFFFFF', backgroundColor: '#2659AD' }} onClick={this.searchCase}>查询</Button>
-                    <Button bsStyle="default" style={{ marginLeft: '3px' }} onClick={() => this.reset()}>重置</Button>
-                  </div>
-                </div>
+            <div className="caseList_buttonContainer" onClick={() => this.reset()} style={{ marginRight: '0px' }}>
+              <div className="caseList_buttonText">
+                <span>重置</span>
               </div>
-              <div className="container caseList">
-                <div className="searchResult">{searchResult}</div>
-                <Table striped condensed hover responsive>
-                  <thead>
-                    {tHead}
-                  </thead>
-                  <tbody>
-                    {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
-                      return (
-                        <tr style={{ backgroundColor: "#F5F5F5" }} key={specificCase._id} onDoubleClick={() => self.jumpTo(specificCase._id)}>
-                          <td>{specificCase.accessionNumber}</td>
-                          <td style={{ maxWidth: '170px', overflow: 'hidden' }}>{specificCase.patientID}</td>
-                          <td style={{ maxWidth: '150px', overflow: 'hidden' }}>{specificCase.patientName}</td>
-                          <td>{specificCase.patientAge}</td>
-                          <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
-                          <td>{specificCase.studyID}</td>
-                          <td>{specificCase.modality}</td>
-                          <td>{specificCase.studyDate}</td>
-                          <td>{specificCase.patientBirthDate}</td>
-                          <td style={{ maxWidth: '300px' }}>{specificCase.studyDescription}</td>
-                          <td>
-                            <Link to={{
-                              pathname: '/viewer',
-                              state: {
-                                studyUID: specificCase.studyInstanceUID,
-                                seriesNumber: specificCase.seriesList[0].seriesNumber
-                              }
-                            }} className="glyphicon glyphicon-picture" />
-                            &nbsp;&nbsp;&nbsp;
+            </div>
+          </div>
+
+          {/* <FormGroup>
+            <InputGroup>
+              <InputGroup.Addon>检查号</InputGroup.Addon>
+              <FormControl name="patientID" type="text"  />
+            </InputGroup>
+          </FormGroup>
+        <FormGroup>
+          <InputGroup>
+            <InputGroup.Addon>姓名</InputGroup.Addon>
+            <FormControl name="patientName" type="text" onChange={this.handleInputChange} />
+          </InputGroup>
+        </FormGroup>
+        <FormGroup>
+          <InputGroup>
+            <InputGroup.Addon>年龄</InputGroup.Addon>
+            <FormControl name="patientAge" type="text" onChange={this.handleInputChange} />
+          </InputGroup>
+        </FormGroup> */}
+
+          {/* <div className="col-md-4">
+              <div className="col-md-7" style={{ paddingLeft: 0 }}>
+                <FormGroup>
+                  <InputGroup>
+                    <InputGroup.Addon>时间</InputGroup.Addon>
+                    <FormControl type='date' name="startTime" value={this.state.startTime} onChange={this.handleInputChange} />
+                  </InputGroup>
+                </FormGroup>
+              </div>
+              <div className="col-md-5" style={{ paddingLeft: 0, paddingRight: 0 }}>
+                <FormGroup>
+                  <FormControl type='date' name="endTime" value={this.state.endTime} onChange={this.handleInputChange} />
+
+                </FormGroup>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="col-md-3" style={{ padding: 0 }}>
+                <DropdownButton id="patientSex" onSelect={this.handleSexSelect} title={this.state.patientSex === 'M' ? '男' : this.state.patientSex === 'F' ? '女' : this.state.patientSex}>
+                  <MenuItem eventKey="M">男</MenuItem>
+                  <MenuItem eventKey="F">女</MenuItem>
+                  <MenuItem eventKey="不限" >不限</MenuItem>
+                </DropdownButton>
+              </div>
+              <div className="col-md-3" style={{ padding: 0 }}>
+                <DropdownButton id="modality" onSelect={this.handleModalitySelect} title={this.state.modality} style={{ marginLeft: '3px' }}>
+                  <MenuItem eventKey="CT">CT</MenuItem>
+                  <MenuItem eventKey="MRI">MRI</MenuItem>
+                  <MenuItem eventKey="DSA">DSA</MenuItem>
+                  <MenuItem eventKey="DR">DR</MenuItem>
+                  <MenuItem eventKey="CR">CR</MenuItem>
+                  <MenuItem eventKey="RF">RF</MenuItem>
+                  <MenuItem eventKey="MG">MG</MenuItem>
+                  <MenuItem eventKey="US">US</MenuItem>
+                  <MenuItem eventKey="不限">不限</MenuItem>
+                </DropdownButton>
+              </div>
+              <div className="col-md-6" style={{ padding: 0 }}>
+                <Button style={{ marginLeft: '6px', color: '#FFFFFF', backgroundColor: '#2659AD' }} onClick={this.searchCase}>查询</Button>
+                <Button bsStyle="default" style={{ marginLeft: '3px' }} onClick={() => this.reset()}>重置</Button>
+              </div>
+            </div> */}
+        </div>
+        <div className="container caseList">
+          <div className="searchResult">{searchResult}</div>
+          <Table striped condensed hover responsive>
+            <thead>
+              {tHead}
+            </thead>
+            <tbody>
+              {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
+                return (
+                  <tr style={{ backgroundColor: "#F5F5F5" }} key={specificCase._id} onDoubleClick={() => self.jumpTo(specificCase._id)}>
+                    <td>{specificCase.accessionNumber}</td>
+                    <td style={{ maxWidth: '170px', overflow: 'hidden' }}>{specificCase.patientID}</td>
+                    <td style={{ maxWidth: '150px', overflow: 'hidden' }}>{specificCase.patientName}</td>
+                    <td>{specificCase.patientAge}</td>
+                    <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
+                    <td>{specificCase.studyID}</td>
+                    <td>{specificCase.modality}</td>
+                    <td>{specificCase.studyDate}</td>
+                    <td>{specificCase.patientBirthDate}</td>
+                    <td style={{ maxWidth: '300px' }}>{specificCase.studyDescription}</td>
+                    <td>
+                      <Link to={{
+                        pathname: '/viewer',
+                        state: {
+                          studyUID: specificCase.studyInstanceUID,
+                          seriesNumber: specificCase.seriesList[0].seriesNumber
+                        }
+                      }} className="glyphicon glyphicon-picture" />
+                      &nbsp;&nbsp;&nbsp;
                         <Link to={`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`} className="glyphicon glyphicon-pencil" />
-                            &nbsp;&nbsp;&nbsp;
+                      &nbsp;&nbsp;&nbsp;
                         <span className="glyphicon glyphicon-trash" onClick={self.deleteCase.bind(this, specificCase._id)} />
-                          </td>
-                        </tr>
-                      )
-                    })
-                    }
-                  </tbody>
-                </Table>
-              </div>
-              <ToastContainer
-                position="bottom-right"
-                type="info"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                pauseOnHover
-              />
-            </div>
-
-      </div>
+                    </td>
+                  </tr>
+                )
+              })
+              }
+            </tbody>
+          </Table>
+        </div>
+        <ToastContainer
+          position="bottom-right"
+          type="info"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          pauseOnHover
+        />
+      </div >
     )
   }
 }
