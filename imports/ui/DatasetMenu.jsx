@@ -12,7 +12,7 @@ export default class DatasetMenu extends Component {
     super(props);
 
     this.state = {
-      activeKey: this.props.location.state ? this.props.location.state : 'PUBLIC'
+      activeKey: this.props.location.state.tabActiveKey ? this.props.location.state.tabActiveKey : 'PUBLIC'
     };
   }
 

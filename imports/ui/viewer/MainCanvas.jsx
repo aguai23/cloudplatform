@@ -187,17 +187,10 @@ export default class MainCanvas extends Component {
    * @param seriesIndex
    */
   initMainCanvas(caseId, seriesNumber) {
-    this.setState({
-      isLoading: true
-    });
     Meteor.call('prepareDicoms', caseId, seriesNumber, (error, result) => {
       if (error) {
         console.error(error)
       } else {
-        this.setState({
-          isLoading: false
-        });
-
         customEventEmitter.dispatch('loadThumbnails');
 
         let dateTime = ''
@@ -225,6 +218,12 @@ export default class MainCanvas extends Component {
           image.getPixelData = function () {
             return pixelData
           };
+
+          if(this.state.isLoading) {
+            this.setState({
+              isLoading: false
+            });
+          }
 
           this.dicomObj[seriesNumber][image.index] = image;
           customEventEmitter.dispatch('showSliceLoaded', {seriesNumber: seriesNumber, index: image.index});
@@ -292,47 +291,52 @@ export default class MainCanvas extends Component {
     }
 
     if (!this.dicomObj[seriesNumber][index]) {
+      console.log(`set true for ${index}`)
       this.setState({
         isLoading: true
-      });
-      this.cacheManager.cacheSlice(caseId, seriesNumber, index, (image) => {
-        let pixelData = this.setPixelData(image);
+      }, () => {
+        this.cacheManager.cacheSlice(caseId, seriesNumber, index, (image) => {
+          let pixelData = this.setPixelData(image);
 
-        image.getPixelData = function () {
-          return pixelData;
-        }
-
-        this.dicomObj[seriesNumber][index] = image;
-        customEventEmitter.dispatch('showSliceLoaded', {seriesNumber: seriesNumber, index: image.index});
-
-        /**
-         * set viewport scale when loading first slice
-          */
-        var viewport = {};
-        if (index === 1) {
-          viewport.scale = (600 / image.width).toFixed(2);
-
-          if(image.photometricInterpretation === 'MONOCHROME1') {
-            viewport.invert = true;
+          image.getPixelData = function () {
+            return pixelData;
           }
-        }
 
-        this.setState({
-          isLoading: false
-        }, () => {
-          cornerstone.displayImage(this.container, image, viewport);
+          this.dicomObj[seriesNumber][index] = image;
+          customEventEmitter.dispatch('showSliceLoaded', {seriesNumber: seriesNumber, index: image.index});
+
+          /**
+           * set viewport scale when loading first slice
+            */
+          var viewport = {};
+          if (index === 1) {
+            viewport.scale = (600 / image.width).toFixed(2);
+
+            if(image.photometricInterpretation === 'MONOCHROME1') {
+              viewport.invert = true;
+            }
+          }
+
+          console.log(`received for ${index}`);
+
+          this.setState({
+            isLoading: false
+          }, () => {
+            console.log(`set false for ${index}`);
+            cornerstone.displayImage(this.container, image, viewport);
+          });
+
+          let measurementData = {
+            currentImageIdIndex: this.index,
+            imageIds: image.imageId
+          };
+
+          cornerstoneTools.addToolState(this.container, 'stack', measurementData);
+          if (!this.imageLoaded) {
+            this.disableAllTools();
+            this.imageLoaded = true;
+          }
         });
-
-        let measurementData = {
-          currentImageIdIndex: this.index,
-          imageIds: image.imageId
-        };
-
-        cornerstoneTools.addToolState(this.container, 'stack', measurementData);
-        if (!this.imageLoaded) {
-          this.disableAllTools();
-          this.imageLoaded = true;
-        }
       });
     } else {
       cornerstone.displayImage(this.container, this.dicomObj[seriesNumber][index]);

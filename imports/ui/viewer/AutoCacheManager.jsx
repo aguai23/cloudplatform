@@ -54,11 +54,11 @@ export default class AutoCacheManager {
    * @param cb
    */
   cacheSlice(caseId, seriesNumber, index, cb) {
-    // console.log('request to cache slice ' + index);
+    console.log('request to cache slice ' + index);
     let series = this.series[seriesNumber];
 
     if(series.cachingPool.hasOwnProperty(index)) {
-      // console.log(`slice${index} is being cached`);
+      console.log(`slice${index} is being cached`);
       return;
     }
 

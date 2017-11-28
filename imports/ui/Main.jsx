@@ -141,10 +141,10 @@ export class Main extends Component {
    * add collection
    */
   onClickAddCollection() {
-    // if (Main.isAdmin()) {
+    if (Main.isAdmin()) {
       this.setState({ showAddCollectionModal: true });
       ReactDOM.render((<ModalAddCollection showModal={true} userInfo={this.props.userData} />), document.getElementById('modal-base'));
-    // }
+    }
   }
 
   /**
