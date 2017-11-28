@@ -1,18 +1,3 @@
-.nav-container {
-  background-color: #353a44;
-  overflow: hidden;
-  padding: 0;
-  height: inherit;
-}
-
-.content-container {
-  height: inherit;
-  background-color: #e7edf6;
-  padding-left: 20px;
-  padding-right: 20px;
-  overflow-y: scroll;
-}
-
 .upper-div {
   height: 80px;
   margin-top: 30px;

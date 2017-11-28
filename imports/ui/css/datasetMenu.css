@@ -1,19 +1,31 @@
 .nav-custom {
-  padding-top: 30px;
+  padding-top: 20px;
   text-align: center;
   position: relative;
   display: inline-block;
-  font-size: 16px;
+  font-size: 14px;
   width: 100%;
 }
 
-.nav-custom li a {
-  border-radius: 0;
-  color: darkgrey;
-  padding-top: 17px;
-  padding-bottom: 17px;
-  margin-bottom: -2px;
+.nav-custom li {
+  position: relative;
+  height: 50px;
+}
 
+.nav-custom li:nth-child(2) {
+  top: -2px;
+}
+
+.nav-custom li:nth-child(3) {
+  top: -4px;
+}
+
+.nav-custom li a {
+  height: inherit;
+  position: relative;
+  border-radius: 0;
+  color: rgba(255, 255, 255, 0.5);
+  padding-top: 16px;
 }
 
 .nav-custom .active a {
