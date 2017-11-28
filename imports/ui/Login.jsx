@@ -9,12 +9,12 @@ const styles = {
 
   loginBox: {
     margin: '0 auto',
-    padding: '10px 30px 10px 30px',
     position: 'relative',
-    marginTop: '10%',
-    width: '400px',
-    marginLeft: '60%',
-    background: 'white'
+    width: '380px',
+    height: "380px",
+    marginRight: '180px',
+    background: 'white',
+    marginTop: "114px",
   },
 
   linkNoAccountYet: {
@@ -30,15 +30,16 @@ export default class Login extends Component {
 
   login(){
 
-    if(this.emailInput.value === undefined || this.emailInput.value === "") {
+    if(this.emailInput === undefined || this.emailInput === "") {
       return toast.warning("邮箱不能为空");
     }
 
-    if(this.passwordInput.value === undefined || this.emailInput.value === "") {
+    if(this.passwordInput === undefined || this.emailInput === "") {
       return toast.warning("密码不能为空");
     }
-
-    Meteor.loginWithPassword(this.emailInput.value, this.passwordInput.value, function(error) {
+    console.log(this.emailInput);
+    console.log(this.passwordInput);
+    Meteor.loginWithPassword(this.emailInput, this.passwordInput, function(error) {
       if(error) {
         console.log(error);
         if(error.reason === 'User not found') {
@@ -58,40 +59,40 @@ export default class Login extends Component {
     return (
       <div id = "login-background">
         <div id = "login-logo"/>
-        <div ref="container" className="container" style={styles.loginBox}>
-          <h3 style={{textAlign: 'center', color: '#2659ad', marginBottom: '20px'}}>用户登录</h3>
-          <Form horizontal>
-            <FormGroup >
-              <Col smOffset={1} sm={2} className = "login-text">邮箱</Col>
-              <br/>
-              <Col smOffset={1} sm={10}>
-                <FormControl id= "login-input" type="email" placeholder="Email" inputRef={function(ref) { this.emailInput = ref; }} />
-              </Col>
-            </FormGroup>
+        <div ref="container"  style={styles.loginBox}>
+          <h3 style={{textAlign: 'center', color: '#245aa8', marginBottom: '50px',
+              fontFamily: "Microsoft Yahei", fontSize: "16px", paddingTop: "30px"}}>用户登录</h3>
 
-            <FormGroup className = "login-box">
-              <Col smOffset={1} sm={2} className = "login-text">密码</Col>
-              <br/>
-              <Col smOffset={1} sm={10}>
-                <FormControl id= "login-input" type="password" placeholder="Password" inputRef={function(ref) { this.passwordInput = ref; }}/>
-              </Col>
-            </FormGroup>
+          <div className = "login-text">邮箱</div>
+          <div>
+            <input id= "login-input" type="text" placeholder="Email" onInput={function (event) {
+              this.emailInput = event.target.value;
+            }} />
+          </div>
 
-            {/* <FormGroup>
+
+          <div className = "login-text">密码</div>
+          <div>
+            <input id= "login-input" type="text" placeholder="Password" onInput={function (event) {
+              this.passwordInput = event.target.value;
+            }}/>
+          </div>
+
+          {/* <FormGroup>
               <Col smOffset={2} sm={10}>
                 <Checkbox>Remember me</Checkbox>
               </Col>
             </FormGroup> */}
 
-            <FormGroup>
-              <Col smOffset={8} sm={3} style={{textAlign: 'center'}}>
-                <Button className = "login-button" onClick={this.login}>登录</Button>
-              </Col>
-            </FormGroup>
+          <div>
+            <Button className = "login-button" onClick={this.login}>登录</Button>
+          </div>
 
-            <a href="registration" className="pull-right" style={styles.linkNoAccountYet}>去注册?</a>
+          <div className={"login-link"}>
+            <a href="registration"  style={styles.linkNoAccountYet}>去注册?</a>
+          </div>
 
-          </Form>
+
           <ToastContainer
             position="top-center"
             type="info"
