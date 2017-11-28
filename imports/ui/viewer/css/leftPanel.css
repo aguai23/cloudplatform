@@ -99,8 +99,14 @@
 }
 
 .loading-info {
-  padding-left: 75px;
-  padding-right: 75px;
+  width: 60%;
+  margin: 0 auto;
+  padding-bottom: 50px;
+
+}
+
+.loading-info > div {
+  height: 5px;
 }
 
 .loading-info .block {

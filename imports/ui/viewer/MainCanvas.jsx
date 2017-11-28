@@ -174,6 +174,7 @@ export default class MainCanvas extends Component {
 
   componentWillUnmount() {
     window.removeEventListener('resize', () => this.updateDimensions());
+    window.clearInterval(this.cacheManager.autoCacheProcess);
 
     customEventEmitter.unsubscribe('changeSeries');
     customEventEmitter.unsubscribe('diagnosisResult');

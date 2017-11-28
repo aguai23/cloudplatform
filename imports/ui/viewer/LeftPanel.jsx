@@ -58,6 +58,7 @@ export default class LeftPanel extends Component {
 
   componentWillUnmount() {
     customEventEmitter.unsubscribe('loadThumbnails');
+    customEventEmitter.unsubscribe('showSliceLoaded');
   }
 
   getThumbnails(caseId) {
@@ -213,10 +214,9 @@ export default class LeftPanel extends Component {
   getLoadingBlocks(seriesNumber) {
     // console.log('seriesNumber', seriesNumber);
     // console.log(this.state.loadingList[seriesNumber]);
-
     let loadingList = this.state.loadingList[seriesNumber];
 
-    let col = 40;
+    let col = 45;
     let row = Math.round(loadingList[0] / col - 0.5) + 1;
 
     let blocks = [];
@@ -236,7 +236,7 @@ export default class LeftPanel extends Component {
     }
 
     return (
-      <div>
+      <div className="loading-info row">
         {
           blocks.map((row, colNum) => {
             return (
@@ -309,18 +309,12 @@ export default class LeftPanel extends Component {
                 <div className="col-sm-4" style={{ textAlign: 'center', color: '#91b9cd' }}>
                   <div>
                     <b style={{ color: '#4da2f2' }}>S</b>{' ' + this.state.seriesList[index].seriesNumber}
-                    <FontAwesome name='ellipsis-h' size='lg' />
-                    <FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}
+                    <FontAwesome name='ellipsis-h' size='lg' style={{marginLeft: '5px'}}/>
+                    <FontAwesome name='file-image-o' size='lg'  style={{marginLeft: '5px'}}/>{' ' + this.state.seriesList[index].total}
                   </div>
-                  {/*
-                  <div><FontAwesome name='ellipsis-v' size='lg' /></div>
-                  <div><FontAwesome name='file-image-o' size='lg' />{' ' + this.state.seriesList[index].total}</div>
-                  */}
                 </div>
               </div>
-              <div className="loading-info row">
-                {this.getLoadingBlocks(series.seriesNumber)}
-              </div>
+              {this.getLoadingBlocks(series.seriesNumber)}
             </div>
           )
         })

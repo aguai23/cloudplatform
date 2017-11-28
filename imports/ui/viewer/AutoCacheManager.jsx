@@ -1,20 +1,5 @@
-let __instance = (function() {
-  let instance;
-
-  return (newInstance) => {
-    if(newInstance) {
-      instance = newInstance;
-    }
-    return instance;
-  }
-}());
-
 export default class AutoCacheManager {
   constructor(seriesList) {
-    if(__instance()) {
-      return __instance();
-    }
-
     this.series = {};
 
     for(let i = 0; i < seriesList.length; i++) {
@@ -34,19 +19,6 @@ export default class AutoCacheManager {
         series.uncachedMap[j-1].next = series.uncachedMap[j] = new ListNode(j);
       }
     }
-
-    __instance(this);
-  }
-
-
-  /**
-   * get existed AutoCacheManager instance
-   */
-  static getInstance() {
-    if(__instance()) {
-      return __instance();
-    }
-    return undefined;
   }
 
   /**
@@ -56,6 +28,7 @@ export default class AutoCacheManager {
    * @param cb callback for successfully caching each slice
    */
   startAutoCacheSeries(caseId, seriesNumber, cb) {
+    // console.log('auto-caching started at', new Date());
     let series = this.series[seriesNumber];
 
     window.clearInterval(this.autoCacheProcess);
@@ -66,10 +39,11 @@ export default class AutoCacheManager {
           this.cacheSlice(caseId, seriesNumber, series.nextSliceToCache, cb);
         }
       } else {
-        console.log('all slice loaded, stop auto-cache process');
+        console.log('All slice loaded, stop auto-cache process');
+        // console.log('auto-caching ended at', new Date());
         window.clearInterval(this.autoCacheProcess);
       }
-    }, 200);
+    }, 50);
   }
 
   /**
