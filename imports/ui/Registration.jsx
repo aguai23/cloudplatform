@@ -7,13 +7,13 @@ import { ToastContainer, toast } from 'react-toastify';
 import './css/registration.css';
 const styles = {
   loginBox: {
-      margin: '0 auto',
-      padding: '10px 30px 10px 30px',
-      position: 'relative',
-      marginTop: '10%',
-      width: '400px',
-      marginLeft: '60%',
-      background: 'white'
+    margin: '0 auto',
+    position: 'relative',
+    width: '380px',
+    height: "470px",
+    marginRight: '180px',
+    background: 'white',
+    marginTop: "114px",
   },
 
   btnRegister: {
@@ -22,15 +22,16 @@ const styles = {
   },
 
   linkAlreadyHaveAccount: {
-    fontSize: '12px',
-    color: '#2659ad'
+    fontSize: '14px',
+    color: '#245aa8',
+    fontFamily: "Microsoft Yahei"
   }
 };
 
 validateEmail = function() {
   var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  console.log(re.test(this.emailInput.value));
-  return re.test(this.emailInput.value);
+  console.log(re.test(this.emailInput));
+  return re.test(this.emailInput);
 };
 
 export default class Registration extends Component {
@@ -40,7 +41,7 @@ export default class Registration extends Component {
 
   register = function() {
 
-    if(this.emailInput.value === undefined || this.emailInput.value === "") {
+    if(this.emailInput === undefined || this.emailInput === "") {
       toast.warning("注册失败：Email不能为空");
       return console.log("Registration Failed. Error: Empty email address.");
     }
@@ -51,22 +52,22 @@ export default class Registration extends Component {
     }
 
 
-    if(this.passwordInput.value === undefined || this.passwordInput.value === "") {
+    if(this.passwordInput === undefined || this.passwordInput === "") {
       toast.warning("注册失败：密码不能为空");
       return console.log("Registration Failed. Error: Empty password.");
     }
 
-    if(this.passwordInput.value !== this.confirmPasswordInput.value) {
+    if(this.passwordInput !== this.confirmPasswordInput) {
       toast.warning("注册失败：两次输入密码不一致");
       return console.log("Registration Failed. Error: Different passwords.");
     }
-
     Accounts.createUser({
-      email: this.emailInput.value,
-      password: this.passwordInput.value,
-      isAdmin: this.adminInput.value === 'on' ,
+      email: this.emailInput,
+      password: this.passwordInput,
+      isAdmin: this.adminInput === true ,
     }, function(error) {
       if(error) {
+        toast.warning(error.message);
         return console.log("Registration Failed. " + error);
       }
 
@@ -79,45 +80,52 @@ export default class Registration extends Component {
     return (
       <div id = "registration-background">
         <div id = "registration-logo"/>
-        <div ref="container" className="container" style={styles.loginBox}>
-          <h3 style={{textAlign: 'center',color: '#2659ad', marginBottom: '20px'}}>新用户注册</h3>
-          <Form horizontal>
-            <FormGroup>
-              <Col smOffset={1} sm={2} className={'registration-text'}>Email</Col>
-              <Col smOffset={1} sm={10}>
-                <FormControl className = "registration-input" type="email" placeholder="Email" inputRef={function(ref) { this.emailInput = ref; }} />
-              </Col>
-            </FormGroup>
+        <div ref="container"  style={styles.loginBox}>
+          <h3 style={{textAlign: 'center', color: '#245aa8', marginBottom: '50px',
+            fontFamily: "Microsoft Yahei", fontSize: "16px", paddingTop: "30px"}}>新用户注册</h3>
 
-            <FormGroup>
-              <Col smOffset={1} sm={2} className={'registration-text'}>密码</Col>
-              <Col smOffset={1} sm={10}>
-                <FormControl className = "registration-input" type="password" placeholder="Password" inputRef={function(ref) { this.passwordInput = ref; }}/>
-              </Col>
-            </FormGroup>
 
-            <FormGroup>
-              <Col smOffset={1} sm={4} className={'registration-text'}>确认密码</Col>
-              <Col smOffset={1} sm={10}>
-                <FormControl className = "registration-input" type="password" placeholder="Confirm password" inputRef={function(ref) { this.confirmPasswordInput = ref; }}/>
-              </Col>
-            </FormGroup>
+          <div className={'registration-text'}>邮箱</div>
+          <div>
+            <input className = "registration-input" type="email" placeholder="Email" onInput={function(event) { this.emailInput = event.target.value; }} />
+          </div>
 
-            <FormGroup>
-              <Col smOffset={1} sm={4}>
-                <Checkbox inputRef={function(ref) { this.adminInput = ref; }}  >管理员</Checkbox>
-              </Col>
-              <Col smOffset={4} sm={3}>
-                <Button className="registration-button" onClick={this.register}>注册</Button>
-              </Col>
-              <Col smOffset={1} sm={5}>
-                <Checkbox>同意使用协议</Checkbox>
-              </Col>
 
-            </FormGroup>
 
-            <a href="login" className="pull-right" style={styles.linkAlreadyHaveAccount}>已经有账号?</a>
-          </Form>
+          <div className={'registration-text'}>密码</div>
+          <div >
+            <input className = "registration-input" type="password" placeholder="Password" onInput={function(event) { this.passwordInput = event.target.value; }}/>
+          </div>
+
+
+
+          <div  className={'registration-text'}>确认密码</div>
+          <div >
+            <input className = "registration-input" type="password" placeholder="Confirm password" onInput={function(event) { this.confirmPasswordInput = event.target.value; }}/>
+          </div>
+
+
+
+          <div className = "registration-checkbox">
+            <input  type={"checkbox"} className={"registration-check-input"} id={"registration-admin"}
+                    onChange={function(event) { this.adminInput = event.target.checked; }}/>
+            <label className={"registration-check-label"}  htmlFor="registration-admin">管理员</label>
+            <br/>
+            <input  type={"checkbox"} className={"registration-check-input"} id={"registration-contract"}/>
+            <label className={"registration-check-label"} htmlFor={"registration-contract"}>同意使用协议</label>
+          </div>
+
+
+          <div style={{float : "right", width : "100px", marginRight: "40px", marginTop: "-10px"}}>
+            <a href="login" className="pull-right" style={styles.linkAlreadyHaveAccount}>已有账号?</a>
+            <Button className="registration-button" onClick={this.register}>注册</Button>
+          </div>
+
+
+
+
+
+
 
           <ToastContainer
             position="top-center"

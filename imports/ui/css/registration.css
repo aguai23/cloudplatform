@@ -8,22 +8,88 @@
 
 
 #registration-logo {
-    background: url("/img/logo3.jpg") no-repeat 100% 100%;
+    background: url("/img/logo3.jpg") no-repeat center;
     position: relative;
     height: 90px;
-    width: 400px;
-    margin-left: 55%;
+    width: 380px;
+    margin-right: 180px;
+    margin-left: auto;
     z-index: 100;
     top: 10%;
 }
 
 .registration-button {
-    background: #2659ad;
+    background: #245aa8;
     color: white;
+    height:46px;
+    width: 80px;
+    margin-left: 260px;
+    margin-bottom: 10px;
+    border-radius: 0;
+    float: right;
+    margin-top: 16px;
 }
 
 .registration-input {
     margin-top:10px;
-    border-color: black;
-    width: 100%;
+    border-color: #353a44;
+    height: 46px;
+    width:300px;
+    border-width: 1px;
+    border-radius: 0;
+    padding-left: 20px;
+    margin-bottom: 20px;
+    margin-left: 40px;
+    outline: #245aa8
 }
+
+.registration-input:focus {
+    border: #245aa8 solid 1px;
+}
+
+.registration-text {
+    color: #353a44;
+    font-family: "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    margin-left: 40px;
+}
+
+.registration-checkbox {
+    float : left;
+    width :150px;
+    margin-left: 40px;
+    margin-top: 20px;
+    font-size: 14px;
+
+
+}
+
+.registration-check-label {
+    font-family: "Microsoft YaHei", sans-serif;
+    color: #353a44;
+    font-weight: inherit;
+    cursor: pointer;
+}
+
+.registration-check-input {
+    display: none;
+
+}
+
+
+.registration-check-input + .registration-check-label:before {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    border: 1px #353a44 solid;
+    background: white;
+    position: relative;
+    margin-right: 8px;
+    content: "";
+}
+
+.registration-check-input:checked + .registration-check-label:before{
+    background:#245aa8
+}
+
+
