@@ -5,7 +5,7 @@
   font-size: 18px
 }
 
-.caseList_littleMargin{
+.caseList_littleMargin {
   margin-right: 6px;
 }
 
@@ -135,11 +135,12 @@
   width: 133px;
 }
 
-.caseList_buttonList{
+.caseList_buttonList {
   display: flex;
 }
+
 .caseList_buttonContainer {
-  display:flex;
+  display: flex;
   margin-right: 10px;
   width: 46px;
   height: 36px;
@@ -156,7 +157,7 @@
   color: #353a44;
 }
 
-.caseList_table{
+.caseList_table {
   width: 100%;
 }
 
@@ -171,10 +172,26 @@ td {
   overflow: hidden;
 }
 
-th:first-child,td:first-child{
+th:first-child,
+td:first-child {
   padding-left: 20px;
 }
 
+.caseList_optionList>button {
+  margin-right: 10px;
+  float: right;
+}
+
+.caseList_td_patientID {
+  display: inline-block;
+  max-width: 150px;
+  margin-right: 5px;
+  overflow: hidden;
+}
+
 .caseList_td_patientName {
-  /* max-width: 150px; */
+  display: inline-block;
+  max-width: 130px;
+  margin-right: 5px;
+  overflow: hidden;
 }
