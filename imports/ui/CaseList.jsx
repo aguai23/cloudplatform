@@ -309,6 +309,7 @@ export class CaseList extends Component {
           <table className="caseList_table">
             <thead>
               {tHead}
+              <div style={{height:'10px'}}/>
             </thead>
             <tbody className="bottom-div">
               {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
