@@ -74,20 +74,27 @@ export default class ModalAddCollection extends Component {
     const oldData = this.props.dataCollection;
     return (
       <div>
-        <Modal show={this.state.showModal} onHide={() => this.close()}>
-          <Modal.Header closeButton>
-            <Modal.Title className="add-collection-title">{oldData ? `修改${oldData.name}` : '添加新'}数据集</Modal.Title>
+        <Modal className="add-collection-modal" show={this.state.showModal} onHide={() => this.close()}>
+          <Modal.Header className="add-collection-modal-header">
+            <div>
+              <Modal.Title className="add-collection-modal-title">{oldData ? `修改${oldData.name}` : '添加新'}数据集</Modal.Title>
+            </div>
           </Modal.Header>
           <Modal.Body>
             <div>
               <Form horizontal>
                 <ControlLabel>数据集名称</ControlLabel>
-                <FormControl defaultValue={oldData ? oldData.name : ''} type="text" placeholder="数据集名称" inputRef={(ref) => this.name = ref} />
+                <FormControl defaultValue={oldData ? oldData.name : ''} type="text" inputRef={(ref) => this.name = ref} />
                 <ControlLabel>设备名称</ControlLabel>
-                <FormControl defaultValue={oldData ? oldData.equip : ''} type="text" placeholder="设备" inputRef={(ref) => this.equip = ref} />
-                <Checkbox checked={this.state.isPublic} onChange={(evt) => { this.setState({ isPublic: evt.target.checked }); }}>设为公有</Checkbox>
-                <br />
-                <Button className="btn btn-primary" onClick={this.onClickSubmit}>提交</Button>
+                <FormControl defaultValue={oldData ? oldData.equip : ''} type="text" inputRef={(ref) => this.equip = ref} />
+                <div className="last-row">
+                  <div className="col-sm-3">
+                    <Checkbox checked={this.state.isPublic} onChange={(evt) => { this.setState({ isPublic: evt.target.checked }); }}>设为公有</Checkbox>
+                  </div>
+                  <div className="col-sm-2 col-sm-offset-7">
+                    <Button className="btn btn-primary pull-right" onClick={this.onClickSubmit}>提交</Button>
+                  </div>
+                </div>
               </Form>
             </div>
           </Modal.Body>
