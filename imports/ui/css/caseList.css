@@ -179,6 +179,7 @@ td:first-child {
 
 .caseList_optionList>button {
   margin-right: 10px;
+  float: right;
 }
 
 .caseList_td_patientID {
