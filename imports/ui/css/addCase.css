@@ -1,3 +1,24 @@
+#addcase-container {
+  padding: 16px 0;
+}
+
+#addcase-container .top-div {
+  min-height: 36px;
+}
+
+#addcase-container .top-div .left-subdiv {
+  padding-left: 0;
+  text-align: left;
+  font-weight: bold;
+  color: grey;
+  font-size: 12px;
+}
+
+#addcase-container .top-div .right-subdiv {
+  padding-right: 0;
+  text-align: right;
+}
+
 .modal {
   height: auto;
   position: absolute;
@@ -30,15 +51,21 @@
 }
 
 #customUploader + label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   color: white;
   display: inline-block;
   padding: 8px;
+  width: 180px;
+  height: 36px;
 }
 
 .well {
   background: white;
+  margin-top: 15px;
+  padding: 20px 20px 0 20px;
+  letter-spacing: 2px;
+  font-size: 14px;
 }
 
 .well-title {
@@ -47,13 +74,87 @@
   font-weight: bold;
 }
 
-.series-well {
-  border: none;
-  background: white;
+.well .row {
+  margin-bottom: 30px;
+  height: 50px;
 }
 
-.series-head tr {
-  border:none
+.well label {
+  line-height: 2;
+  padding: 0;
+  margin-left: 0;
+}
+
+.well input[type=text] {
+  width: 400px;
+  height: 50px;
+  border-radius: 0;
+}
+
+.well input[id=patient-age] {
+  position: relative;
+  top: -17px;
+  width: 340px;
+  display: inline-block;
+}
+
+.well .gender-radios {
+  position: relative;
+  height: 50px;
+  margin-left: 40px;
+  display: inline-block;
+}
+
+.well .gender-radios .radio {
+  padding-top: 0;
+}
+
+.series-well {
+  background-color: transparent;
+  font-size: 14px;
+}
+
+.series-well > .table {
+  border: none;
+}
+
+.series-well > .table > thead {
+  letter-spacing: 2px;
+}
+
+.series-well > .table > thead > tr > th {
+  border: none;
+}
+
+.series-well > .table > thead > tr > th:first-child {
+  padding-left: 20px;
+}
+
+.series-well > .table > tbody {
+  background-color: white;
+}
+
+.series-well > .table > tbody > tr {
+  height: 50px;
+  border-bottom: 1px solid #cddcf2;
+}
+
+.series-well > .table > tbody > tr > td {
+  padding-top: 15px;
+  border: none;
+}
+
+.series-well > .table > tbody > tr:last-child {
+  border-bottom: none;
+}
+
+.series-well > .table > tbody > tr > td:first-child {
+  padding: 15px 0 0 20px;
+}
+
+.series-well > .table > tbody > tr > td:last-child {
+  text-align: right;
+  padding: 8px 20px 0 0;
 }
 
 .bottom-button {

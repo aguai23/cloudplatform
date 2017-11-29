@@ -665,176 +665,134 @@ export class AddCase extends Component {
     const oldCase = this.state.oldCase;
     const Case = this.state.Case;
     return (
-      <div id={"addcase-container"} style={{ padding: '20px' }}>
-        <div style={{ textAlign: 'left', fontWeight: "bold", color: "grey" }}>
-          {this.state.collection ? this.state.collection.type === "PUBLIC" ? "公共数据集" : "个人数据集" : "个人数据集"}
-          > {this.state.collectionName}
-          > {oldCase ? `修改病例` : '添加新病例'}
-        </div>
-
-        <form id="form1" encType="multipart/form-data" method="post">
-          <div style={{ textAlign: 'right' }}>
-            <input type="file" id="customUploader" ref="customAttributes" multiple onChange={() => this.selectFile()} />
-            <label id="uploader-label" className="btn btn-primary" htmlFor="customUploader"><FontAwesome name='upload' size={"lg"} style={{ marginRight: '20px' }} />批量上传DICOM文件</label>
+      <div id={"addcase-container"}>
+        <div className="top-div">
+          <div className="col-sm-6 left-subdiv">
+            {this.state.collection ? this.state.collection.type === "PUBLIC" ? "公共数据集" : "个人数据集" : "个人数据集"}
+            > {this.state.collectionName}
+            > {oldCase ? `修改病例` : '添加新病例'}
           </div>
-        </form>
+          <div className="col-sm-6 right-subdiv">
+            <form id="form1" encType="multipart/form-data" method="post">
+                <input type="file" id="customUploader" ref="customAttributes" multiple onChange={() => this.selectFile()} />
+                <label id="uploader-label" className="btn btn-primary" htmlFor="customUploader"><FontAwesome name='upload' size={"lg"} style={{ marginRight: '20px' }} />批量上传DICOM文件</label>
+            </form>
+          </div>
+        </div>
 
         <div style={{ display: (this.state.uploadProgress < 0 ? 'none' : 'block'), textAlign: 'center' }}>
           <h4>{this.state.uploadProgress + '%'}</h4>
           <Line percent={this.state.uploadProgress} strokeWidth="1" strokeColor="#2db7f5" />
         </div>
         <Form horizontal className="case-form">
-          <div className="well" style={wellStyles}>
+          <div className="well">
             <div className="well-title">患者基本信息</div>
             <Row className="show-grid">
               <Col md={6} mdPush={6}>
-                <FormGroup controlId="patientBirthDate">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    出生日期
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.patientBirthDate : Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
+                <Col componentClass={ControlLabel} sm={1}>
+                  出生日期
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.patientBirthDate : Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
               <Col md={6} mdPull={6}>
-                <FormGroup controlId="patientName">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    患者姓名
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.patientName : Case.patientName} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
+                <Col componentClass={ControlLabel} sm={1}>
+                  患者姓名
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.patientName : Case.patientName} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
             </Row>
             <Row className="show-grid">
-              <Col md={6} mdPush={6}>
-                <FormGroup controlId="patientSex">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    患者性别
-                  </Col>
-                  <Col sm={6}>
-                    <Radio checked={oldCase ? oldCase.patientSex === 'M' : Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M" inline>男</Radio>{' '}
-                    <Radio checked={oldCase ? oldCase.patientSex === 'F' : Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F" inline>女</Radio>{' '}
-                  </Col>
-                </FormGroup>
+              <Col md={6}>
+                <Col componentClass={ControlLabel} sm={1}>
+                  年龄性别
+                </Col>
+                <Col sm={7}>
+                  <FormControl id="patient-age" value={oldCase ? oldCase.patientAge : Case.patientAge} onChange={this.onCaseChange} type="text" />
+                  <div className="gender-radios">
+                    <Radio checked={oldCase ? oldCase.patientSex === 'M' : Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M">男</Radio>
+                    <Radio checked={oldCase ? oldCase.patientSex === 'F' : Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F">女</Radio>
+                  </div>
+                </Col>
               </Col>
-              <Col md={6} mdPull={6}>
-                <FormGroup controlId="patientAge">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    患者年龄
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.patientAge : Case.patientAge} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
-              </Col>
-            </Row>
-            <Row className="show-grid">
-              <Col md={6} mdPush={6}>
-
-              </Col>
-              <Col md={6} mdPull={6}>
-
-                <FormGroup controlId="patientID">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    患者编号
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.patientID : Case.patientID} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
+              <Col md={6}>
+                <Col componentClass={ControlLabel} sm={1}>
+                  患者编号
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.patientID : Case.patientID} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
             </Row>
-
           </div>
 
           <div className="well" style={wellStyles}>
             <div className="well-title">检查信息</div>
             <Row className="show-grid">
               <Col md={6} mdPush={6}>
-                <FormGroup controlId="studyID">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    检查号
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.studyID : Case.studyID} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
-
+                <Col componentClass={ControlLabel} sm={1}>
+                  检查号
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.studyID : Case.studyID} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
               <Col md={6} mdPull={6}>
-                <FormGroup controlId="accessionNumber">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    检查流水
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.accessionNumber : Case.accessionNumber} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
-
+                <Col componentClass={ControlLabel} sm={1}>
+                  检查流水
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.accessionNumber : Case.accessionNumber} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
             </Row>
             <Row className="show-grid">
               <Col md={6} mdPush={6}>
-
-                <FormGroup controlId="studyTime">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    检查时间
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.studyTime : Case.studyTime} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
-
+                <Col componentClass={ControlLabel} sm={1}>
+                  检查时间
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.studyTime : Case.studyTime} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
               <Col md={6} mdPull={6}>
-                <FormGroup controlId="studyDate">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    检查日期
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.studyDate : Case.studyDate} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
-
+                <Col componentClass={ControlLabel} sm={1}>
+                  检查日期
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.studyDate : Case.studyDate} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
             </Row>
             <Row className="show-grid">
               <Col md={6} mdPush={6}>
-                <FormGroup controlId="bodyPart">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    身体部位
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.bodyPart : Case.bodyPart} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
-
+                <Col componentClass={ControlLabel} sm={1}>
+                  身体部位
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.bodyPart : Case.bodyPart} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
               <Col md={6} mdPull={6}>
-
-                <FormGroup controlId="modality">
-                  <Col componentClass={ControlLabel} sm={2}>
-                    设备类型
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.modality : Case.modality} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
+                <Col componentClass={ControlLabel} sm={1}>
+                  设备类型
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.modality : Case.modality} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
             </Row>
             <Row className="show-grid">
-              <Col sm={12} md={12}>
-                <FormGroup controlId="studyDescription">
-                  <Col componentClass={ControlLabel} sm={1}>
-                    描述
-                  </Col>
-                  <Col sm={6}>
-                    <FormControl value={oldCase ? oldCase.studyDescription : Case.studyDescription} onChange={this.onCaseChange} type="text" />
-                  </Col>
-                </FormGroup>
+              <Col sm={6} md={6}>
+                <Col componentClass={ControlLabel} sm={1}>
+                  描述
+                </Col>
+                <Col sm={6}>
+                  <FormControl value={oldCase ? oldCase.studyDescription : Case.studyDescription} onChange={this.onCaseChange} type="text" />
+                </Col>
               </Col>
             </Row>
 
@@ -842,7 +800,7 @@ export class AddCase extends Component {
 
           <div className="series-well" style={wellStyles}>
             <Table bordered condensed hover>
-              <thead className="series-head">
+              <thead>
                 <tr>
                   <th>序列流水号</th>
                   <th>序列编号</th>
@@ -850,7 +808,7 @@ export class AddCase extends Component {
                   <th>日期</th>
                   <th>时间</th>
                   <th>图像数</th>
-                  <th>选项</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -864,16 +822,22 @@ export class AddCase extends Component {
                       <td>{obj.seriesTime}</td>
                       <td>{obj.total}</td>
                       <td>
-                        <Button onClick={this.changeSeriesModalState.bind(this, index)} style={{ marginLeft: '5px' }}>详情</Button>
-                        <Link to={{
-                          pathname: '/viewer',
-                          state: { studyUID: oldCase && oldCase.studyInstanceUID, seriesNumber: obj.seriesNumber }
-                        }} className="btn btn-default" style={{ marginLeft: '5px' }}>浏览</Link>
-                        <Button onClick={() => this.download(oldCase._id, index)} style={{ marginLeft: '5px' }}>
+                        <a className="btn btn-default" onClick={this.changeSeriesModalState.bind(this, index)} style={{ marginLeft: '5px' }}>详情</a>
+                        <Link
+                          to={{
+                            pathname: '/viewer',
+                            state: { studyUID: oldCase && oldCase.studyInstanceUID, seriesNumber: obj.seriesNumber }
+                            }}
+                          className="btn btn-default"
+                          style={{marginLeft: '5px'}}>
+                          浏览
+                        </Link>
+                        <a className="btn btn-default" onClick={() => this.download(oldCase._id, index)} style={{ marginLeft: '5px' }}>
                           <FontAwesome name='download' size='lg' />
-                        </Button>
+                        </a>
                       </td>
-                    </tr>)
+                    </tr>
+                  )
                 })
                 }
 
