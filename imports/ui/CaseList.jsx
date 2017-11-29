@@ -196,7 +196,7 @@ export class CaseList extends Component {
         <th>影像时间</th>
         <th>生日</th>
         <th>影像描述</th>
-        <th>操作</th>
+        <th></th>
       </tr> :
       <tr><th>未找到符合搜索条件的病例</th></tr>;
 
@@ -315,8 +315,8 @@ export class CaseList extends Component {
                 return (
                   <tr className="caseList_tr" key={specificCase._id} onDoubleClick={() => self.jumpTo(specificCase._id)}>
                     <td>{specificCase.accessionNumber}</td>
-                    <td className="caseList_td_patientName">{specificCase.patientID}</td>
-                    <td>{specificCase.patientName}</td>
+                    <td><span className="caseList_td_patientID">{specificCase.patientID}</span></td>
+                    <td><span className="caseList_td_patientName">{specificCase.patientName}</span></td>
                     <td>{specificCase.patientAge}</td>
                     <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
                     <td>{specificCase.studyID}</td>
@@ -325,17 +325,22 @@ export class CaseList extends Component {
                     <td>{specificCase.patientBirthDate}</td>
                     <td style={{ maxWidth: '300px' }}>{specificCase.studyDescription}</td>
                     <td>
-                      <Link to={{
-                        pathname: '/viewer',
-                        state: {
-                          studyUID: specificCase.studyInstanceUID,
-                          seriesNumber: specificCase.seriesList[0].seriesNumber
+                      <div className="caseList_optionList">
+                        <Button onClick={() => {
+                          browserHistory.push({
+                            pathname: '/viewer',
+                            state: {
+                              studyUID: specificCase.studyInstanceUID,
+                              seriesNumber: specificCase.seriesList[0].seriesNumber
+                            }
+                          });
                         }
-                      }} className="glyphicon glyphicon-picture" />
-                      &nbsp;&nbsp;&nbsp;
-                        <Link to={`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`} className="glyphicon glyphicon-pencil" />
-                      &nbsp;&nbsp;&nbsp;
-                        <span className="glyphicon glyphicon-trash" onClick={self.deleteCase.bind(this, specificCase._id)} />
+                        } className="btn-tool btn-delete" >影像</Button>
+                        <Button onClick={() => {
+                          browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
+                        }} className="btn-tool btn-delete">编辑</Button>
+                        <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete">删除</Button>
+                      </div>
                     </td>
                   </tr>
                 )
