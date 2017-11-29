@@ -1,4 +1,83 @@
-.add-collection-title {
+.add-collection-modal-header {
+  padding: 0;
+  border: none;
+}
+
+.add-collection-modal-header >  div {
+  width: 560px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 20px 0;
+  border-bottom: 1px solid #245aa8;
+}
+
+.add-collection-modal-header .add-collection-modal-title {
   color: #446eb1;
-  font-weight: 500;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.add-collection-modal .modal-body {
+  padding: 20px;
+}
+
+.add-collection-modal .modal-body > div {
+  padding-top: 30px;
+}
+
+.add-collection-modal .control-label {
+  font-weight: 400;
+  font-size: 14px;
+  margin-bottom: 8px;
+  margin-left: 0;
+}
+
+.add-collection-modal .form-horizontal input[type=text] {
+  height: 45px;
+  border-radius: 0;
+  margin-bottom: 20px;
+  border: 1px solid black;
+}
+
+.add-collection-modal .last-row {
+  height: 70px;
+  padding: 30px 0 5px 0;
+}
+
+.add-collection-modal .last-row > div {
+  padding: 0;
+}
+
+.add-collection-modal .last-row input[type=checkbox] {
+  position: relative;
+  width: 12px;
+  height: 1px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.add-collection-modal .last-row input[type=checkbox]::before {
+  content:'';
+  position: absolute;
+  top: -12px;
+  left: 0;
+  width: 12px;
+  height: 12px;
+  background-color: white;
+  border: 1px solid #446eb1;
+  box-shadow: 1px 1px 1px rgba(68,110,177,0.5) inset, -1px -1px 1px rgba(68,110,177,0.5) inset;
+  margin-top: 2px;
+}
+
+.add-collection-modal .last-row input[type=checkbox]:checked::before {
+  background-color: #245aa8;
+  border: 1px solid #446eb1;
+  box-shadow: 1px 1px 1px white inset, -1px -1px 1px white inset;
+}
+
+.add-collection-modal .last-row button {
+  background-color: #245aa8;
+  height: 42px;
+  width: 80px;
+  border-radius: 0;
 }
