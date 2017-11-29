@@ -73,7 +73,8 @@ export class Viewer extends Component {
       isLoadingPanelFinished: false,
       isMagnifyToolOpened: false,
       isRotateMenuOpened: false,
-      isWindowToolOpened: false
+      isWindowToolOpened: false,
+      isFullScreen: false,
     };
     this.toastInfo = this.toastInfo.bind(this)
   }
@@ -218,6 +219,31 @@ export class Viewer extends Component {
     this.setState({
       canvasParams: {}
     });
+  }
+
+  fullScreen() {
+    this.setState({ isFullScreen: !this.state.isFullScreen }, () => {
+      if (this.state.isFullScreen) {
+        let de = document.documentElement;
+        if (this.state.isFullScreen)
+          if (de.requestFullscreen) {
+            de.requestFullscreen();
+          } else if (de.mozRequestFullScreen) {
+            de.mozRequestFullScreen();
+          } else if (de.webkitRequestFullScreen) {
+            de.webkitRequestFullScreen();
+          }
+      } else {
+        let de = document;
+        if (de.exitFullscreen) {
+            de.exitFullscreen();
+        } else if (de.mozCancelFullScreen) {
+            de.mozCancelFullScreen();
+        } else if (de.webkitCancelFullScreen) {
+            de.webkitCancelFullScreen();
+        }
+      }
+    })
   }
 
   toastInfo(type, data) {
@@ -437,11 +463,19 @@ export class Viewer extends Component {
                 <br />
                 <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
               </Navbar.Text>
-              <Navbar.Text className="button" onClick={Meteor.userId() ? browserHistory.goBack : null}>
-                <FontAwesome name='reply' size='2x' />
-                <br />
-                <span>返回</span>
-              </Navbar.Text>
+              <Nav className="viewer_pullright">
+                <Navbar.Text className="button" onClick={Meteor.userId() ? browserHistory.goBack : null}>
+                  <FontAwesome name='reply' size='2x' />
+                  <br />
+                  <span>返回</span>
+                </Navbar.Text>
+                <Navbar.Text className="button" onClick={() => this.fullScreen()}>
+                  <FontAwesome name='arrows' size='2x' />
+                  <br />
+                  <span>全屏</span>
+                </Navbar.Text>
+              </Nav>
+
             </Navbar.Collapse>
           </Navbar>
         </div>
