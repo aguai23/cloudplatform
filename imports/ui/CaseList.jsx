@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
-import { Navbar, Table, Button, Form, FormControl, FormGroup, ControlLabel, Nav, NavItem, Col, InputGroup, DropdownButton, MenuItem } from 'react-bootstrap';
-import { Cases } from '../api/cases';
+import ReactDOM from 'react-dom';
+import { Button, ControlLabel, DropdownButton, Form, FormControl, FormGroup, MenuItem, Modal } from 'react-bootstrap';
 import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
 import { browserHistory, Link } from 'react-router';
 import { toast, ToastContainer } from 'react-toastify';
+
+import { Cases } from '../api/cases';
+import { DataCollections } from '../api/dataCollections';
 import DatasetMenu from './DatasetMenu.jsx';
 import CustomEventEmitter from '../library/CustomEventEmitter';
 
@@ -16,6 +19,7 @@ export class CaseList extends Component {
     super(props);
     this.state = {
       cases: Cases.find({ collectionName: this.props.params.collectionName }).fetch(),
+      dataCollections: [],
       isSearchClicked: false,
       patientID: "",
       patientName: "",
@@ -23,14 +27,15 @@ export class CaseList extends Component {
       patientSex: "性别",
       modality: "设备",
       startTime: "",
-      endTime: ""
+      endTime: "",
+      showModal: false
     };
 
     this.searchCase = this.searchCase.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleModalitySelect = this.handleModalitySelect.bind(this);
     this.handleSexSelect = this.handleSexSelect.bind(this);
-    this.onTabSelectHandler = this.onTabSelectHandler.bind(this)
+    this.onTabSelectHandler = this.onTabSelectHandler.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -182,6 +187,41 @@ export class CaseList extends Component {
     browserHistory.replace(`/datasets?key=${eventKey}`)
   }
 
+  addToFavorite() {
+    let dataCollections = DataCollections.find({type: 'FAVORITE'}).fetch();
+    this.setState({
+      showModal: true,
+      dataCollections: dataCollections
+    });
+  }
+
+  getAddToFavoriteModal() {
+    let title = "选择收藏数据集";
+    return (
+      <Modal className="caselist-favorite-modal" show={this.state.showModal} onHide={() => this.setState({ showModal: false })} >
+        <Modal.Header className="caselist-favorite-modal-header">
+          <div>
+            <Modal.Title className="caselist-favorite-modal-title">收藏病例</Modal.Title>
+          </div>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="col-sm-6">
+            <DropdownButton bsStyle="default" title={title} id={`dropdown-basic-fav`}>
+              {
+                this.state.dataCollections.map((collection, i) => {
+                  return <MenuItem key={i} eventKey={i}>{collection.name}</MenuItem>
+                })
+              }
+            </DropdownButton>
+          </div>
+          <div className="col-sm-6">
+            收藏到新建数据集
+          </div>
+        </Modal.Body>
+      </Modal>
+    );
+  }
+
   render() {
     const self = this;
     let tHead = this.state.cases.length > 0 ?
@@ -203,6 +243,7 @@ export class CaseList extends Component {
 
     return (
       <div>
+        {this.getAddToFavoriteModal()}
         <div className="caseList_header">
           <span>
             {this.props.location.state === 'PUBLIC' ? '公共数据集' : '个人数据集'}
@@ -327,6 +368,7 @@ export class CaseList extends Component {
                     <td>
                       <div className="caseList_optionList">
                         <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete">删除</Button>
+                        <Button onClick={() => this.addToFavorite(specificCase._id)} className="btn-tool btn-delete">收藏</Button>
                         <Button onClick={() => {
                           browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
                         }} className="btn-tool btn-delete">编辑</Button>
@@ -370,6 +412,7 @@ CaseList.contextTypes = {
 
 export default withTracker(props => {
   const handle = Meteor.subscribe('cases');
+  Meteor.subscribe('dataCollections');
   return {
     cases: Cases.find({ collectionName: props.params.collectionName }).fetch(),
     listLoading: !handle.ready()

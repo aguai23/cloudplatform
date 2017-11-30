@@ -203,10 +203,14 @@ td:first-child {
   overflow: hidden;
 }
 
-.caseList_searchBar_container input[type=date]::-webkit-inner-spin-button, 
-.caseList_searchBar_container input[type=date]::-webkit-outer-spin-button { 
+.caseList_searchBar_container input[type=date]::-webkit-inner-spin-button,
+.caseList_searchBar_container input[type=date]::-webkit-outer-spin-button {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    margin: 0; 
+    margin: 0;
+}
+
+.caselist-favorite-modal .modal-body {
+  min-height: 400px;
 }

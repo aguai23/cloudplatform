@@ -23,7 +23,7 @@ const DataCollectionSchema = new SimpleSchema({
     unique: true
   },
   type: {
-    label: 'values: PUBLIC/PRIVATE/FAVORITES',
+    label: 'values: PUBLIC/PRIVATE/FAVORITE',
     type: String,
     optional: false,
     defaultValue: 'PRIVATE'

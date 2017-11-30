@@ -12,17 +12,23 @@ export default class ModalAddCollection extends Component {
 
     this.state = {
       showModal: this.props.showModal,
-      isPublic: this.props.dataCollection ? this.props.dataCollection.type === 'PUBLIC' : false
+      type: this.props.dataCollection ? this.props.dataCollection.type : (localStorage.getItem('tabActiveKey') ? localStorage.getItem('tabActiveKey') : 'PUBLIC')
     };
     this.onClickSubmit = this.onClickSubmit.bind(this);
+  }
+
+  componentDidMount() {
+    if(this.state.type === 'FAVORITE') {
+      document.getElementById('type-checkbox').disabled = true;
+    }
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.showModal !== this.state.showModal) {
       this.setState({ showModal: nextProps.showModal });
     }
-    if (nextProps.dataCollection) {
-      this.setState({isPublic: nextProps.dataCollection.type === 'PUBLIC'});
+    if (this.state.type !== nextProps.dataCollection.type) {
+      this.setState({type: nextProps.dataCollection.type});
     }
   }
 
@@ -35,7 +41,7 @@ export default class ModalAddCollection extends Component {
       name: this.name.value,
       equip: this.equip.value,
       ownerId: Meteor.userId(),
-      type: this.state.isPublic ? 'PUBLIC' : 'PRIVATE'
+      type: this.state.type
     };
 
     if (!(this.name.value && this.equip.value)) {
@@ -89,7 +95,11 @@ export default class ModalAddCollection extends Component {
                 <FormControl defaultValue={oldData ? oldData.equip : ''} type="text" inputRef={(ref) => this.equip = ref} />
                 <div className="last-row">
                   <div className="col-sm-3">
-                    <Checkbox checked={this.state.isPublic} onChange={(evt) => { this.setState({ isPublic: evt.target.checked }); }}>设为公有</Checkbox>
+                    <Checkbox id="type-checkbox" checked={this.state.type === 'PUBLIC'} readOnly={false}
+                      onChange={(evt) => { this.setState({ type: evt.target.checked ? 'PUBLIC' : 'PRIVATE' }); }}
+                    >
+                      设为公有
+                    </Checkbox>
                   </div>
                   <div className="col-sm-2 col-sm-offset-7">
                     <Button className="btn btn-primary pull-right" onClick={this.onClickSubmit}>提交</Button>
