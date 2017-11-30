@@ -356,22 +356,17 @@ export class CaseList extends Component {
               {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
                 return (
                   <tr className="caseList_tr" key={specificCase._id} onDoubleClick={() => self.jumpTo(specificCase._id)}>
-                    <td>{specificCase.accessionNumber}</td>
-                    <td><span className="caseList_td_patientID">{specificCase.patientID}</span></td>
+                    <td style={{maxWidth:'150px'}}><span>{specificCase.accessionNumber}</span></td>
+                    <td style={{maxWidth:'110px'}}><span className="caseList_td_patientID">{specificCase.patientID}</span></td>
                     <td><span className="caseList_td_patientName">{specificCase.patientName}</span></td>
-                    <td>{specificCase.patientAge}</td>
-                    <td>{specificCase.studyID}</td>
-                    <td>{specificCase.modality}</td>
-                    <td>{specificCase.studyDate}</td>
-                    <td>{specificCase.patientBirthDate}</td>
-                    <td><span className="caseList_td_studyDescription">{specificCase.studyDescription}</span></td>
+                    <td><span>{specificCase.patientAge}</span></td>
+                    <td><span>{specificCase.studyID}</span></td>
+                    <td><span>{specificCase.modality}</span></td>
+                    <td><span>{specificCase.studyDate}</span></td>
+                    <td><span>{specificCase.patientBirthDate}</span></td>
+                    <td style={{maxWidth:'150px'}}><span className="caseList_td_studyDescription">{specificCase.studyDescription}</span></td>
                     <td>
                       <div className="caseList_optionList">
-                        <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete">删除</Button>
-                        <Button onClick={() => this.addToFavorite(specificCase._id)} className="btn-tool btn-delete">收藏</Button>
-                        <Button onClick={() => {
-                          browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
-                        }} className="btn-tool btn-delete">编辑</Button>
                         <Button onClick={() => {
                           browserHistory.push({
                             pathname: '/viewer',
@@ -380,9 +375,12 @@ export class CaseList extends Component {
                               seriesNumber: specificCase.seriesList[0].seriesNumber
                             }
                           });
-                        }
-                        } className="btn-tool btn-delete" >影像</Button>
-
+                        }} className="btn-tool btn-delete" >影像</Button>
+                        <Button onClick={() => {
+                          browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
+                        }} className="btn-tool btn-delete">编辑</Button>
+                        <Button onClick={() => this.addToFavorite(specificCase._id)} className="btn-tool btn-delete">收藏</Button>
+                        <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete">删除</Button>
                       </div>
                     </td>
                   </tr>
