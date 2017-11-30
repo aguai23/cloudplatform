@@ -171,6 +171,7 @@ export class AddCase extends Component {
   }
 
   onCaseChange(input) {
+    console.log(input.target.id);
     if (this.state.oldCase) {
       let { currentSeries, oldCase } = this.state
       if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'seriesDate', 'seriesTime', 'total'].indexOf(input.target.id) < 0) {
@@ -188,6 +189,7 @@ export class AddCase extends Component {
       })
     } else {
       const { Case } = this.state;
+      console.log(Case);
       if (['seriesNumber', 'seriesInstanceUID', 'files', 'seriesDescription', 'seriesDate', 'seriesTime', 'total'].indexOf(input.target.id) < 0) {
         Case[input.target.id] = input.target.value;
       } else {
@@ -693,7 +695,7 @@ export class AddCase extends Component {
                   出生日期
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.patientBirthDate : Case.patientBirthDate} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="patientBirthDate" value={oldCase ? oldCase.patientBirthDate : Case.patientBirthDate} onChange={this.onCaseChange} type="text"/>
                 </Col>
               </Col>
               <Col md={6} mdPull={6}>
@@ -701,7 +703,7 @@ export class AddCase extends Component {
                   患者姓名
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.patientName : Case.patientName} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="patientName" value={oldCase ? oldCase.patientName : Case.patientName} onChange={this.onCaseChange} type="text" />
                 </Col>
               </Col>
             </Row>
@@ -711,7 +713,7 @@ export class AddCase extends Component {
                   年龄性别
                 </Col>
                 <Col sm={11} style={{paddingRight: 0}}>
-                  <FormControl id="patient-age" value={oldCase ? oldCase.patientAge : Case.patientAge} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="patientAge" value={oldCase ? oldCase.patientAge : Case.patientAge} onChange={this.onCaseChange} type="text" />
                   <div className="gender-radios">
                     <Radio checked={oldCase ? oldCase.patientSex === 'M' : Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M">男</Radio>
                     <Radio checked={oldCase ? oldCase.patientSex === 'F' : Case.patientSex === 'F'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="F">女</Radio>
@@ -723,7 +725,7 @@ export class AddCase extends Component {
                   患者编号
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.patientID : Case.patientID} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="patientID" value={oldCase ? oldCase.patientID : Case.patientID} onChange={this.onCaseChange} type="text" />
                 </Col>
               </Col>
             </Row>
@@ -737,7 +739,7 @@ export class AddCase extends Component {
                   检查号
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.studyID : Case.studyID} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="studyID" value={oldCase ? oldCase.studyID : Case.studyID} onChange={this.onCaseChange} type="text" />
                 </Col>
               </Col>
               <Col md={6} mdPull={6}>
@@ -745,7 +747,7 @@ export class AddCase extends Component {
                   检查流水
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.accessionNumber : Case.accessionNumber} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="accessionNumber" value={oldCase ? oldCase.accessionNumber : Case.accessionNumber} onChange={this.onCaseChange} type="text" />
                 </Col>
               </Col>
             </Row>
@@ -755,7 +757,7 @@ export class AddCase extends Component {
                   检查时间
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.studyTime : Case.studyTime} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="studyTime" value={oldCase ? oldCase.studyTime : Case.studyTime} onChange={this.onCaseChange} type="text" />
                 </Col>
               </Col>
               <Col md={6} mdPull={6}>
@@ -763,7 +765,7 @@ export class AddCase extends Component {
                   检查日期
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.studyDate : Case.studyDate} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="studyDate" value={oldCase ? oldCase.studyDate : Case.studyDate} onChange={this.onCaseChange} type="text" />
                 </Col>
               </Col>
             </Row>
@@ -773,7 +775,7 @@ export class AddCase extends Component {
                   身体部位
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.bodyPart : Case.bodyPart} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="bodyPart" value={oldCase ? oldCase.bodyPart : Case.bodyPart} onChange={this.onCaseChange} type="text" />
                 </Col>
               </Col>
               <Col md={6} mdPull={6}>
@@ -781,7 +783,7 @@ export class AddCase extends Component {
                   设备类型
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.modality : Case.modality} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="modality" value={oldCase ? oldCase.modality : Case.modality} onChange={this.onCaseChange} type="text" />
                 </Col>
               </Col>
             </Row>
@@ -791,7 +793,7 @@ export class AddCase extends Component {
                   描述
                 </Col>
                 <Col sm={6}>
-                  <FormControl value={oldCase ? oldCase.studyDescription : Case.studyDescription} onChange={this.onCaseChange} type="text" />
+                  <FormControl id="studyDescription" value={oldCase ? oldCase.studyDescription : Case.studyDescription} onChange={this.onCaseChange} type="text" />
                 </Col>
               </Col>
             </Row>

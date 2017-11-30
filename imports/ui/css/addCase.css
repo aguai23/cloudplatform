@@ -91,7 +91,7 @@
   border-radius: 0;
 }
 
-.well input[id=patient-age] {
+.well input[id=patientAge] {
   position: relative;
   top: -17px;
   width: 340px;
