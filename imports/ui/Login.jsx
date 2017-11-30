@@ -73,7 +73,7 @@ export default class Login extends Component {
 
           <div className = "login-text">密码</div>
           <div>
-            <input id= "login-input" type="text" placeholder="Password" onInput={function (event) {
+            <input id= "login-input" type="password" placeholder="Password" onInput={function (event) {
               this.passwordInput = event.target.value;
             }}/>
           </div>
