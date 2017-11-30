@@ -26,7 +26,12 @@ Picker.route('/test', function(params, req, res, next) {
 });
 
 Picker.route('/uploads', function(params, req, res, next) {
-  if(req.method === 'POST') {
+  if(req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    next();
+  } else if(req.method === 'POST') {
     res.setHeader('Access-Control-Allow-Origin', '*');
 
     let form = new formidable.IncomingForm();
