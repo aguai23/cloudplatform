@@ -148,11 +148,11 @@ export default class Header extends Component {
     </div>
     */
     return (
-      <div id="header" className="eight-cols" >
-        <div className="col-sm-1 logo-div">
+      <div id="header" >
+        <div className="logo-div">
           <img src="/img/logo.png" />
         </div>
-        <div className="col-sm-7 main-div">
+        <div className="main-div">
           <div className="col-sm-10">
             <img src="/img/header_title.png" />
           </div>

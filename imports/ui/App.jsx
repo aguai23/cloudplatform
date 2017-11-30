@@ -44,10 +44,10 @@ export default class App extends Component {
       <div>
         <Header routes={this.props.routes} params={this.props.params} location={this.props.location}/>
           <div className="eight-cols" style={{height: containerHeight}}>
-            <div className="col-sm-1 nav-container">
+            <div className="nav-container">
               <DatasetMenu location={this.props.location}/>
             </div>
-            <div className="col-sm-7 content-container">
+            <div className="content-container">
               {childrenWithProps}
             </div>
           </div>

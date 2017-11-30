@@ -3,6 +3,8 @@
 }
 
 .logo-div {
+  float: left;
+  width: 170px;
   background-color: #D7D8DA;
   height: inherit;
   padding: 10px;
@@ -11,10 +13,11 @@
 
 .logo-div img {
   position: relative;
-  left : 20px;
 }
 
 .main-div {
+  float: left;
+  width: calc(100% - 170px);
   background-color: #FAFBFD;
   height: 57px;
   padding: 10px 10px 15px 0;

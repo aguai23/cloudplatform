@@ -190,7 +190,6 @@ export class CaseList extends Component {
         <th>检查号</th>
         <th>姓名</th>
         <th>年龄</th>
-        <th>性别</th>
         <th>影像号</th>
         <th>设备</th>
         <th>影像时间</th>
@@ -220,7 +219,7 @@ export class CaseList extends Component {
         </div>
         <div className="caseList_searchBar">
           <div className="caseList_searchBar_container caseList_searchBar_patientID">
-            <div className="caseList_searchBar_headerText">
+            <div className="caseList_searchBar_headerText" style={{width:'36px'}}>
               <span>检查号</span>
             </div>
             <div className="caseList_middleLine" />
@@ -285,7 +284,8 @@ export class CaseList extends Component {
             </div>
             <div className="caseList_middleLine" />
             <input name="startTime" onChange={this.handleInputChange} className="caseList_input caseList_input_time" style={{ marginRight: '0px' }} type="date" />
-            <i style={{ margin: 'auto' }} className="fa fa-caret-right"></i>
+            {/* <i style={{ marginTop: 'auto',marginBottom: 'auto' }}>-</i> */}
+            <span style={{ marginTop: 'auto',marginBottom: 'auto' }}>-</span>
             <input name="endTime" onChange={this.handleInputChange} className="caseList_input caseList_input_time" style={{ marginLeft: '0px', marginRight: '1px' }} type="date" />
             <span className="caseList_border"></span>
           </div>
@@ -319,12 +319,11 @@ export class CaseList extends Component {
                     <td><span className="caseList_td_patientID">{specificCase.patientID}</span></td>
                     <td><span className="caseList_td_patientName">{specificCase.patientName}</span></td>
                     <td>{specificCase.patientAge}</td>
-                    <td>{specificCase.patientSex === 'M' ? '男' : '女'}</td>
                     <td>{specificCase.studyID}</td>
                     <td>{specificCase.modality}</td>
                     <td>{specificCase.studyDate}</td>
                     <td>{specificCase.patientBirthDate}</td>
-                    <td style={{ maxWidth: '300px' }}>{specificCase.studyDescription}</td>
+                    <td><span className="caseList_td_studyDescription">{specificCase.studyDescription}</span></td>
                     <td>
                       <div className="caseList_optionList">
                         <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete">删除</Button>

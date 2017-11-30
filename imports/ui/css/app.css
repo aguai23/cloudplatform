@@ -1,4 +1,6 @@
 .nav-container {
+  width: 170px;
+  float: left;
   background-color: #353a44;
   overflow: hidden;
   padding: 0;
@@ -6,6 +8,8 @@
 }
 
 .content-container {
+  float: left;
+  width: calc(100% - 170px);
   height: inherit;
   background-color: #e7edf6;
   padding-left: 20px;

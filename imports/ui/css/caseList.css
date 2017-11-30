@@ -46,6 +46,7 @@
 }
 
 .caseList_searchBar_headerText {
+  width:24px;
   margin: auto 10px auto 10px;
   font-size: 12px;
   color: rgba(53, 58, 68, 0.8);
@@ -132,7 +133,7 @@
 }
 
 .caseList_input_time {
-  width: 133px;
+  width: 100px;
 }
 
 .caseList_buttonList {
@@ -183,15 +184,29 @@ td:first-child {
 }
 
 .caseList_td_patientID {
-  display: inline-block;
+  /* display: inline-block; */
   max-width: 150px;
   margin-right: 5px;
   overflow: hidden;
 }
 
 .caseList_td_patientName {
-  display: inline-block;
+  /* display: inline-block; */
   max-width: 130px;
   margin-right: 5px;
   overflow: hidden;
+}
+
+.caseList_td_studyDescription{
+  max-width: 210px;
+  margin-right: 5px;
+  overflow: hidden;
+}
+
+.caseList_searchBar_container input[type=date]::-webkit-inner-spin-button, 
+.caseList_searchBar_container input[type=date]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    margin: 0; 
 }
