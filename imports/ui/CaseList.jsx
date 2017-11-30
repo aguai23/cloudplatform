@@ -309,7 +309,7 @@ export class CaseList extends Component {
           <table className="caseList_table">
             <thead>
               {tHead}
-              <div style={{height:'10px'}}/>
+              <div style={{ height: '10px' }} />
             </thead>
             <tbody className="bottom-div">
               {this.state.cases.length > 0 && this.state.cases.map((specificCase) => {
@@ -327,6 +327,10 @@ export class CaseList extends Component {
                     <td style={{ maxWidth: '300px' }}>{specificCase.studyDescription}</td>
                     <td>
                       <div className="caseList_optionList">
+                        <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete">删除</Button>
+                        <Button onClick={() => {
+                          browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
+                        }} className="btn-tool btn-delete">编辑</Button>
                         <Button onClick={() => {
                           browserHistory.push({
                             pathname: '/viewer',
@@ -337,10 +341,7 @@ export class CaseList extends Component {
                           });
                         }
                         } className="btn-tool btn-delete" >影像</Button>
-                        <Button onClick={() => {
-                          browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
-                        }} className="btn-tool btn-delete">编辑</Button>
-                        <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete">删除</Button>
+
                       </div>
                     </td>
                   </tr>
