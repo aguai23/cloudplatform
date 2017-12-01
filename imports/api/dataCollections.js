@@ -43,6 +43,11 @@ const DataCollectionSchema = new SimpleSchema({
     type: String,
     optional: true,
   },
+  caseList: {
+    label: '记录收藏数据集中的病例列表',
+    type: [String],
+    optional: true
+  }
 });
 
 DataCollections.attachSchema(DataCollectionSchema);

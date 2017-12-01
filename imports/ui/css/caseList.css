@@ -223,6 +223,11 @@ th:first-child,
     margin: 0;
 }
 
-.caselist-favorite-modal .modal-body {
-  min-height: 400px;
+.caselist-fav-modal .modal-body {
+  height: 250px;
+}
+
+.caselist-fav-modal .caselist-fav-modal-left {
+  height: 100%;
+  border-right: 1px solid rgba(192, 192, 192, 0.7);
 }

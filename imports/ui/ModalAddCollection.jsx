@@ -41,7 +41,8 @@ export default class ModalAddCollection extends Component {
       name: this.name.value,
       equip: this.equip.value,
       ownerId: Meteor.userId(),
-      type: this.state.type
+      type: this.state.type,
+      caseList: []
     };
 
     if (!(this.name.value && this.equip.value)) {

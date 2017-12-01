@@ -463,7 +463,7 @@ export class Viewer extends Component {
                 <br />
                 <span>{this.state.circleVisible ? '隐藏' : '展示'}</span>
               </Navbar.Text>
-              <Nav className="viewer_pullright">
+              <div className="viewer_pullright">
                 <Navbar.Text className="button" onClick={Meteor.userId() ? browserHistory.goBack : null}>
                   <FontAwesome name='reply' size='2x' />
                   <br />
@@ -474,7 +474,7 @@ export class Viewer extends Component {
                   <br />
                   <span>全屏</span>
                 </Navbar.Text>
-              </Nav>
+              </div>
 
             </Navbar.Collapse>
           </Navbar>
