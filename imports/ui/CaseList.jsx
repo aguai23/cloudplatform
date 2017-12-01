@@ -457,12 +457,16 @@ export class CaseList extends Component {
                             }
                           });
                         }} className="btn-tool btn-delete" >影像</Button>
-                        <Button onClick={() => {
-                          browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
-                        }} className="btn-tool btn-delete">编辑</Button>
+                        <Button
+                          onClick={() => {
+                            browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
+                          }} className="btn-tool btn-delete"
+                          style={{display: this.props.location.state === 'FAVORITE' ? 'none' : 'inline'}}
+                        >编辑</Button>
                         <Button onClick={() => this.openFavModal(specificCase._id)} className="btn-tool btn-delete"
                           style={{display: this.props.location.state === 'FAVORITE' ? 'none' : 'inline'}}>收藏</Button>
-                        <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete">删除</Button>
+                        <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete"
+                          style={{display: this.props.location.state === 'FAVORITE' ? 'none' : 'inline'}}>删除</Button>
                       </div>
                     </td>
                   </tr>

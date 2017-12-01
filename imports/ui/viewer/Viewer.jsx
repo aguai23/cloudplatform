@@ -236,11 +236,11 @@ export class Viewer extends Component {
       } else {
         let de = document;
         if (de.exitFullscreen) {
-            de.exitFullscreen();
+          de.exitFullscreen();
         } else if (de.mozCancelFullScreen) {
-            de.mozCancelFullScreen();
+          de.mozCancelFullScreen();
         } else if (de.webkitCancelFullScreen) {
-            de.webkitCancelFullScreen();
+          de.webkitCancelFullScreen();
         }
       }
     })
@@ -475,7 +475,6 @@ export class Viewer extends Component {
                   <span>全屏</span>
                 </Navbar.Text>
               </div>
-
             </Navbar.Collapse>
           </Navbar>
         </div>
