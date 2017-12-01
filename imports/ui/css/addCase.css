@@ -1,5 +1,6 @@
 #addcase-container {
   padding: 16px 0;
+  font-family: 'MicrosoftYaHei';
 }
 
 #addcase-container .top-div {
@@ -10,7 +11,7 @@
   padding-left: 0;
   text-align: left;
   font-weight: bold;
-  color: grey;
+  color: rgba(53,58,68,0.5);
   font-size: 12px;
 }
 
@@ -58,6 +59,8 @@
   padding: 8px;
   width: 180px;
   height: 36px;
+  background-color: #2659ad;
+  border-radius: 0;
 }
 
 .well {
@@ -83,6 +86,8 @@
   line-height: 2;
   padding: 0;
   margin-left: 0;
+  font-weight: 400;
+  width: 80px;
 }
 
 .well input[type=text] {
@@ -100,9 +105,14 @@
 
 .well .gender-radios {
   position: relative;
+  width: 40px;
   height: 50px;
   margin-left: 40px;
   display: inline-block;
+}
+
+.well .gender-radios label {
+  width: 15px;
 }
 
 .well .gender-radios .radio {

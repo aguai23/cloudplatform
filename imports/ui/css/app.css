@@ -1,4 +1,6 @@
 .nav-container {
+  position:absolute;
+  top: 60px;
   width: 170px;
   float: left;
   background-color: #353a44;
@@ -8,7 +10,9 @@
 }
 
 .content-container {
-  float: left;
+  position: absolute;
+  top: 60px;
+  left: 170px;
   width: calc(100% - 170px);
   height: inherit;
   background-color: #e7edf6;

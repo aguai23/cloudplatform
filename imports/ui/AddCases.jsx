@@ -712,7 +712,7 @@ export class AddCase extends Component {
                 <Col componentClass={ControlLabel} sm={1}>
                   年龄性别
                 </Col>
-                <Col sm={11} style={{paddingRight: 0}}>
+                <Col sm={10} style={{paddingRight: 0,   whiteSpace: 'nowrap'}}>
                   <FormControl id="patientAge" value={oldCase ? oldCase.patientAge : Case.patientAge} onChange={this.onCaseChange} type="text" />
                   <div className="gender-radios">
                     <Radio checked={oldCase ? oldCase.patientSex === 'M' : Case.patientSex === 'M'} onChange={this.onCaseChange} id="patientSex" name="patientSex" value="M">男</Radio>

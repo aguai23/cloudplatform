@@ -1,9 +1,13 @@
-.add-collection-modal-header {
+.add-collection-modal .modal-content {
+  border-radius: 0;
+}
+
+.add-collection-modal .add-collection-modal-header {
   padding: 0;
   border: none;
 }
 
-.add-collection-modal-header >  div {
+.add-collection-modal .add-collection-modal-header >  div {
   width: 560px;
   height: 100%;
   margin: 0 auto;
@@ -11,7 +15,7 @@
   border-bottom: 1px solid #245aa8;
 }
 
-.add-collection-modal-header .add-collection-modal-title {
+.add-collection-modal .add-collection-modal-header .add-collection-modal-title {
   color: #446eb1;
   font-weight: 700;
   font-size: 16px;

@@ -181,14 +181,11 @@ export class Main extends Component {
               <div className="col-sm-6" style={{padding: 0}}>
                 <FormGroup bsSize="small" className="search-bar">
                   <FormControl type="text" placeholder="输入名称搜索" inputRef={input => { this.textInput = input }} />
-                  <a onClick={this.searchDatabase.bind(this)} className='btn-search'>
-                    <FontAwesome name='search' size='lg' />
-                  </a>
+                  <img src="/img/btn-search.png" className='btn-search' onClick={this.searchDatabase.bind(this)}/>
                 </FormGroup>
               </div>
               <div className="col-sm-6" style={{padding: 0}}>
-                <div className="pull-right btn-create-dataset" onClick={() => this.onClickAddCollection()}>
-                </div>
+                <Button bsStyle="primary" className="btn-create-dataset pull-right" onClick={() => this.onClickAddCollection()}>新建数据集</Button>
               </div>
             </div>
             <div className="bottom-div" style={{height: this.state.bottomDivHeight}}>

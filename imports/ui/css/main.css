@@ -12,8 +12,9 @@
 .search-bar input {
   height: 46px!important;
   font-size: 14px!important;
-  border: 1px solid black;
+  border: 1px solid rgba(53,58,68,0.5);
   border-radius: 0!important;
+  background-color: inherit;;
 }
 
 .search-bar input:hover {
@@ -23,6 +24,9 @@
 
 .search-bar input::-webkit-input-placeholder {
   padding-left: 15px;
+  color: black;
+  opacity: 0.5;
+  letter-spacing: 2px;
 }
 
 .search-bar input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
@@ -40,19 +44,18 @@
   display: inline-block;
   position: absolute;
   right: 16px;
-  top: 12px;
-  border: none;
+  top: 14px;
   cursor: pointer;
 }
 
 .btn-create-dataset {
-  background-image: url(/img/btn_create_dataset.png);
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
-  -moz-background-size: 100% 100%;
   width: 120px;
   height: 46px;
-  cursor: pointer;
+  border-radius: 0;
+  background-color: #245aa8;
+  letter-spacing: 2px;
+  color: white;
+  font-size: 14px;
 }
 
 .bottom-div {

@@ -27,8 +27,11 @@ export default class ModalAddCollection extends Component {
     if (nextProps.showModal !== this.state.showModal) {
       this.setState({ showModal: nextProps.showModal });
     }
-    if (this.state.type !== nextProps.dataCollection.type) {
-      this.setState({type: nextProps.dataCollection.type});
+
+    if(nextProps.dataCollection !== undefined) {
+      if (this.state.type !== nextProps.dataCollection.type) {
+        this.setState({type: nextProps.dataCollection.type});
+      }
     }
   }
 
