@@ -162,6 +162,10 @@
   width: 100%;
 }
 
+.caseList_thead {
+  border-bottom: 15px solid rgba(0,0,0,0)
+}
+
 .caseList_tr {
   height: 60px;
   width: 100%;
@@ -210,14 +214,11 @@ th:first-child,
   white-space: nowrap;
 }
 
-.caseList_td_studyDescription{
-  /* min-width: 150px; */
-}
 
 .caseList_searchBar_container input[type=date]::-webkit-inner-spin-button, 
 .caseList_searchBar_container input[type=date]::-webkit-outer-spin-button { 
     -webkit-appearance: none;
     -moz-appearance: none;
-    appearance: none;
+    /* appearance: none; */
     margin: 0; 
 }
