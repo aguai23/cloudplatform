@@ -292,7 +292,6 @@ export default class MainCanvas extends Component {
     }
 
     if (!this.dicomObj[seriesNumber][index]) {
-      console.log(`set true for ${index}`)
       this.setState({
         isLoading: true
       }, () => {
@@ -318,12 +317,9 @@ export default class MainCanvas extends Component {
             }
           }
 
-          console.log(`received for ${index}`);
-
           this.setState({
             isLoading: false
           }, () => {
-            console.log(`set false for ${index}`);
             cornerstone.displayImage(this.container, image, viewport);
           });
 

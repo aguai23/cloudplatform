@@ -16,3 +16,7 @@
   padding-right: 20px;
   overflow: hidden;
 }
+
+.content-container .toastify {
+  z-index: 9999;
+}

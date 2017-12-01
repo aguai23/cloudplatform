@@ -17,8 +17,24 @@ import './css/common/eightCols.css';
 export class CaseList extends Component {
   constructor(props) {
     super(props);
+
+    let cases = undefined;
+    if(props.location.state === 'FAVORITE') {
+      let collection = DataCollections.findOne({name : props.params.collectionName});
+      let caseList = collection && collection.caseList ? collection.caseList : [];
+      cases = Cases.find({ _id: {$in: caseList}}).fetch();
+    } else {
+      cases = Cases.find({ collectionName: props.params.collectionName }).fetch();
+    }
+
+    this.newFavCollection = {
+      type: 'FAVORITE',
+      ownerId: Meteor.userId(),
+      caseList: []
+    };
+
     this.state = {
-      cases: Cases.find({ collectionName: this.props.params.collectionName }).fetch(),
+      cases: cases,
       dataCollections: [],
       isSearchClicked: false,
       patientID: "",
@@ -187,35 +203,101 @@ export class CaseList extends Component {
     browserHistory.replace(`/datasets?key=${eventKey}`)
   }
 
-  addToFavorite() {
+  openFavModal(caseId) {
     let dataCollections = DataCollections.find({type: 'FAVORITE'}).fetch();
+    this.favCaseId = caseId;
     this.setState({
       showModal: true,
       dataCollections: dataCollections
     });
   }
 
+  onFavoriteSelect(eventKey) {
+    this.favCollectionIndex = eventKey;
+    document.getElementById('dropdown-basic-fav').innerHTML = `${this.state.dataCollections[eventKey].name} <span class='caret'></span>`;
+  }
+
+  addToFavorite() {
+    if(this.favCollectionIndex === undefined) {
+      return toast.warning('请先选择一个收藏数据集');
+    }
+
+    let collection = this.state.dataCollections[this.favCollectionIndex];
+
+    if(collection.caseList === undefined) {
+      collection.caseList = [];
+    }
+
+    for(let i = 0; i < collection.caseList.length; i++) {
+      if(collection.caseList[i] === this.favCaseId) {
+        toast.warning("收藏失败：该收藏夹中已包含本病例");
+        return;
+      }
+    }
+
+    collection.caseList.push(this.favCaseId);
+
+    Meteor.call('updateDataCollection', collection, (err) => {
+      if (err) {
+        return toast.error("收藏失败" + error.reason);
+      }
+
+      toast.success("成功病例收藏");
+      this.favCollectionIndex = undefined;
+      this.setState({ showModal: false });
+    });
+  }
+
+  createAndFavorite() {
+    if(this.newFavCollection.name === undefined) {
+      return toast.warning('请输入新建收藏数据集名称');
+    }
+
+    if(this.newFavCollection.equip === undefined) {
+      return toast.warning('请输入设备名称');
+    }
+
+    this.newFavCollection.caseList = [this.favCaseId];
+
+    Meteor.call('insertDataCollection', this.newFavCollection, (err) => {
+      if(err) {
+        return toast.error("新建收藏数据集失败" + error.reason);
+      }
+
+      this.newFavCollection = {};
+      toast.success("成功病例收藏");
+      this.setState({ showModal: false });
+    });
+  }
+
   getAddToFavoriteModal() {
     let title = "选择收藏数据集";
     return (
-      <Modal className="caselist-favorite-modal" show={this.state.showModal} onHide={() => this.setState({ showModal: false })} >
+      <Modal className="caselist-fav-modal" show={this.state.showModal} onHide={() => this.setState({ showModal: false })} >
         <Modal.Header className="caselist-favorite-modal-header">
           <div>
             <Modal.Title className="caselist-favorite-modal-title">收藏病例</Modal.Title>
           </div>
         </Modal.Header>
         <Modal.Body>
-          <div className="col-sm-6">
-            <DropdownButton bsStyle="default" title={title} id={`dropdown-basic-fav`}>
+          <div className="col-sm-6 caselist-fav-modal-left">
+            <DropdownButton bsStyle="default" title={title} id={`dropdown-basic-fav`} onSelect={(eventKey) => this.onFavoriteSelect(eventKey)}>
               {
                 this.state.dataCollections.map((collection, i) => {
                   return <MenuItem key={i} eventKey={i}>{collection.name}</MenuItem>
                 })
               }
             </DropdownButton>
+            <div>
+              <Button className="btn btn-default" onClick={() => this.addToFavorite()}>收藏</Button>
+            </div>
           </div>
           <div className="col-sm-6">
             收藏到新建数据集
+            <input type="text" placeholder="收藏数据集名称" onChange={(evt) => this.newFavCollection.name = evt.target.value}></input>
+            <input type="text" placeholder="设备名称" onChange={(evt) => this.newFavCollection.equip = evt.target.value}></input>
+            <Button className="btn btn-default" onClick={() => this.createAndFavorite()}>新建并收藏</Button>
+
           </div>
         </Modal.Body>
       </Modal>
@@ -375,11 +457,16 @@ export class CaseList extends Component {
                             }
                           });
                         }} className="btn-tool btn-delete" >影像</Button>
-                        <Button onClick={() => {
-                          browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
-                        }} className="btn-tool btn-delete">编辑</Button>
-                        <Button onClick={() => this.addToFavorite(specificCase._id)} className="btn-tool btn-delete">收藏</Button>
-                        <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete">删除</Button>
+                        <Button
+                          onClick={() => {
+                            browserHistory.push(`/newCase?id=${specificCase._id}&&collection=${this.props.params.collectionName}`)
+                          }} className="btn-tool btn-delete"
+                          style={{display: this.props.location.state === 'FAVORITE' ? 'none' : 'inline'}}
+                        >编辑</Button>
+                        <Button onClick={() => this.openFavModal(specificCase._id)} className="btn-tool btn-delete"
+                          style={{display: this.props.location.state === 'FAVORITE' ? 'none' : 'inline'}}>收藏</Button>
+                        <Button onClick={self.deleteCase.bind(this, specificCase._id)} className="btn-tool btn-delete"
+                          style={{display: this.props.location.state === 'FAVORITE' ? 'none' : 'inline'}}>删除</Button>
                       </div>
                     </td>
                   </tr>
@@ -408,10 +495,19 @@ CaseList.contextTypes = {
 };
 
 export default withTracker(props => {
-  const handle = Meteor.subscribe('cases');
+  Meteor.subscribe('cases');
   Meteor.subscribe('dataCollections');
+
+  let cases = undefined;
+  if(props.location.state === 'FAVORITE') {
+    let collection = DataCollections.findOne({name : props.params.collectionName});
+    let caseList = collection && collection.caseList ? collection.caseList : [];
+    cases = Cases.find({ _id: {$in: caseList}}).fetch();
+  } else {
+    cases = Cases.find({ collectionName: props.params.collectionName }).fetch();
+  }
+
   return {
-    cases: Cases.find({ collectionName: props.params.collectionName }).fetch(),
-    listLoading: !handle.ready()
+    cases: cases
   }
 })(CaseList);
