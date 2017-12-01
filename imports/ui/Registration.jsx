@@ -37,6 +37,8 @@ validateEmail = function() {
 export default class Registration extends Component {
   constructor(props) {
     super(props);
+    this.logoMarginTop = (window.innerHeight - 574)/2;
+    this.registrationMarginTop = this.logoMarginTop + 24;
   }
 
   register = function() {
@@ -79,10 +81,22 @@ export default class Registration extends Component {
   render() {
     return (
       <div id = "registration-background">
-        <div id = "registration-logo"/>
-        <div ref="container"  style={styles.loginBox}>
-          <h3 style={{textAlign: 'center', color: '#245aa8', marginBottom: '50px',
-            fontFamily: "Microsoft Yahei", fontSize: "16px", paddingTop: "30px"}}>新用户注册</h3>
+        <div id = "registration-logo" style={{top: this.logoMarginTop + "px"}}/>
+        <div ref="container"  style={{margin: '0 auto',
+          position: 'relative',
+          width: '380px',
+          height: "470px",
+          marginRight: '180px',
+          background: 'white',
+          marginTop: this.registrationMarginTop + "px"}}>
+          <h3 style={{textAlign: 'center',
+            color: '#245aa8',
+            marginBottom: '50px',
+            fontFamily: "Microsoft Yahei",
+            fontSize: "16px",
+            paddingTop: "30px",
+            fontWeight : "bold",
+            letterSpacing: "2px"}}>新用户注册</h3>
 
 
           <div className={'registration-text'}>邮箱</div>
@@ -118,7 +132,7 @@ export default class Registration extends Component {
 
           <div style={{float : "right", width : "100px", marginRight: "40px", marginTop: "-10px"}}>
             <a href="login" className="pull-right" style={styles.linkAlreadyHaveAccount}>已有账号?</a>
-            <Button className="registration-button" onClick={this.register}>注册</Button>
+            <Button className="registration-button" onClick={this.register}>注 册</Button>
           </div>
 
 
