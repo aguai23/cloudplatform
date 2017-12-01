@@ -46,7 +46,7 @@
 }
 
 .caseList_searchBar_headerText {
-  width:24px;
+  width: 24px;
   margin: auto 10px auto 10px;
   font-size: 12px;
   color: rgba(53, 58, 68, 0.8);
@@ -163,7 +163,7 @@
 }
 
 .caseList_thead {
-  border-bottom: 15px solid rgba(0,0,0,0)
+  border-bottom: 15px solid rgba(0, 0, 0, 0)
 }
 
 .caseList_tr {
@@ -185,7 +185,6 @@ th:first-child,
 .caseList_tr td:first-child {
   padding-left: 20px;
 }
-
 
 .caseList_optionList {
   float: right;
@@ -214,13 +213,10 @@ th:first-child,
   white-space: nowrap;
 }
 
-
 .caseList_searchBar_container input[type=date]::-webkit-inner-spin-button,
 .caseList_searchBar_container input[type=date]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    margin: 0;
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .caselist-favorite-modal .modal-body {
