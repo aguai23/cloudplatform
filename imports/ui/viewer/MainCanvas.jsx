@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import cornerstone from 'cornerstone-core';
 import cornerstoneTools from '../../library/cornerstoneTools';
 import { _ } from 'underscore';
-
+import h337 from 'heatmap.js';
 import CustomEventEmitter from '../../library/CustomEventEmitter';
 import AutoCacheManager from './AutoCacheManager';
 import LoadingScene from './LoadingScene';
@@ -156,6 +156,7 @@ export default class MainCanvas extends Component {
     document.getElementById('viewer').oncontextmenu = function (e) {
       e.preventDefault();
     };
+    // this.renderHeatMap()
   }
 
   componentWillReceiveProps(nextProps) {
@@ -705,6 +706,48 @@ export default class MainCanvas extends Component {
 
     viewport.scale = (600 / width).toFixed(2);
     cornerstone.setViewport(this.container, viewport);
+  }
+
+  renderHeatMap() {
+    let config2 = {
+      container: this.container,
+      radius: 10,
+      maxOpacity: .5,
+      minOpacity: 0,
+      blur: .75,
+      gradient: {
+        // enter n keys between 0 and 1 here
+        // for gradient color customization
+        '.5': 'blue',
+        '.8': 'red',
+        '.95': 'white'
+      }
+    };
+    let heatmapInstance = h337.create(config2);
+    let points = [];
+    let max = 0;
+    let width = 840;
+    let height = 400;
+    let len = 200;
+    
+    while (len--) {
+      let val = Math.floor(Math.random()*100);
+      max = Math.max(max, val);
+      let point = {
+        x: Math.floor(Math.random()*width),
+        y: Math.floor(Math.random()*height),
+        value: val
+      };
+      points.push(point);
+    }
+    // heatmap data format
+    let data = { 
+      max: max, 
+      data: points 
+    };
+    // if you have a set of datapoints always use setData instead of addData
+    // for data initialization
+    heatmapInstance.setData(data);
   }
 
   /**
