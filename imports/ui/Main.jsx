@@ -26,17 +26,18 @@ export class Main extends Component {
     super(props);
 
     let tempCollection = this.props.publicDataCollections,
-        tempActiveKey = 'PUBLIC';
+        tempActiveKey = undefined;
 
-    if(this.props.location.state && this.props.location.state.tabActiveKey) {
-      let key = this.props.location.state.tabActiveKey;
+    if(localStorage.getItem('tabActiveKey')) {
+      tempActiveKey = localStorage.getItem('tabActiveKey');
+    } else  {
+      tempActiveKey = (this.props.location.state && this.props.location.state.tabActiveKey) ? this.props.location.state.tabActiveKey : 'PUBLIC';
+    }
 
-      if(key === 'PRIVATE') {
-        tempCollection = this.props.privateDataCollections;
-      } else if(key == 'FAVORITE'){
-        tempCollection = this.props.favoriteDataCollections;
-      }
-      tempActiveKey = key;
+    if(tempActiveKey === 'PRIVATE') {
+      tempCollection = this.props.privateDataCollections;
+    } else if(tempActiveKey == 'FAVORITE'){
+      tempCollection = this.props.favoriteDataCollections;
     }
 
     //setting up State
@@ -125,10 +126,10 @@ export class Main extends Component {
    * @param id
    */
   onClickRemoveCollection(id) {
-    if (Main.isAdmin()) {
+    if (localStorage.getItem('tabActiveKey') !== 'PUBLIC' || Main.isAdmin()) {
       Meteor.call('removeDataCollection', id, (error) => {
         if (error) {
-          console.error("Failed to remove DataCollection. " + error.reason);
+          console.error("Failed to remove collection. " + error.reason);
           toast.error("数据集删除失败！", { position: toast.POSITION.BOTTOM_RIGHT });
         } else {
           toast.success("数据集已成功删除！", { position: toast.POSITION.BOTTOM_RIGHT });
@@ -141,7 +142,7 @@ export class Main extends Component {
    * add collection
    */
   onClickAddCollection() {
-    if (Main.isAdmin()) {
+    if (localStorage.getItem('tabActiveKey') !== 'PUBLIC' || Main.isAdmin()) {
       this.setState({ showAddCollectionModal: true });
       ReactDOM.render((<ModalAddCollection showModal={true} userInfo={this.props.userData} />), document.getElementById('modal-base'));
     }
@@ -152,7 +153,7 @@ export class Main extends Component {
    * @param dataCollection
    */
   updateCurrentDataCollection(dataCollection) {
-    if (Main.isAdmin()) {
+    if (localStorage.getItem('tabActiveKey') !== 'PUBLIC' || Main.isAdmin()) {
       this.setState({ showAddCollectionModal: true });
       ReactDOM.render((<ModalAddCollection showModal={true} dataCollection={dataCollection} userInfo={this.props.userData} />), document.getElementById('modal-base'));
     }

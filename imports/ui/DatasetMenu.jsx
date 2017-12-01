@@ -11,8 +11,18 @@ export default class DatasetMenu extends Component {
   constructor(props) {
     super(props);
 
+    this.eventEmitter = new CustomEventEmitter();
+
+    let key = undefined;
+
+    if(localStorage.getItem('tabActiveKey')) {
+      key = localStorage.getItem('tabActiveKey');
+    } else  {
+      key = (this.props.location.state && this.props.location.state.tabActiveKey) ? this.props.location.state.tabActiveKey : 'PUBLIC';
+    }
+
     this.state = {
-      activeKey: (this.props.location.state && this.props.location.state.tabActiveKey) ? this.props.location.state.tabActiveKey : 'PUBLIC'
+      activeKey: key
     };
   }
 
@@ -25,8 +35,8 @@ export default class DatasetMenu extends Component {
       activeKey: key
     });
 
-    let eventEmitter = new CustomEventEmitter();
-    eventEmitter.dispatch('tabKeyChanged', {tabActiveKey: key});
+    localStorage.setItem('tabActiveKey', key);
+    this.eventEmitter.dispatch('tabKeyChanged', {tabActiveKey: key});
   }
 
   render() {
