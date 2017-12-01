@@ -73,10 +73,13 @@ export default class AutoCacheManager {
 
     this.removeSliceFromUncached(seriesNumber, index);
 
-    Meteor.call('getDicom', caseId, seriesNumber, index, (err, image) => {
+    HTTP.call("GET", "/getDicom", {
+      params: {caseId: caseId, seriesNumber: seriesNumber, index: index}}, (err, result) => {
       if(err) {
         return console.error(err);
       }
+      let image = result.data;
+      image.imageBuf = new Uint8Array(image.imageBuf.data);
       // console.log(`manipulated ${index}`);
       if(series.cachingPool[index] === undefined) {
         if(series.uncachedList.next !== undefined) {
