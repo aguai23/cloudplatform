@@ -25,7 +25,6 @@
   justify-content: space-between;
   height: 36px;
   outline: none;
-  margin-bottom: 16px;
 }
 
 .caseList_searchBar_container {
@@ -160,6 +159,11 @@
 
 .caseList_table {
   width: 100%;
+  border-collapse: separate;
+}
+
+.caseList_table tr th {
+  height: 50px;
 }
 
 .caseList_thead {
@@ -208,7 +212,7 @@ th:first-child,
 }
 
 .caseList_tr td span {
-  display: inline-block;
+  /* display: inline-block; */
   overflow: hidden;
   white-space: nowrap;
 }
